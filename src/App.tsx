@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut, type User } from 'firebase/auth'
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, writeBatch } from 'firebase/firestore'
 import './App.css'
-import { auth, completeRedirectSignIn, firebaseReady, getAuthErrorMessage, googleProvider } from './firebase'
+import { auth, db, completeRedirectSignIn, firebaseReady, getAuthErrorMessage, googleProvider } from './firebase'
 
 type EventKind =
   | 'birthday'
@@ -575,6 +576,136 @@ function getStoredEditingIdForUser(uid: string) {
   return localStorage.getItem(getUserEditingKey(uid))
 }
 
+// ── Firestore sync helpers ────────────────────────────────────────────────
+async function firestoreLoadEventsForUser(uid: string): Promise<LovinglyEvent[]> {
+  if (!db) return []
+  try {
+    const snap = await getDocs(collection(db, 'users', uid, 'events'))
+    return snap.docs.map((d) => d.data() as LovinglyEvent)
+  } catch {
+    return []
+  }
+}
+
+async function firestoreSaveEvent(uid: string, event: LovinglyEvent): Promise<void> {
+  if (!db) return
+  try {
+    await setDoc(doc(db, 'users', uid, 'events', event.id), event)
+  } catch {
+    // silently ignore - localStorage is still the fallback
+  }
+}
+
+async function firestoreDeleteEvent(uid: string, eventId: string): Promise<void> {
+  if (!db) return
+  try {
+    await deleteDoc(doc(db, 'users', uid, 'events', eventId))
+  } catch {
+    // silently ignore
+  }
+}
+
+async function firestoreSavePublicEvent(event: LovinglyEvent): Promise<void> {
+  if (!db) return
+  try {
+    const payload = {
+      id: event.id,
+      slug: event.slug,
+      title: event.title,
+      eventType: event.eventType,
+      customType: event.customType,
+      recipientName: event.recipientName,
+      eventDate: event.eventDate,
+      location: event.location,
+      primaryColor: event.primaryColor,
+      secondaryColor: event.secondaryColor,
+      highlightColor: event.highlightColor,
+      elements: event.elements,
+      backgroundText: event.backgroundText,
+      contentBlocks: event.contentBlocks,
+      backgroundPattern: event.backgroundPattern,
+      messageAlignment: event.messageAlignment,
+      photoAlignment: event.photoAlignment,
+      photoSize: event.photoSize,
+      isPublished: event.isPublished,
+      createdAt: event.createdAt,
+      spotifyUrl: event.spotifyUrl ?? '',
+      showAds: event.showAds ?? true,
+      visibility: event.visibility ?? 'anyone',
+      driveFileId: event.driveFileId ?? '',
+      creatorPath: event.creatorPath,
+    }
+    await setDoc(doc(db, 'published_events', event.slug), payload)
+  } catch {
+    // silently ignore
+  }
+}
+
+async function firestoreDeletePublicEvent(slug: string): Promise<void> {
+  if (!db) return
+  try {
+    await deleteDoc(doc(db, 'published_events', slug))
+  } catch {
+    // silently ignore
+  }
+}
+
+async function firestoreLoadPublicEvent(slug: string): Promise<LovinglyEvent | null> {
+  if (!db) return null
+  try {
+    const snap = await getDoc(doc(db, 'published_events', slug))
+    if (snap.exists()) return snap.data() as LovinglyEvent
+    return null
+  } catch {
+    return null
+  }
+}
+
+async function firestoreBulkSaveEvents(uid: string, events: LovinglyEvent[]): Promise<void> {
+  if (!db || events.length === 0) return
+  try {
+    const batch = writeBatch(db)
+    for (const event of events) {
+      batch.set(doc(db, 'users', uid, 'events', event.id), event)
+    }
+    await batch.commit()
+  } catch {
+    // silently ignore
+  }
+}
+
+async function syncUserEvents(uid: string, localEvents: LovinglyEvent[], setEvents: (evs: LovinglyEvent[]) => void) {
+  const cloudEvents = await firestoreLoadEventsForUser(uid)
+  const mergedMap = new Map<string, LovinglyEvent>()
+
+  // 1. Load local events
+  for (const e of localEvents) {
+    mergedMap.set(e.id, e)
+  }
+
+  // 2. Add or overwrite with cloud events
+  for (const ce of cloudEvents) {
+    mergedMap.set(ce.id, ce)
+  }
+
+  // 3. Identify local-only events that need to upload to cloud
+  const uploadToCloud: LovinglyEvent[] = []
+  for (const le of localEvents) {
+    if (!cloudEvents.some((ce) => ce.id === le.id)) {
+      uploadToCloud.push(le)
+    }
+  }
+
+  const mergedList = Array.from(mergedMap.values())
+  setEvents(mergedList)
+  localStorage.setItem(getUserStorageKey(uid), JSON.stringify(mergedList))
+
+  if (uploadToCloud.length > 0) {
+    await firestoreBulkSaveEvents(uid, uploadToCloud)
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────
+
 function getCountdown(dateValue: string) {
   if (!dateValue) return ''
   const target = new Date(`${dateValue}T00:00:00`).getTime()
@@ -818,11 +949,13 @@ function App() {
 
   const [authLoading, setAuthLoading] = useState(() => Boolean(auth))
   const [authError, setAuthError] = useState<string | null>(null)
-  const [driveAccessToken, setDriveAccessToken] = useState(() => sessionStorage.getItem(DRIVE_TOKEN_KEY) || '')
+  const [driveAccessToken, setDriveAccessToken] = useState(() => localStorage.getItem(DRIVE_TOKEN_KEY) || '')
   const [driveError, setDriveError] = useState<string | null>(null)
   const [drivePublishing, setDrivePublishing] = useState(false)
   const [publicDriveEvent, setPublicDriveEvent] = useState<{ fileId: string; event: LovinglyEvent } | null>(null)
   const [publicDriveError, setPublicDriveError] = useState<{ fileId: string; message: string } | null>(null)
+  const [firestorePublicEvent, setFirestorePublicEvent] = useState<LovinglyEvent | null>(null)
+  const [firestorePublicLoading, setFirestorePublicLoading] = useState(false)
   const [events, setEvents] = useState<LovinglyEvent[]>(getInitialEvents)
   const [editingId, setEditingId] = useState<string | null>(() => localStorage.getItem(EDITING_ID_KEY))
   const [selectedType, setSelectedType] = useState<EventKind>('birthday')
@@ -830,6 +963,29 @@ function App() {
   const [publicReturnPath, setPublicReturnPath] = useState('/user')
   const isLoggedIn = Boolean(user)
   const pageLimit = FREE_EVENT_LIMIT
+
+  const editingEvent = events.find((event) => event.id === editingId) ?? null
+  const publicRoute = getPublicRoute(path)
+  const localPublicEvent = publicRoute
+    ? [...events, ...sampleEvents].find((event) => {
+        const hasSlug = event.slug.toLowerCase() === publicRoute.slug.toLowerCase()
+        const hasCreatorPath = !publicRoute.creatorPath || !event.creatorPath || event.creatorPath === publicRoute.creatorPath
+        const hasEventPath = !publicRoute.eventPath || getEventTypePath(event) === publicRoute.eventPath
+        return hasSlug && hasCreatorPath && hasEventPath
+      })
+    : undefined
+  const publicEvent = firestorePublicEvent || (publicRoute?.driveFileId
+    ? (publicDriveEvent?.fileId === publicRoute.driveFileId ? publicDriveEvent.event : undefined)
+    : localPublicEvent)
+  const currentPublicDriveError = publicRoute?.driveFileId && publicDriveError?.fileId === publicRoute.driveFileId
+    ? publicDriveError.message
+    : null
+  const publicDriveLoading = Boolean(
+    publicRoute &&
+    !publicEvent &&
+    !currentPublicDriveError &&
+    (firestorePublicLoading || (publicRoute.driveFileId && !publicDriveEvent))
+  )
 
   useEffect(() => {
     if (!auth) return
@@ -844,8 +1000,10 @@ function App() {
       if (!active) return
       setUser(nextUser)
       if (nextUser) {
-        setEvents(getStoredEventsForUser(nextUser.uid))
+        const local = getStoredEventsForUser(nextUser.uid)
+        setEvents(local)
         setEditingId(getStoredEditingIdForUser(nextUser.uid))
+        syncUserEvents(nextUser.uid, local, setEvents).catch(() => {})
       } else {
         setEvents([])
         setEditingId(null)
@@ -872,6 +1030,14 @@ function App() {
   }, [events, user])
 
   useEffect(() => {
+    if (!user || !editingEvent) return
+    const timer = setTimeout(() => {
+      firestoreSaveEvent(user.uid, editingEvent)
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [editingEvent, user])
+
+  useEffect(() => {
     if (!user) return
     const editingKey = getUserEditingKey(user.uid)
     if (editingId) {
@@ -887,26 +1053,34 @@ function App() {
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
-  const editingEvent = events.find((event) => event.id === editingId) ?? null
-  const publicRoute = getPublicRoute(path)
-  const localPublicEvent = publicRoute
-    ? [...events, ...sampleEvents].find((event) => {
-        const hasSlug = event.slug.toLowerCase() === publicRoute.slug.toLowerCase()
-        const hasCreatorPath = !publicRoute.creatorPath || !event.creatorPath || event.creatorPath === publicRoute.creatorPath
-        const hasEventPath = !publicRoute.eventPath || getEventTypePath(event) === publicRoute.eventPath
-        return hasSlug && hasCreatorPath && hasEventPath
-      })
-    : undefined
-  const publicEvent = publicRoute?.driveFileId
-    ? publicDriveEvent?.fileId === publicRoute.driveFileId ? publicDriveEvent.event : undefined
-    : localPublicEvent
-  const currentPublicDriveError = publicRoute?.driveFileId && publicDriveError?.fileId === publicRoute.driveFileId
-    ? publicDriveError.message
-    : null
-  const publicDriveLoading = Boolean(publicRoute?.driveFileId && !publicEvent && !currentPublicDriveError)
+
 
   useEffect(() => {
-    if (!publicRoute?.driveFileId) return
+    if (!publicRoute?.slug) {
+      setFirestorePublicEvent(null)
+      return
+    }
+
+    let active = true
+    setFirestorePublicLoading(true)
+    firestoreLoadPublicEvent(publicRoute.slug)
+      .then((evt) => {
+        if (active && evt) {
+          setFirestorePublicEvent(evt)
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setFirestorePublicLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [publicRoute?.slug])
+
+  useEffect(() => {
+    if (!publicRoute?.driveFileId || firestorePublicEvent) return
 
     let active = true
     fetchDriveEvent(publicRoute.driveFileId, driveAccessToken || undefined)
@@ -925,7 +1099,7 @@ function App() {
     return () => {
       active = false
     }
-  }, [publicRoute?.driveFileId, driveAccessToken])
+  }, [publicRoute?.driveFileId, driveAccessToken, firestorePublicEvent])
 
   useEffect(() => {
     if (path === '/builder' && editingEvent?.isPublished) {
@@ -979,7 +1153,7 @@ function App() {
     const credential = GoogleAuthProvider.credentialFromResult(result)
     const token = credential?.accessToken || ''
     if (!token) throw new Error('Google Drive access was not granted. Please try again.')
-    sessionStorage.setItem(DRIVE_TOKEN_KEY, token)
+    localStorage.setItem(DRIVE_TOKEN_KEY, token)
     setDriveAccessToken(token)
     return token
   }
@@ -1012,11 +1186,16 @@ function App() {
       })
 
       updateEvent(driveEvent)
+      // Save public copy to Firestore so anyone can view without login
+      await firestoreSavePublicEvent(driveEvent)
+      if (user) {
+        await firestoreSaveEvent(user.uid, driveEvent)
+      }
       setPublicReturnPath('/user')
-      showToast('Successfully published to Google Drive!', 'success')
+      showToast('Successfully published!', 'success')
       navigate(getPublicPath(driveEvent, user))
     } catch (error) {
-      setDriveError(error instanceof Error ? error.message : 'Unable to publish to Google Drive.')
+      setDriveError(error instanceof Error ? error.message : 'Unable to publish.')
     } finally {
       setDrivePublishing(false)
     }
@@ -1043,21 +1222,34 @@ function App() {
         drivePublishedAt: undefined,
       }
       updateEvent(updated)
+      // Remove public copy from Firestore
+      await firestoreDeletePublicEvent(event.slug)
+      if (user) {
+        await firestoreSaveEvent(user.uid, updated)
+      }
       showToast('Page unpublished successfully and restored to Draft.', 'success')
     } catch (error) {
-      setDriveError(error instanceof Error ? error.message : 'Unable to unpublish from Google Drive.')
+      setDriveError(error instanceof Error ? error.message : 'Unable to unpublish.')
     } finally {
       setDrivePublishing(false)
     }
   }
 
   function deleteEvent(id: string) {
+    const eventToDelete = events.find((e) => e.id === id)
     const confirmed = confirm('Are you sure you want to delete this draft event? This action cannot be undone.')
     if (!confirmed) return
 
     setEvents((currentEvents) => currentEvents.filter((e) => e.id !== id))
     if (editingId === id) {
       setEditingId(null)
+    }
+
+    if (user) {
+      firestoreDeleteEvent(user.uid, id).catch(() => {})
+      if (eventToDelete?.slug) {
+        firestoreDeletePublicEvent(eventToDelete.slug).catch(() => {})
+      }
     }
     showToast('Event deleted successfully.', 'success')
   }
@@ -1084,7 +1276,7 @@ function App() {
       const result = await signInWithPopup(auth, googleProvider)
       const credential = GoogleAuthProvider.credentialFromResult(result)
       if (credential?.accessToken) {
-        sessionStorage.setItem(DRIVE_TOKEN_KEY, credential.accessToken)
+        localStorage.setItem(DRIVE_TOKEN_KEY, credential.accessToken)
         setDriveAccessToken(credential.accessToken)
       }
       if (result.user) navigate('/user', true)
@@ -1101,7 +1293,7 @@ function App() {
 
   async function handleLogout() {
     if (auth) await signOut(auth)
-    sessionStorage.removeItem(DRIVE_TOKEN_KEY)
+    localStorage.removeItem(DRIVE_TOKEN_KEY)
     setDriveAccessToken('')
     setEvents([])
     setEditingId(null)
@@ -2624,7 +2816,7 @@ function ThemeEditor({
           <button
             key={preset.label}
             type="button"
-            className={event.backgroundPattern === preset.pattern ? 'pattern-button selected' : 'pattern-button'}
+            className={event.backgroundText === preset.value ? 'pattern-button selected' : 'pattern-button'}
             onClick={() => onUpdate({ ...event, backgroundText: preset.value, backgroundPattern: preset.pattern as BackgroundPattern })}
           >
             {preset.label}
