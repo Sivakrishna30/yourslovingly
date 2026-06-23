@@ -2438,10 +2438,65 @@ textarea.input-error:focus {
   margin: 0 0 24px 0;
 }
 
+.modal-message {
+  color: #4b5563;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+  text-align: left;
+}
+
+.modal-message p {
+  margin: 0 0 8px;
+}
+
+.modal-message ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.modal-message li {
+  margin-bottom: 4px;
+}
+
+/* Icon badge shown above title */
+.modal-icon {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  font-size: 22px;
+  font-weight: 900;
+  height: 52px;
+  justify-content: center;
+  margin: 0 auto 16px;
+  width: 52px;
+}
+
+.modal-icon-error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.modal-icon-warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.modal-icon-info {
+  background: #dbeafe;
+  color: #2563eb;
+  font-style: italic;
+}
+
+.modal-icon-success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
 .custom-modal-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 12px;
+  justify-content: center;
 }
 
 .custom-modal-actions button {
@@ -2479,4 +2534,27 @@ textarea.input-error:focus {
 
 .modal-confirm-btn:active {
   transform: translateY(0);
+}
+
+/* Error variant — red confirm button */
+.modal-confirm-btn-error {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+.modal-confirm-btn-error:hover {
+  background: #b91c1c;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35);
+}
+
+/* Single-button (info modal) — make cancel fill full width */
+.custom-modal-actions:has(.modal-cancel-btn:only-child),
+.custom-modal-actions:has(.modal-confirm-btn:only-child) {
+  justify-content: center;
+}
+
+.custom-modal-actions .modal-cancel-btn,
+.custom-modal-actions .modal-confirm-btn {
+  flex: 1;
+  max-width: 200px;
 }

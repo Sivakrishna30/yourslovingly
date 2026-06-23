@@ -969,10 +969,12 @@ function App() {
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean
     title: string
-    message: string
+    message: string | React.ReactNode
     onConfirm: () => void
     confirmText?: string
     cancelText?: string
+    infoModal?: boolean        // true = alert-style (no cancel btn)
+    variant?: 'error' | 'warning' | 'info' | 'success'
   } | null>(null)
   const [events, setEvents] = useState<LovinglyEvent[]>(getInitialEvents)
   const [editingId, setEditingId] = useState<string | null>(() => localStorage.getItem(EDITING_ID_KEY))
@@ -1220,7 +1222,24 @@ function App() {
 
     const { isValid, errors } = validateEvent(event)
     if (!isValid) {
-      alert(`Cannot publish. Please fix the following errors:\n${Object.values(errors).map(err => `- ${err}`).join('\n')}`)
+      setConfirmModal({
+        isOpen: true,
+        title: 'Cannot publish',
+        message: (
+          <>
+            <p style={{ marginBottom: 8 }}>Please fix the following before publishing:</p>
+            <ul style={{ paddingLeft: 18, margin: 0 }}>
+              {Object.values(errors).map((err, i) => (
+                <li key={i} style={{ marginBottom: 4 }}>{err}</li>
+              ))}
+            </ul>
+          </>
+        ),
+        confirmText: 'OK',
+        infoModal: true,
+        variant: 'error',
+        onConfirm: () => setConfirmModal(null),
+      })
       return
     }
 
@@ -1549,20 +1568,34 @@ function App() {
         </div>
       )}
       {confirmModal && confirmModal.isOpen && (
-        <div className="custom-modal-overlay" role="dialog" aria-modal="true">
+        <div className={`custom-modal-overlay${confirmModal.variant ? ` modal-variant-${confirmModal.variant}` : ''}`} role="dialog" aria-modal="true">
           <div className="custom-modal-content">
+            {confirmModal.variant === 'error' && (
+              <div className="modal-icon modal-icon-error">✕</div>
+            )}
+            {confirmModal.variant === 'warning' && (
+              <div className="modal-icon modal-icon-warning">!</div>
+            )}
+            {confirmModal.variant === 'info' && (
+              <div className="modal-icon modal-icon-info">i</div>
+            )}
+            {confirmModal.variant === 'success' && (
+              <div className="modal-icon modal-icon-success">✓</div>
+            )}
             <h2>{confirmModal.title}</h2>
-            <p>{confirmModal.message}</p>
+            <div className="modal-message">{confirmModal.message}</div>
             <div className="custom-modal-actions">
+              {!confirmModal.infoModal && (
+                <button
+                  className="modal-cancel-btn"
+                  type="button"
+                  onClick={() => setConfirmModal(null)}
+                >
+                  {confirmModal.cancelText || 'Cancel'}
+                </button>
+              )}
               <button
-                className="modal-cancel-btn"
-                type="button"
-                onClick={() => setConfirmModal(null)}
-              >
-                {confirmModal.cancelText || 'Cancel'}
-              </button>
-              <button
-                className="modal-confirm-btn"
+                className={`modal-confirm-btn${confirmModal.variant === 'error' ? ' modal-confirm-btn-error' : ''}`}
                 type="button"
                 onClick={() => {
                   confirmModal.onConfirm()
