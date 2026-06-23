@@ -956,6 +956,15 @@ function App() {
   const [publicDriveError, setPublicDriveError] = useState<{ fileId: string; message: string } | null>(null)
   const [firestorePublicEvent, setFirestorePublicEvent] = useState<LovinglyEvent | null>(null)
   const [firestorePublicLoading, setFirestorePublicLoading] = useState(false)
+  const [publishActionType, setPublishActionType] = useState<'publish' | 'unpublish' | null>(null)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    confirmText?: string
+    cancelText?: string
+  } | null>(null)
   const [events, setEvents] = useState<LovinglyEvent[]>(getInitialEvents)
   const [editingId, setEditingId] = useState<string | null>(() => localStorage.getItem(EDITING_ID_KEY))
   const [selectedType, setSelectedType] = useState<EventKind>('birthday')
@@ -1171,87 +1180,108 @@ function App() {
       return
     }
 
-    const confirmed = confirm(
-      'Please preview this page before publishing. Once published, this event cannot be edited. Publish now?',
-    )
-    if (!confirmed) return
+    setConfirmModal({
+      isOpen: true,
+      title: 'Publish page',
+      message: 'Please preview this page before publishing. Once published, this event cannot be edited. Publish now?',
+      confirmText: 'Publish Now',
+      cancelText: 'Cancel',
+      onConfirm: async () => {
+        setDrivePublishing(true)
+        setPublishActionType('publish')
+        setDriveError(null)
+        try {
+          const token = driveAccessToken || await requestDriveAccess()
+          const { event: driveEvent } = await publishEventToDrive(token, {
+            ...event,
+            creatorPath: getEventCreatorPath(event, user),
+          })
 
-    setDrivePublishing(true)
-    setDriveError(null)
-    try {
-      const token = driveAccessToken || await requestDriveAccess()
-      const { event: driveEvent } = await publishEventToDrive(token, {
-        ...event,
-        creatorPath: getEventCreatorPath(event, user),
-      })
-
-      updateEvent(driveEvent)
-      // Save public copy to Firestore so anyone can view without login
-      await firestoreSavePublicEvent(driveEvent)
-      if (user) {
-        await firestoreSaveEvent(user.uid, driveEvent)
+          updateEvent(driveEvent)
+          // Save public copy to Firestore so anyone can view without login
+          await firestoreSavePublicEvent(driveEvent)
+          if (user) {
+            await firestoreSaveEvent(user.uid, driveEvent)
+          }
+          setPublicReturnPath('/user')
+          showToast('Successfully published!', 'success')
+          navigate(getPublicPath(driveEvent, user))
+        } catch (error) {
+          setDriveError(error instanceof Error ? error.message : 'Unable to publish.')
+        } finally {
+          setDrivePublishing(false)
+          setPublishActionType(null)
+          setConfirmModal(null)
+        }
       }
-      setPublicReturnPath('/user')
-      showToast('Successfully published!', 'success')
-      navigate(getPublicPath(driveEvent, user))
-    } catch (error) {
-      setDriveError(error instanceof Error ? error.message : 'Unable to publish.')
-    } finally {
-      setDrivePublishing(false)
-    }
+    })
   }
 
   async function unpublishEvent(event: LovinglyEvent) {
-    const confirmed = confirm(
-      'Are you sure you want to unpublish this page? It will be removed from your Google Drive and converted back to a Draft. Anyone with the link will no longer be able to view it.'
-    )
-    if (!confirmed) return
-
-    setDrivePublishing(true)
-    setDriveError(null)
-    try {
-      const token = driveAccessToken || await requestDriveAccess()
-      await unpublishEventFromDrive(token, event)
-      
-      const updated: LovinglyEvent = {
-        ...event,
-        isPublished: false,
-        driveFileId: undefined,
-        driveFolderId: undefined,
-        drivePhotoFileIds: undefined,
-        drivePublishedAt: undefined,
+    setConfirmModal({
+      isOpen: true,
+      title: 'Unpublish page',
+      message: 'Are you sure you want to unpublish this page? It will be removed from your Google Drive and converted back to a Draft. Anyone with the link will no longer be able to view it.',
+      confirmText: 'Unpublish',
+      cancelText: 'Cancel',
+      onConfirm: async () => {
+        setDrivePublishing(true)
+        setPublishActionType('unpublish')
+        setDriveError(null)
+        try {
+          const token = driveAccessToken || await requestDriveAccess()
+          await unpublishEventFromDrive(token, event)
+          
+          const updated: LovinglyEvent = {
+            ...event,
+            isPublished: false,
+            driveFileId: undefined,
+            driveFolderId: undefined,
+            drivePhotoFileIds: undefined,
+            drivePublishedAt: undefined,
+          }
+          updateEvent(updated)
+          // Remove public copy from Firestore
+          await firestoreDeletePublicEvent(event.slug)
+          if (user) {
+            await firestoreSaveEvent(user.uid, updated)
+          }
+          showToast('Page unpublished successfully and restored to Draft.', 'success')
+        } catch (error) {
+          setDriveError(error instanceof Error ? error.message : 'Unable to unpublish.')
+        } finally {
+          setDrivePublishing(false)
+          setPublishActionType(null)
+          setConfirmModal(null)
+        }
       }
-      updateEvent(updated)
-      // Remove public copy from Firestore
-      await firestoreDeletePublicEvent(event.slug)
-      if (user) {
-        await firestoreSaveEvent(user.uid, updated)
-      }
-      showToast('Page unpublished successfully and restored to Draft.', 'success')
-    } catch (error) {
-      setDriveError(error instanceof Error ? error.message : 'Unable to unpublish.')
-    } finally {
-      setDrivePublishing(false)
-    }
+    })
   }
 
   function deleteEvent(id: string) {
     const eventToDelete = events.find((e) => e.id === id)
-    const confirmed = confirm('Are you sure you want to delete this draft event? This action cannot be undone.')
-    if (!confirmed) return
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete draft',
+      message: 'Are you sure you want to delete this draft event? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      onConfirm: () => {
+        setEvents((currentEvents) => currentEvents.filter((e) => e.id !== id))
+        if (editingId === id) {
+          setEditingId(null)
+        }
 
-    setEvents((currentEvents) => currentEvents.filter((e) => e.id !== id))
-    if (editingId === id) {
-      setEditingId(null)
-    }
-
-    if (user) {
-      firestoreDeleteEvent(user.uid, id).catch(() => {})
-      if (eventToDelete?.slug) {
-        firestoreDeletePublicEvent(eventToDelete.slug).catch(() => {})
+        if (user) {
+          firestoreDeleteEvent(user.uid, id).catch(() => {})
+          if (eventToDelete?.slug) {
+            firestoreDeletePublicEvent(eventToDelete.slug).catch(() => {})
+          }
+        }
+        showToast('Event deleted successfully.', 'success')
+        setConfirmModal(null)
       }
-    }
-    showToast('Event deleted successfully.', 'success')
+    })
   }
 
   function startEvent(type = selectedType) {
@@ -1440,6 +1470,7 @@ function App() {
         onTerms={() => navigate('/terms')}
         onAbout={() => navigate('/about')}
         onContact={() => navigate('/contact')}
+        onSamples={() => navigate('/samples')}
         onDelete={deleteEvent}
         onUnpublish={unpublishEvent}
       />
@@ -1453,8 +1484,12 @@ function App() {
         <div className="loading-overlay" role="alert" aria-busy="true">
           <div className="spinner-container">
             <div className="spinner"></div>
-            <p className="spinner-text">Publishing to Google Drive...</p>
-            <span className="spinner-subtext">Creating secure files and saving your assets.</span>
+            <p className="spinner-text">
+              {publishActionType === 'unpublish' ? 'Unpublishing page...' : 'Publishing to Google Drive...'}
+            </p>
+            <span className="spinner-subtext">
+              {publishActionType === 'unpublish' ? 'Restoring draft and updating storage.' : 'Creating secure files and saving your assets.'}
+            </span>
           </div>
         </div>
       )}
@@ -1463,6 +1498,32 @@ function App() {
           <span className="toast-icon">{toast.type === 'success' ? '✨' : '⚠️'}</span>
           <p className="toast-message">{toast.message}</p>
           <button className="toast-close" onClick={() => setToast(null)}>&times;</button>
+        </div>
+      )}
+      {confirmModal && confirmModal.isOpen && (
+        <div className="custom-modal-overlay" role="dialog" aria-modal="true">
+          <div className="custom-modal-content">
+            <h2>{confirmModal.title}</h2>
+            <p>{confirmModal.message}</p>
+            <div className="custom-modal-actions">
+              <button
+                className="modal-cancel-btn"
+                type="button"
+                onClick={() => setConfirmModal(null)}
+              >
+                {confirmModal.cancelText || 'Cancel'}
+              </button>
+              <button
+                className="modal-confirm-btn"
+                type="button"
+                onClick={() => {
+                  confirmModal.onConfirm()
+                }}
+              >
+                {confirmModal.confirmText || 'Confirm'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>
@@ -1867,6 +1928,7 @@ function Dashboard({
   onTerms,
   onAbout,
   onContact,
+  onSamples,
   onDelete,
   onUnpublish,
 }: {
@@ -1882,6 +1944,7 @@ function Dashboard({
   onTerms: () => void
   onAbout: () => void
   onContact: () => void
+  onSamples: () => void
   onDelete: (id: string) => void
   onUnpublish: (event: LovinglyEvent) => void
 }) {
@@ -1981,6 +2044,7 @@ function Dashboard({
       <footer className="home-footer">
         <p>To create custom event websites or digital products, reach out to the creator at <a href="mailto:unpredictable.knucklehead.era@gmail.com">unpredictable.knucklehead.era@gmail.com</a></p>
         <div className="footer-links">
+          <button className="text-link" type="button" onClick={onSamples}>Samples</button>
           <button className="text-link" type="button" onClick={onAbout}>About</button>
           <button className="text-link" type="button" onClick={onContact}>Contact</button>
           <button className="text-link" type="button" onClick={onTerms}>Terms & Security Policy</button>
