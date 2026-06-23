@@ -598,6 +598,26 @@
   margin-top: 0;
 }
 
+.samples-strip-btn {
+  background: transparent;
+  border: 1.5px solid var(--brand);
+  border-radius: 8px;
+  color: var(--brand);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-top: 0;
+  padding: 7px 18px;
+  transition: background 0.18s, color 0.18s;
+  white-space: nowrap;
+}
+
+.samples-strip-btn:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
 .notice {
   background: #fff7ed;
   border: 1px solid #fed7aa;

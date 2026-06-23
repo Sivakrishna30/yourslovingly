@@ -752,6 +752,15 @@ function dataUrlToBlob(dataUrl: string) {
   return new Blob([bytes], { type: mime })
 }
 
+class DriveError extends Error {
+  status?: number
+  constructor(message: string, status?: number) {
+    super(message)
+    this.name = 'DriveError'
+    this.status = status
+  }
+}
+
 function getDriveMediaUrl(fileId: string) {
   return `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&key=${encodeURIComponent(getGoogleApiKey())}`
 }
@@ -767,7 +776,7 @@ async function driveJsonRequest<T>(accessToken: string, url: string, init: Reque
   })
   const text = await response.text()
   const data = text ? JSON.parse(text) : null
-  if (!response.ok) throw new Error(data?.error?.message || 'Google Drive request failed.')
+  if (!response.ok) throw new DriveError(data?.error?.message || 'Google Drive request failed.', response.status)
   return data as T
 }
 
@@ -794,7 +803,7 @@ async function uploadDriveFile(accessToken: string, metadata: Record<string, unk
     body: multipartBody,
   })
   const data = await response.json()
-  if (!response.ok) throw new Error(data?.error?.message || 'Drive upload failed.')
+  if (!response.ok) throw new DriveError(data?.error?.message || 'Drive upload failed.', response.status)
   return data.id as string
 }
 
@@ -1158,13 +1167,48 @@ function App() {
       return ''
     }
 
-    const result = await signInWithPopup(auth, googleProvider)
+    // Use a separate provider scoped only to Drive so we don't force consent
+    // if the user is already signed in to Google
+    const driveProvider = new GoogleAuthProvider()
+    driveProvider.addScope('https://www.googleapis.com/auth/drive.file')
+    // select_account shows account picker but doesn't force re-consent if scope already granted
+    driveProvider.setCustomParameters({ prompt: 'select_account' })
+
+    const result = await signInWithPopup(auth, driveProvider)
     const credential = GoogleAuthProvider.credentialFromResult(result)
     const token = credential?.accessToken || ''
     if (!token) throw new Error('Google Drive access was not granted. Please try again.')
     localStorage.setItem(DRIVE_TOKEN_KEY, token)
     setDriveAccessToken(token)
     return token
+  }
+
+  // Returns a valid Drive token — uses stored token if present, otherwise requests access
+  async function getValidDriveToken(currentToken: string): Promise<string> {
+    if (currentToken) return currentToken
+    return requestDriveAccess()
+  }
+
+  // If a Drive API call fails with 401/403 (expired/invalid token), clear the stored token
+  // and retry with a fresh one — this avoids the user having to manually sign in again
+  async function withDriveTokenRetry<T>(
+    currentToken: string,
+    action: (token: string) => Promise<T>
+  ): Promise<T> {
+    const token = await getValidDriveToken(currentToken)
+    try {
+      return await action(token)
+    } catch (error) {
+      const isAuthError = error instanceof DriveError && (error.status === 401 || error.status === 403)
+      if (isAuthError) {
+        // Token is expired or invalid — clear it and get a fresh one
+        localStorage.removeItem(DRIVE_TOKEN_KEY)
+        setDriveAccessToken('')
+        const freshToken = await requestDriveAccess()
+        return action(freshToken)
+      }
+      throw error
+    }
   }
 
   async function publishEvent(event: LovinglyEvent) {
@@ -1191,11 +1235,13 @@ function App() {
         setPublishActionType('publish')
         setDriveError(null)
         try {
-          const token = driveAccessToken || await requestDriveAccess()
-          const { event: driveEvent } = await publishEventToDrive(token, {
-            ...event,
-            creatorPath: getEventCreatorPath(event, user),
-          })
+          const { event: driveEvent } = await withDriveTokenRetry(
+            driveAccessToken,
+            (token) => publishEventToDrive(token, {
+              ...event,
+              creatorPath: getEventCreatorPath(event, user),
+            })
+          )
 
           updateEvent(driveEvent)
           // Save public copy to Firestore so anyone can view without login
@@ -1229,8 +1275,10 @@ function App() {
         setPublishActionType('unpublish')
         setDriveError(null)
         try {
-          const token = driveAccessToken || await requestDriveAccess()
-          await unpublishEventFromDrive(token, event)
+          await withDriveTokenRetry(
+            driveAccessToken,
+            (token) => unpublishEventFromDrive(token, event)
+          )
           
           const updated: LovinglyEvent = {
             ...event,
@@ -1983,6 +2031,9 @@ function Dashboard({
             {limitReached ? 'View plans' : createLabel}
           </button>
         )}
+        <button className="samples-strip-btn" type="button" onClick={onSamples}>
+          View Samples
+        </button>
       </section>
 
       {limitReached && (

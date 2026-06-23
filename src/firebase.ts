@@ -19,7 +19,6 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
-googleProvider.setCustomParameters({ prompt: 'consent' });
 
 export const firebaseReady = Boolean(import.meta.env.VITE_FIREBASE_API_KEY);
 
