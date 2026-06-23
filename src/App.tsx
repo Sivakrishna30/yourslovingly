@@ -92,7 +92,7 @@ type ContentBlock =
       borderStyle: BorderStyle
     }
 
-const FREE_EVENT_LIMIT = 1
+const FREE_EVENT_LIMIT = 3
 const MAX_PHOTOS = 10
 const MAX_ELEMENTS = 5
 const STORAGE_KEY = 'lovingly-demo-events'
@@ -2010,7 +2010,12 @@ function Dashboard({
             <h1>Your memory pages</h1>
           </div>
         </div>
-        <UserBadge user={user} onLogout={onLogout} />
+        <div className="header-right">
+          <button className="samples-strip-btn" type="button" onClick={onSamples}>
+            View Samples
+          </button>
+          <UserBadge user={user} onLogout={onLogout} />
+        </div>
       </header>
 
       <section className="status-strip">
@@ -2031,9 +2036,6 @@ function Dashboard({
             {limitReached ? 'View plans' : createLabel}
           </button>
         )}
-        <button className="samples-strip-btn" type="button" onClick={onSamples}>
-          View Samples
-        </button>
       </section>
 
       {limitReached && (

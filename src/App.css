@@ -488,6 +488,12 @@
   gap: 16px;
 }
 
+.header-right {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
 .app-header h1,
 .editor-header h1 {
   font-size: clamp(32px, 4vw, 54px);
