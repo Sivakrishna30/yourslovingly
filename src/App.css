@@ -1926,41 +1926,7 @@ input:checked + .slider:before {
 }
 
 
-/* Global Ad Slot Styles */
-.ad-slot {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px dashed rgba(0, 0, 0, 0.05);
-  color: #999;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
 
-.ad-slot.top {
-  min-height: 60px;
-  margin-bottom: 0;
-}
-
-.ad-slot.bottom {
-  min-height: 90px;
-  margin-top: 2rem;
-}
-
-.builder-shell .ad-slot.top {
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-
-.inline-ad {
-  margin: 2rem 0;
-  background: rgba(0,0,0,0.03);
-  border-radius: 8px;
-}
 
 /* Validation and Form Error Styles */
 .required-star {

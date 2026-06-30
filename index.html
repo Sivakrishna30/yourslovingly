@@ -13,6 +13,20 @@
     <meta name="twitter:title" content="Lovingly | Event Microsite Builder" />
     <meta name="twitter:description" content="Create wedding invitation websites, birthday websites, digital event invitations, and memory pages with Lovingly." />
     <title>Lovingly | Wedding Invitation Website & Birthday Website Builder</title>
+    <!-- Google AdSense Verification & Auto Ads -->
+    <meta name="google-adsense-account" content="%VITE_ADSENSE_CLIENT_ID%" />
+    <script>
+      (function() {
+        const client = '%VITE_ADSENSE_CLIENT_ID%';
+        if (client && client.trim() !== '' && client.indexOf('%VITE_') === -1) {
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + client;
+          script.crossOrigin = 'anonymous';
+          document.head.appendChild(script);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

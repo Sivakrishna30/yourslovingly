@@ -1634,56 +1634,6 @@ function UserBadge({ user, onLogout }: { user: User; onLogout: () => void }) {
   )
 }
 
-function AdSlot({ position, className = '' }: { position: 'top' | 'bottom'; className?: string }) {
-  const clientId = import.meta.env.VITE_ADSENSE_CLIENT_ID
-  const slotId = position === 'top' 
-    ? import.meta.env.VITE_ADSENSE_TOP_SLOT_ID 
-    : import.meta.env.VITE_ADSENSE_BOTTOM_SLOT_ID
-
-  useEffect(() => {
-    if (clientId && slotId) {
-      // Dynamic injection of AdSense script
-      const scriptId = 'google-adsense-script'
-      let script = document.getElementById(scriptId) as HTMLScriptElement
-      if (!script) {
-        script = document.createElement('script')
-        script.id = scriptId
-        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${clientId}`
-        script.async = true
-        script.crossOrigin = 'anonymous'
-        document.body.appendChild(script)
-      }
-
-      try {
-        // @ts-expect-error window.adsbygoogle is not typed globally
-        (window.adsbygoogle = window.adsbygoogle || []).push({})
-      } catch (e) {
-        console.warn('AdSense ad push failed:', e)
-      }
-    }
-  }, [clientId, slotId])
-
-  if (!clientId || !slotId) {
-    return (
-      <div className={`ad-slot ${position} ${className}`}>
-        <span>Advertisement Space ({position})</span>
-      </div>
-    )
-  }
-
-  return (
-    <div className={`ad-slot adsense-slot ${position} ${className}`} style={{ minHeight: '90px', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0', overflow: 'hidden' }}>
-      <ins
-        className="adsbygoogle"
-        style={{ display: 'block', width: '100%', minWidth: '250px' }}
-        data-ad-client={clientId}
-        data-ad-slot={slotId}
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      />
-    </div>
-  )
-}
 
 function Home({
   authError,
@@ -1743,7 +1693,6 @@ function Home({
           {authError && <p className="notice">{authError}</p>}
         </div>
       </section>
-      <AdSlot position="bottom" />
       <footer className="home-footer">
         <p>To create custom event websites or digital products, reach out to the creator at <a href="mailto:unpredictable.knucklehead.era@gmail.com">unpredictable.knucklehead.era@gmail.com</a></p>
         <div className="footer-links">
@@ -2034,7 +1983,6 @@ function Dashboard({
 
   return (
     <main className="app-shell">
-      <AdSlot position="top" />
       <header className="app-header">
         <div className="header-title-row">
           <LogoMark onClick={onHome} />
@@ -2062,7 +2010,12 @@ function Dashboard({
         </div>
         <div className="welcome-pill">
           <span>Current plan</span>
-          <strong>Free</strong>
+          <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            Free
+            <button className="text-link" type="button" onClick={onSubscription} style={{ fontSize: '13px', fontWeight: 'bold' }}>
+              (Upgrade)
+            </button>
+          </strong>
         </div>
         {events.length > 0 && (
           <button className="primary-action" type="button" onClick={limitReached ? onSubscription : onCreate}>
@@ -2126,11 +2079,9 @@ function Dashboard({
           ))
         )}
       </section>
-      <AdSlot position="bottom" />
       <footer className="home-footer">
         <p>To create custom event websites or digital products, reach out to the creator at <a href="mailto:unpredictable.knucklehead.era@gmail.com">unpredictable.knucklehead.era@gmail.com</a></p>
         <div className="footer-links">
-          <button className="text-link" type="button" onClick={onSamples}>Samples</button>
           <button className="text-link" type="button" onClick={onAbout}>About</button>
           <button className="text-link" type="button" onClick={onContact}>Contact</button>
           <button className="text-link" type="button" onClick={onTerms}>Terms & Security Policy</button>
@@ -2199,7 +2150,6 @@ function CreateEvent({
           {canCreate ? 'Continue' : 'View plans'}
         </button>
       </footer>
-      <AdSlot position="bottom" />
     </main>
   )
 }
@@ -2221,7 +2171,6 @@ function SubscriptionPage({
 }) {
   return (
     <main className="app-shell">
-      <AdSlot position="top" />
       <header className="app-header">
         <div className="header-title-row">
           <LogoMark onClick={onHome} />
@@ -2327,7 +2276,6 @@ function SubscriptionPage({
       </section>
 
       <p className="notice">Payments will be enabled in the next version. All purchases are one-time — no subscriptions, no auto-renewals. Read our <strong>Refund & Cancellation Policy</strong> in the Terms page before purchasing.</p>
-      <AdSlot position="bottom" />
     </main>
   )
 }
@@ -2380,7 +2328,6 @@ function EventEditor({
   return (
     <main className="builder-shell">
       <section className="editor-panel">
-        <AdSlot position="top" />
         <header className="editor-header">
           <div className="header-title-row">
             <LogoMark onClick={onHome} />
@@ -2539,7 +2486,6 @@ function EventEditor({
           </div>
           {driveError && <p className="notice">{driveError}</p>}
         </section>
-        <AdSlot position="bottom" />
       </section>
 
       <aside className="live-preview">
@@ -3112,7 +3058,6 @@ function PublicPage({
         } as React.CSSProperties
       }
     >
-      {event.showAds !== false && <AdSlot position="top" />}
       <div className="public-bg-decor" aria-hidden="true">
         {backgroundDecor.map((item, i) => (
           <span
@@ -3194,8 +3139,6 @@ function PublicPage({
         ))}
         {event.location && <p className="location-line">Location: {event.location}</p>}
       </section>
-
-      {event.showAds !== false && <AdSlot position="bottom" />}
 
       <footer className="public-footer">
         <span>Created with Lovingly</span>
