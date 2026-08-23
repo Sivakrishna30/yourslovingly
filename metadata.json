@@ -1,0 +1,8 @@
+{
+  "name": "Yours Lovingly",
+  "description": "Create beautiful digital invites, business cards, flyers, and portfolios with one-click directions, in-page RSVPs, page insights, and PDF export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

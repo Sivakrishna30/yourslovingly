@@ -1,26 +1,45 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, doc, getDoc } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import appletConfig from '../firebase-applet-config.json';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || appletConfig.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || appletConfig.authDomain,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || appletConfig.projectId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || appletConfig.storageBucket,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || appletConfig.messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || appletConfig.appId,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || appletConfig.measurementId,
 };
 
 // Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const firestoreDbId = (appletConfig as { firestoreDatabaseId?: string }).firestoreDatabaseId;
+
+// Use initializeFirestore with long-polling for better stability in restricted environments
+const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+}, firestoreDbId || '(default)');
+
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
 
-export const firebaseReady = Boolean(import.meta.env.VITE_FIREBASE_API_KEY);
+export const firebaseReady = Boolean(firebaseConfig.apiKey);
+
+// Test connection on boot
+async function testConnection() {
+  if (!firebaseReady) return;
+  try {
+    await getDoc(doc(db, 'test', 'connection'));
+    console.log('Firestore connection verified.');
+  } catch {
+    console.log('Firestore operating in cached/offline mode.');
+  }
+}
+testConnection();
 
 export function getAuthErrorMessage(error: unknown): string {
   if (typeof error === 'string') return error;
@@ -31,7 +50,6 @@ export function getAuthErrorMessage(error: unknown): string {
 }
 
 export async function completeRedirectSignIn() {
-  // Not strictly needed for popup, but good for redirect flow
   return null;
 }
 

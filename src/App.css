@@ -2524,3 +2524,69 @@ textarea.input-error:focus {
   flex: 1;
   max-width: 200px;
 }
+
+/* Studio Element Animations */
+.anim-fade-in {
+  animation: studioFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-slide-up {
+  animation: studioSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-slide-left {
+  animation: studioSlideLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-zoom-in {
+  animation: studioZoomIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-bounce-in {
+  animation: studioBounceIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.anim-pulse {
+  animation: studioPulse 2.5s infinite ease-in-out;
+}
+
+.anim-rotate-in {
+  animation: studioRotateIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes studioFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes studioSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes studioSlideLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes studioZoomIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes studioBounceIn {
+  0% { opacity: 0; transform: scale(0.6); }
+  60% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes studioPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+@keyframes studioRotateIn {
+  from { opacity: 0; transform: rotate(-6deg) scale(0.9); }
+  to { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+

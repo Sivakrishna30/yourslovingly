@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "LovinglyEvent": {
+      "title": "LovinglyEvent",
+      "description": "An event created by a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "slug": { "type": "string" },
+        "creatorPath": { "type": "string" },
+        "title": { "type": "string" },
+        "eventType": { "type": "string" },
+        "customType": { "type": "string" },
+        "recipientName": { "type": "string" },
+        "messages": { "type": "array", "items": { "type": "string" } },
+        "eventDate": { "type": "string" },
+        "location": { "type": "string" },
+        "primaryColor": { "type": "string" },
+        "secondaryColor": { "type": "string" },
+        "highlightColor": { "type": "string" },
+        "elements": { "type": "array", "items": { "type": "string" } },
+        "backgroundText": { "type": "string" },
+        "photos": { "type": "array", "items": { "type": "string" } },
+        "contentBlocks": { "type": "array" },
+        "messageAlignment": { "type": "string" },
+        "photoAlignment": { "type": "string" },
+        "photoSize": { "type": "string" },
+        "backgroundPattern": { "type": "string" },
+        "isPublished": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "spotifyUrl": { "type": "string" },
+        "showAds": { "type": "boolean" },
+        "driveFolderId": { "type": "string" },
+        "driveFileId": { "type": "string" },
+        "drivePhotoFileIds": { "type": "array", "items": { "type": "string" } },
+        "drivePublishedAt": { "type": "string" },
+        "visibility": { "type": "string" },
+        "allowedEmails": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "planTier": { "type": "string" },
+        "hostingDurationDays": { "type": "number" },
+        "isLifetime": { "type": "boolean" },
+        "publishedAt": { "type": "string" },
+        "expiresAt": { "type": "string" },
+        "hostingExtensions": { "type": "array" },
+        "googleMapsUrl": { "type": "string" },
+        "showLocationQrCode": { "type": "boolean" },
+        "whatsappNumber": { "type": "string" },
+        "upiId": { "type": "string" },
+        "showUpiQrCode": { "type": "boolean" },
+        "isPasscodeProtected": { "type": "boolean" },
+        "passcode": { "type": "string" }
+      },
+      "required": ["id", "slug", "title", "ownerId"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}/events/{eventId}": {
+      "schema": "LovinglyEvent",
+      "description": "User's private event drafts"
+    },
+    "/published_events/{slug}": {
+      "schema": "LovinglyEvent",
+      "description": "Publicly accessible published events"
+    },
+    "/published_events/{slug}/rsvps/{rsvpId}": {
+      "description": "Guest RSVP submissions"
+    },
+    "/published_events/{slug}/transactions/{txId}": {
+      "description": "Gift transactions recorded by guests"
+    },
+    "/published_events/{slug}/insights/{docId}": {
+      "description": "Page view and analytics counters"
+    }
+  }
+}

@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidLovinglyEvent(data) {
+      return data.keys().hasAll(['id', 'slug', 'title', 'ownerId']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.slug is string && data.slug.size() <= 128 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.ownerId is string && data.ownerId == request.auth.uid &&
+             (!('backgroundText' in data) || (data.backgroundText is string && data.backgroundText.size() <= 10000)) &&
+             (!('messages' in data) || (data.messages is list && data.messages.size() <= 100)) &&
+             (!('photos' in data) || (data.photos is list && data.photos.size() <= 50));
+    }
+
+    // Users Collection
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      
+      match /events/{eventId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && isValidLovinglyEvent(incoming()) && incoming().id == eventId;
+        allow update: if isOwner(uid) && isValidLovinglyEvent(incoming()) && 
+                         incoming().id == existing().id &&
+                         incoming().ownerId == existing().ownerId;
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    // Published Events
+    match /published_events/{slug} {
+      allow read: if true; // Public access
+      allow create: if isSignedIn() && isValidLovinglyEvent(incoming()) && incoming().slug == slug;
+      allow update: if isSignedIn() && isOwner(existing().ownerId) && 
+                         isValidLovinglyEvent(incoming()) &&
+                         incoming().slug == existing().slug &&
+                         incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && isOwner(existing().ownerId);
+
+      // RSVPs submitted by guests
+      match /rsvps/{rsvpId} {
+        allow read: if true;
+        allow create: if incoming().guestName is string && 
+                         incoming().guestName.size() > 0 && 
+                         incoming().guestName.size() <= 100 &&
+                         incoming().attending is bool &&
+                         incoming().guestCount is number &&
+                         incoming().guestCount >= 0 &&
+                         incoming().guestCount <= 50;
+        allow update, delete: if isSignedIn();
+      }
+
+      // Transactions / Gifts recorded by guests
+      match /transactions/{txId} {
+        allow read: if true;
+        allow create: if incoming().senderName is string &&
+                         incoming().senderName.size() > 0 &&
+                         incoming().senderName.size() <= 100 &&
+                         incoming().amount is number &&
+                         incoming().amount >= 0;
+        allow update, delete: if isSignedIn();
+      }
+
+      // Insights & page view tracking
+      match /insights/{docId} {
+        allow read: if true;
+        allow write: if true;
+      }
+    }
+
+    // Connection test document
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}
