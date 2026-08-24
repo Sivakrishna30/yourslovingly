@@ -8,7 +8,7 @@ export class InviteRepository {
   /**
    * Migrate a legacy LovinglyEvent to the new normalized Invite structure in-memory.
    */
-  private static adaptLegacyEvent(legacy: LovinglyEvent): { invite: Invite, pages: Page[], elements: ElementInstance[] } {
+  public static adaptLegacyEvent(legacy: LovinglyEvent): { invite: Invite, pages: Page[], elements: ElementInstance[] } {
     const invite: Invite = {
       id: legacy.id,
       ownerId: legacy.ownerId,

@@ -1,6 +1,7 @@
 import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, serverTimestamp, increment } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import type { LovinglyEvent, EventRSVP, EventTransaction, EventInsights } from '../types';
+import { DashboardAggregationService } from '../domain/engage/aggregationService';
 
 export enum OperationType {
   CREATE = 'create',
@@ -224,44 +225,29 @@ export const firebaseService = {
     }
   },
 
-  async getEventTransactions(slug: string): Promise<EventTransaction[]> {
-    try {
-      const snap = await getDocs(collection(db, 'published_events', slug, 'transactions'));
-      const txs = snap.docs.map(d => d.data() as EventTransaction);
-      return txs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    } catch (error) {
-      console.warn('Could not fetch transactions:', error);
-      return [];
-    }
-  },
-
   async getEventInsights(slug: string): Promise<EventInsights> {
-    let views = 0;
-    try {
-      const insightDoc = await getDoc(doc(db, 'published_events', slug, 'insights', 'general'));
-      if (insightDoc.exists()) {
-        views = Number(insightDoc.data().views || 0);
-      }
-    } catch (err) {
-      console.warn('Could not fetch view insights:', err);
-    }
-
-    const rsvps = await this.getEventRSVPs(slug);
-    const totalAttendingCount = rsvps.filter(r => r.attending).length;
-    const totalDeclinedCount = rsvps.filter(r => !r.attending).length;
-    const totalGuestCount = rsvps.reduce((sum, r) => sum + (r.attending ? (Number(r.guestCount) || 1) : 0), 0);
-
-    const transactions = await this.getEventTransactions(slug);
-    const totalAmountCollected = transactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-
+    const agg = await DashboardAggregationService.getInsights(slug);
     return {
-      views,
-      rsvps,
-      totalAttendingCount,
-      totalDeclinedCount,
-      totalGuestCount,
-      transactions,
-      totalAmountCollected
+      views: agg.views,
+      rsvps: agg.rsvps.map(r => ({
+        id: r.id || '',
+        slug,
+        guestName: r.guestName,
+        attending: r.attending,
+        guestCount: r.guestCount,
+        createdAt: r.createdAt || new Date().toISOString(),
+      })),
+      totalAttendingCount: agg.totalAttending,
+      totalDeclinedCount: agg.totalDeclined,
+      totalGuestCount: agg.totalGuests,
+      transactions: agg.transactions.map(t => ({
+        id: t.id || '',
+        slug,
+        senderName: t.senderName,
+        amount: t.amount,
+        createdAt: t.createdAt || new Date().toISOString(),
+      })),
+      totalAmountCollected: agg.totalAmountRaised,
     };
   }
 };

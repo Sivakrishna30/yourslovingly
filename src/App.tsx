@@ -11,7 +11,6 @@ import { createBlankEvent, getEventCreatorPath, getEventTypePath } from './lib/u
 import { Landing } from './components/Landing';
 import { Dashboard } from './components/Dashboard';
 import { EventEditor } from './components/Editor';
-import { EventViewer } from './components/Viewer';
 
 // Note: creation components are imported here for the next phase.
 import { EventTypeStep } from './components/creation/EventTypeStep';
@@ -21,6 +20,9 @@ import { ElementsStep } from './components/creation/ElementsStep';
 import { PreviewStep } from './components/creation/PreviewStep';
 import { FeaturesStep } from './components/creation/FeaturesStep';
 import { PublishStep } from './components/creation/PublishStep';
+import { PublicViewerPage } from './components/PublicViewerPage';
+import { PublishService } from './domain/publishing/publishService';
+import { InviteRepository } from './domain/invite/repository';
 
 function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handleSignIn: () => Promise<User | null> }) {
   const navigate = useNavigate();
@@ -75,6 +77,10 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
     setEvent(updated);
     if (user) {
       await firebaseService.saveUserEvent(user.uid, updated);
+      
+      // T09: Publication Pipeline Snapshot
+      const { invite, pages, elements } = InviteRepository.adaptLegacyEvent(updated);
+      await PublishService.publishInvite(user.uid, invite, pages, elements);
     }
     handleNext('payment');
   };
@@ -104,7 +110,7 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
   );
 }
 
-function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: any) {
+function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: { user: User | null, handleSignIn: () => Promise<User | null>, handleSignOut: () => void, events: LovinglyEvent[], setEvents: React.Dispatch<React.SetStateAction<LovinglyEvent[]>> }) {
   const navigate = useNavigate();
 
   const handleStartGuestCreation = () => {
@@ -123,26 +129,26 @@ function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: any
     if (!user) return;
     const updatedEvent: LovinglyEvent = { ...event, isDeleted: true, deletedAt: new Date().toISOString() };
     await firebaseService.saveUserEvent(user.uid, updatedEvent);
-    setEvents((prev: any[]) => prev.map((e: any) => e.id === event.id ? updatedEvent : e));
+    setEvents((prev) => prev.map((e) => e.id === event.id ? updatedEvent : e));
   };
 
   const handleRestore = async (event: LovinglyEvent) => {
     if (!user) return;
     const updatedEvent: LovinglyEvent = { ...event, isDeleted: false, deletedAt: undefined };
     await firebaseService.saveUserEvent(user.uid, updatedEvent);
-    setEvents((prev: any[]) => prev.map((e: any) => e.id === event.id ? updatedEvent : e));
+    setEvents((prev) => prev.map((e) => e.id === event.id ? updatedEvent : e));
   };
 
   const handlePermanentDelete = async (event: LovinglyEvent) => {
     if (!user || !window.confirm('Permanently delete this creation? This cannot be undone.')) return;
     await firebaseService.deleteUserEvent(user.uid, event.id);
-    setEvents((prev: any[]) => prev.filter((e: any) => e.id !== event.id));
+    setEvents((prev) => prev.filter((e) => e.id !== event.id));
   };
 
   const handleExtendHosting = async (updatedEvent: LovinglyEvent) => {
     if (!user) return;
     await firebaseService.extendEventHosting(user.uid, updatedEvent);
-    setEvents((prev: any[]) => prev.map((e: any) => e.id === updatedEvent.id ? updatedEvent : e));
+    setEvents((prev) => prev.map((e) => e.id === updatedEvent.id ? updatedEvent : e));
   };
 
   return (
@@ -195,15 +201,15 @@ function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: any
       <Route path="/create/:inviteId/:step" element={<CreationFlowWrapper user={user} handleSignIn={handleSignIn} />} />
 
       {/* Canonical Viewer Route */}
-      <Route path="/:creator/:eventType/:slug" element={<ViewerRouteWrapper />} />
-      <Route path="/p/:slug" element={<ViewerRouteWrapper />} />
+      <Route path="/:creator/:eventType/:slug" element={<PublicViewerPage />} />
+      <Route path="/p/:slug" element={<PublicViewerPage />} />
       
     </Routes>
   );
 }
 
 // Wrapper to handle fetching legacy event for editor
-function LegacyEditorWrapper({ user, handleSignIn, setEvents }: any) {
+function LegacyEditorWrapper({ user, handleSignIn, setEvents }: { user: User | null, handleSignIn: () => Promise<User | null>, setEvents: React.Dispatch<React.SetStateAction<LovinglyEvent[]>> }) {
   const [editingEvent, setEditingEvent] = useState<LovinglyEvent | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -226,7 +232,7 @@ function LegacyEditorWrapper({ user, handleSignIn, setEvents }: any) {
     setEditingEvent(updated);
     if (user) {
       await firebaseService.saveUserEvent(user.uid, updated);
-      setEvents((prev: any[]) => prev.map((e: any) => e.id === updated.id ? updated : e));
+      setEvents((prev) => prev.map((e) => e.id === updated.id ? updated : e));
     }
   };
 
@@ -237,7 +243,7 @@ function LegacyEditorWrapper({ user, handleSignIn, setEvents }: any) {
     const updatedEvent: LovinglyEvent = { ...eventToPublish, ownerId: targetUser.uid, creatorPath, isPublished: true };
     await firebaseService.saveUserEvent(targetUser.uid, updatedEvent);
     setEditingEvent(updatedEvent);
-    setEvents((prev: any[]) => {
+    setEvents((prev) => {
       if (prev.some(e => e.id === updatedEvent.id)) return prev.map(e => e.id === updatedEvent.id ? updatedEvent : e);
       return [updatedEvent, ...prev];
     });
@@ -247,7 +253,7 @@ function LegacyEditorWrapper({ user, handleSignIn, setEvents }: any) {
   const handleExtendHosting = async (updatedEvent: LovinglyEvent) => {
     if (!user) return;
     await firebaseService.extendEventHosting(user.uid, updatedEvent);
-    setEvents((prev: any[]) => prev.map((e: any) => e.id === updatedEvent.id ? updatedEvent : e));
+    setEvents((prev) => prev.map((e) => e.id === updatedEvent.id ? updatedEvent : e));
     setEditingEvent(updatedEvent);
   };
 
@@ -264,25 +270,6 @@ function LegacyEditorWrapper({ user, handleSignIn, setEvents }: any) {
 }
 
 // Wrapper to handle fetching published event for viewer
-function ViewerRouteWrapper() {
-  const [viewingEvent, setViewingEvent] = useState<LovinglyEvent | null>(null);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const slug = location.pathname.split('/').pop();
-
-  useEffect(() => {
-    if (slug) {
-      firebaseService.getPublishedEvent(slug).then(event => {
-        if (event) setViewingEvent(event);
-        else navigate('/');
-      });
-    }
-  }, [slug, navigate]);
-
-  if (!viewingEvent) return <div className="p-8 text-center">Loading viewer...</div>;
-  return <EventViewer event={viewingEvent} />;
-}
-
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(() => firebaseReady);
