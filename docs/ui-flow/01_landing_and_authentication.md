@@ -112,6 +112,6 @@ Depending on the Invite's exact lifecycle state, the UI exposes contextual actio
 * `Share / Copy Link`: Copies the canonical public URL with instant feedback toast.
 * `QR Generator`: Opens QR download and printable asset modal.
 * `Analytics`: Opens visitor view counts and RSVP submission tallies.
-* `Extend Validity`: Opens hosting renewal modal (₹14/30d Basic, ₹99/30d Premium, ₹999 Lifetime).
+* `Extend Validity`: Opens hosting renewal modal (₹49/30d Basic, ₹99/30d Premium, ₹999 Lifetime).
 * `Copy to New`: Clones all design elements and pages into an independent new Draft with a distinct ID.
 * `Delete`: Prompts for confirmation before moving to soft-deleted status.

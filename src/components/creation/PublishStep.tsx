@@ -58,47 +58,46 @@ export function PublishStep({
   const tiers: { id: TierType; name: string; price: string; validity: string; badge?: string; features: string[] }[] = [
     {
       id: 'basic',
-      name: 'Free Basic',
-      price: '₹0',
-      validity: '3 Days Active Hosting',
-      badge: 'Zero Barrier',
+      name: 'Basic Page',
+      price: `₹${EntitlementService.getPublishingPrice('basic')}`,
+      validity: '15 Days Active Hosting',
+      badge: 'Standard',
       features: [
         'Instant live web link',
         'Mobile responsive invite',
         'Google Maps venue directions',
         'Spotify celebration music',
-        '10 RSVP responses',
-        'Watermark included'
+        'Standard template access',
+        'Platform watermark included'
       ]
     },
     {
       id: 'extended',
-      name: 'Celebration Pro',
+      name: 'Premium Page',
       price: `₹${EntitlementService.getPublishingPrice('premium')}`,
       validity: '15 Days Active Hosting',
       badge: 'Most Popular',
       features: [
-        'Everything in Free Basic',
-        '15 Days extended hosting',
-        'Unlimited RSVP responses',
-        'Zero watermark & clean branding',
-        'UPI Shagun / Gift collection',
-        'Custom photo gallery (up to 10 photos)'
+        'Everything in Basic Page',
+        '15 Days active hosting',
+        'Watermark-Free experience',
+        'Interactive RSVP form & guest responses',
+        'UPI Shagun / Gift collection module',
+        'High-res PNG & Vector PDF download'
       ]
     },
     {
       id: 'lifetime',
-      name: 'Forever Keepsake',
+      name: 'Lifetime Keepsake',
       price: `₹${EntitlementService.getExtensionPrice('premium', true)}`,
       validity: 'Lifetime Perpetual Hosting',
       badge: 'Best Value',
       features: [
-        'Everything in Celebration Pro',
+        'Everything in Premium Page',
         'Lifetime permanent URL',
         'Never expires or deletes',
         'Printable high-res PDF export',
-        'Guest attendance analytics & export',
-        'Password protected private page'
+        'Guest attendance analytics & export'
       ]
     }
   ];
@@ -190,25 +189,26 @@ export function PublishStep({
             })}
           </div>
 
-          {/* Action Row */}
-          <div className="bg-stone-50 rounded-3xl p-6 border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Sticky Action Row */}
+          <div className="sticky bottom-0 bg-white/95 backdrop-blur-xs rounded-3xl p-4 sm:p-6 border border-stone-200 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 z-20">
             <div className="text-stone-600 text-xs sm:text-sm">
-              <span className="font-bold text-stone-900">Zero-Barrier Policy:</span> No credit card required for Free Basic. Sign in securely with Google to protect your invite.
+              <span className="font-bold text-stone-900">Pay-As-You-Need:</span> Individual Invite purchasing. Zero recurring subscriptions or hidden charges.
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <button
                 onClick={onBack}
-                className="px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-4 sm:px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span className="hidden sm:inline">Back to Previous Section</span>
+                <span className="sm:hidden">Back</span>
               </button>
 
               <button
                 onClick={handlePublishClick}
                 disabled={publishing}
-                className="flex-1 sm:flex-initial px-8 py-3 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-rose-700/20 cursor-pointer disabled:opacity-50"
+                className="flex-1 sm:flex-initial px-6 sm:px-8 py-3 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-rose-700/20 cursor-pointer disabled:opacity-50 shrink-0"
               >
                 {publishing ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

@@ -368,7 +368,7 @@ export function EventViewer({
           className="shadow-2xl print:shadow-none"
         >
           <div 
-            className="rounded-2xl sm:rounded-3xl p-5 sm:p-10 md:p-14 space-y-8 sm:space-y-12 relative overflow-hidden print:p-6"
+            className="rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-14 space-y-6 sm:space-y-10 md:space-y-12 relative overflow-hidden print:p-6"
             style={{
               backgroundColor: event.secondaryColor || '#FFFDF7',
               color: event.primaryColor || styleInfo.primary || '#1c1917'
@@ -441,7 +441,7 @@ export function EventViewer({
                     </span>
                   )}
                   <h1 
-                    className="text-4xl sm:text-6xl md:text-7xl font-serif font-bold tracking-tight leading-tight"
+                    className="text-3xl sm:text-6xl md:text-7xl font-serif font-bold tracking-tight leading-tight break-words"
                     style={{ 
                       color: titleElem.style.color || event.primaryColor || styleInfo.primary,
                       fontSize: titleElem.style.fontSize ? `${titleElem.style.fontSize}px` : undefined,

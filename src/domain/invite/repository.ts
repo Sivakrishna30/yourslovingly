@@ -1,6 +1,7 @@
 import { doc, getDoc, collection, getDocs, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import type { Invite } from './types';
+import type { EntitlementTier } from '../entitlement/types';
 import type { Page, ElementInstance } from '../element/types';
 import type { LovinglyEvent } from '../../types';
 
@@ -9,14 +10,21 @@ export class InviteRepository {
    * Migrate a legacy LovinglyEvent to the new normalized Invite structure in-memory.
    */
   public static adaptLegacyEvent(legacy: LovinglyEvent): { invite: Invite, pages: Page[], elements: ElementInstance[] } {
+    const derivedTier: EntitlementTier = (legacy.tier === 'premium' || legacy.planTier === 'premium_99')
+      ? 'premium'
+      : (legacy.tier === 'standard' || legacy.planTier === 'basic_49' || legacy.planTier === 'single_49' || (legacy.isPublished && legacy.tier !== 'free'))
+        ? 'basic'
+        : 'free';
+
     const invite: Invite = {
       id: legacy.id,
       ownerId: legacy.ownerId,
       slug: legacy.slug,
       title: legacy.title || 'Untitled Invite',
-      tier: 'free', // Default migration tier
+      tier: derivedTier,
       status: legacy.isPublished ? 'published' : 'draft',
-      isPasswordProtected: false,
+      isPasswordProtected: Boolean(legacy.isPasscodeProtected || legacy.passcode || legacy.password),
+      password: legacy.passcode || legacy.password,
       createdAt: legacy.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       publishedAt: legacy.publishedAt || null,

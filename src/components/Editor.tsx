@@ -137,6 +137,22 @@ export function EventEditor({
 
   const hostingInfo = getHostingStatus(event);
 
+  const currentStepIndex = stepsList.findIndex(s => s.id === activeTab);
+
+  const handlePrevSection = () => {
+    if (currentStepIndex > 0) {
+      setActiveTab(stepsList[currentStepIndex - 1].id);
+    }
+  };
+
+  const handleNextSection = () => {
+    if (currentStepIndex < stepsList.length - 1) {
+      setActiveTab(stepsList[currentStepIndex + 1].id);
+    } else {
+      handlePublishClick();
+    }
+  };
+
   const updateField = <K extends keyof LovinglyEvent>(field: K, value: LovinglyEvent[K]) => {
     onUpdate({ [field]: value });
   };
@@ -208,7 +224,7 @@ export function EventEditor({
   );
 
   return (
-    <div className="flex flex-col h-screen bg-stone-100 overflow-hidden font-sans">
+    <div className="flex flex-col h-[100dvh] bg-stone-100 overflow-hidden font-sans">
       {/* Top Navigation Bar */}
       <header className="bg-white border-b border-stone-200 px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 z-20 shrink-0">
         <div className="flex items-center justify-between gap-2 max-w-full">
@@ -318,7 +334,7 @@ export function EventEditor({
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* Left Sidebar Controls */}
-        <aside className={`w-full md:w-[420px] lg:w-[440px] bg-white border-r border-stone-200 flex flex-col z-10 shrink-0 shadow-sm ${mobileView === 'editor' ? 'flex' : 'hidden md:flex'}`}>
+        <aside className={`w-full md:w-[360px] lg:w-[400px] xl:w-[440px] bg-white border-r border-stone-200 flex flex-col z-10 shrink-0 shadow-sm ${mobileView === 'editor' ? 'flex' : 'hidden md:flex'}`}>
           {/* Multi-step Guided Navigation Tabs Bar */}
           <nav className="flex border-b border-stone-200 bg-stone-50/80 p-1.5 gap-1 overflow-x-auto no-scrollbar">
             {stepsList.map((step) => {
@@ -1113,6 +1129,33 @@ export function EventEditor({
               )}
             </AnimatePresence>
           </div>
+
+          {/* Fixed Bottom Section Navigation Panel */}
+          <div className="sticky bottom-0 bg-white/95 backdrop-blur-xs border-t border-stone-200 p-3 sm:p-4 z-20 shadow-lg shrink-0 flex items-center justify-between gap-2 max-w-full">
+            <button
+              type="button"
+              disabled={currentStepIndex <= 0}
+              onClick={handlePrevSection}
+              className="px-3 sm:px-4 py-2.5 bg-stone-100 hover:bg-stone-200 disabled:opacity-40 text-stone-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Back to Previous Section</span>
+              <span className="sm:hidden">Back</span>
+            </button>
+
+            <span className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider text-center truncate px-1">
+              Step {currentStepIndex + 1} of {stepsList.length}
+            </span>
+
+            <button
+              type="button"
+              onClick={handleNextSection}
+              className="px-3 sm:px-4 py-2.5 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5 shrink-0"
+            >
+              <span>{activeTab === 'canvas' ? 'Publish & Share' : 'Move to Next Section'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
         </aside>
 
         {/* Right Interactive Live Preview Frame */}
@@ -1128,7 +1171,7 @@ export function EventEditor({
             />
           </div>
 
-          <div className="w-full max-w-3xl xl:max-w-4xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl border border-stone-200 overflow-hidden min-h-[85vh] my-auto">
+          <div className="w-full max-w-3xl xl:max-w-4xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl border border-stone-200 overflow-hidden min-h-[500px] sm:min-h-[650px] md:min-h-[750px] my-auto">
             <EventViewer 
               event={event} 
               isBuilderMode={true}

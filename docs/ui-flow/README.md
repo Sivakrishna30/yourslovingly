@@ -45,7 +45,7 @@ This directory contains the canonical UI / UX Product Flow Specification for **Y
 
 7. **[`06_publishing_pricing_and_verification.md`](./06_publishing_pricing_and_verification.md)**
    - Publishing Review & Tier Comparison
-   - Transparent Pricing Table (₹49 Basic, ₹99 Premium, ₹14/₹99 Extensions, ₹999 Lifetime)
+   - Transparent Pricing Table (₹49 Basic, ₹99 Premium, ₹49/₹99 Extensions, ₹999 Lifetime)
    - Premium Scope Boundaries
    - Payment Execution & Deterministic URL Verification
    - Canonical URL Stability & Safe Republishing Architecture

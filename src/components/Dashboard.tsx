@@ -144,7 +144,7 @@ export function Dashboard({
         </div>
 
         {/* Sub-Navigation Tabs */}
-        <div className="flex items-center gap-1.5 p-1.5 bg-stone-100 rounded-2xl overflow-x-auto mb-8 border border-stone-200/80">
+        <div className="flex items-center gap-1.5 p-1.5 bg-stone-100 rounded-2xl overflow-x-auto mb-8 border border-stone-200/80 no-scrollbar">
           {[
             { id: 'all', label: 'All Invites' },
             { id: 'drafts', label: 'Working Drafts' },
@@ -229,7 +229,7 @@ export function Dashboard({
             )}
           </div>
         ) : (
-          <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto w-full">
             {filteredEvents.map((event) => {
               const hostingInfo = getHostingStatus(event);
               return (
@@ -238,7 +238,7 @@ export function Dashboard({
                   layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] max-w-md bg-white rounded-2xl shadow-sm border border-stone-200/80 overflow-hidden hover:shadow-xl hover:border-brand-red/20 transition-all group flex flex-col justify-between"
+                  className="w-full max-w-md sm:max-w-none mx-auto bg-white rounded-2xl shadow-sm border border-stone-200/80 overflow-hidden hover:shadow-xl hover:border-brand-red/20 transition-all group flex flex-col justify-between"
                 >
                   <div>
                     <div className="aspect-video bg-stone-100 relative overflow-hidden flex items-center justify-center p-6">

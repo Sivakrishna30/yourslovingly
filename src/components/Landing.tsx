@@ -612,7 +612,7 @@ export function Landing({
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
                       Basic Extension
                     </span>
-                    <span className="text-lg font-bold text-white">₹14</span>
+                    <span className="text-lg font-bold text-white">₹49</span>
                   </div>
                   <h4 className="text-xs font-bold text-white mt-1">+30 Days Basic Hosting</h4>
                   <p className="text-[11px] text-stone-300 leading-relaxed">
@@ -685,7 +685,7 @@ export function Landing({
             />
             <FAQItem 
               question="How do hosting extensions and Lifetime Hosting work?"
-              answer="Every newly published page starts with 15 days of hosting. You can extend hosting anytime from your dashboard for ₹14 (+30 days for Basic) or ₹99 (+30 days for Premium). You can also unlock permanent Lifetime Hosting for ₹999 so your page never expires."
+              answer="Every newly published page starts with 15 days of hosting. You can extend hosting anytime from your dashboard for ₹49 (+30 days for Basic) or ₹99 (+30 days for Premium). You can also unlock permanent Lifetime Hosting for ₹999 so your page never expires."
             />
             <FAQItem 
               question="Can I upgrade an existing Basic page to Premium?"

@@ -5,7 +5,7 @@ import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { doc, getDocFromServer } from 'firebase/firestore';
 import { auth, googleProvider, db, firebaseReady } from './firebase';
-import type { LovinglyEvent, DesignStyle } from './types';
+import type { LovinglyEvent, DesignStyle, TierType, PlanTier } from './types';
 import { firebaseService } from './lib/firebase-service';
 import { createBlankEvent, getEventCreatorPath, getEventTypePath } from './lib/utils';
 import { Landing } from './components/Landing';
@@ -71,9 +71,19 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
     }
   };
 
-  const handlePublish = async () => {
+  const handlePublish = async (selectedTier: TierType = 'basic') => {
     if (!event) return;
-    const updated = { ...event, isPublished: true } as LovinglyEvent;
+    const isLifetime = selectedTier === 'lifetime';
+    const planTier: PlanTier = (selectedTier === 'premium' || selectedTier === 'extended') ? 'premium_99' : 'basic_49';
+    const tier = (selectedTier === 'premium' || selectedTier === 'extended') ? 'premium' : 'standard';
+    const updated = { 
+      ...event, 
+      isPublished: true,
+      tier,
+      planTier,
+      isLifetime,
+      publishedAt: new Date().toISOString(),
+    } as LovinglyEvent;
     setEvent(updated);
     if (user) {
       await firebaseService.saveUserEvent(user.uid, updated);
@@ -87,15 +97,52 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
 
   if (!event) return <div>Loading...</div>;
 
+  const stepNames: Record<string, string> = {
+    'event-type': '1. Event Category',
+    'template': '2. Template Canvas',
+    'details': '3. Invite Details',
+    'elements': '4. Motifs & Styles',
+    'preview': '5. Guest Preview',
+    'features': '6. Integrations',
+    'publish': '7. Publish & Share'
+  };
+
+  const getStepNumber = (s: string) => {
+    const keys = Object.keys(stepNames);
+    const idx = keys.indexOf(s);
+    return idx >= 0 ? idx + 1 : 1;
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[600px] flex flex-col">
-         {/* T05 Implementation: Step switching based on route */}
-         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-           <h2 className="font-semibold text-slate-800">Create Invite</h2>
-           <span className="text-sm text-slate-500 font-mono">{inviteId} / {step}</span>
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-stone-100 flex items-center justify-center p-0 sm:p-4">
+      <div className="w-full max-w-6xl bg-white sm:rounded-3xl shadow-md border-0 sm:border border-stone-200 overflow-hidden min-h-[100dvh] flex flex-col relative max-w-full">
+         {/* Creation Header */}
+         <div className="p-3.5 sm:p-4 border-b border-stone-200 bg-white flex items-center justify-between shrink-0 sticky top-0 z-30 shadow-2xs">
+           <div className="flex items-center gap-2 min-w-0">
+             <button 
+               onClick={() => navigate(user ? '/dashboard' : '/')} 
+               className="text-xs font-bold text-stone-500 hover:text-stone-800 transition-colors shrink-0"
+             >
+               &larr; Exit
+             </button>
+             <span className="text-stone-300 font-light">|</span>
+             <h2 className="font-serif font-bold text-stone-900 text-xs sm:text-base truncate">
+               Yours Lovingly Creator
+             </h2>
+           </div>
+
+           <div className="flex items-center gap-2 shrink-0">
+             <span className="px-2.5 py-1 bg-rose-50 border border-rose-200/80 text-rose-700 text-[10px] sm:text-xs font-bold rounded-full">
+               Step {getStepNumber(step || 'event-type')} of 7
+             </span>
+             <span className="text-[11px] font-medium text-stone-500 hidden md:inline">
+               {stepNames[step || 'event-type']}
+             </span>
+           </div>
          </div>
-         <div className="flex-1 p-6 overflow-y-auto">
+
+         {/* Step Content */}
+         <div className="flex-1 p-2 sm:p-6 overflow-y-auto overflow-x-hidden max-w-full">
             {step === 'event-type' && <EventTypeStep selectedEventType={event.eventType} onSelectEventType={(type, data) => { handleUpdate({ eventType: type, ...data }); handleNext('template'); }} onNext={() => handleNext('template')} />}
             {step === 'template' && <TemplateStep event={event} onSelectTemplate={(t) => { handleUpdate({ templateId: t.id, designStyle: t.id as DesignStyle }); handleNext('details'); }} onSelectBlank={() => { handleUpdate({ templateId: undefined }); handleNext('details'); }} onBack={() => handleBack('event-type')} onNext={() => handleNext('details')} />}
             {step === 'details' && <DetailsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('elements')} onBack={() => handleBack('template')} />}
@@ -223,7 +270,7 @@ function LegacyEditorWrapper({ user, handleSignIn, setEvents }: { user: User | n
         else navigate('/dashboard');
       });
     }
-  }, [user, eventId]);
+  }, [user, eventId, navigate]);
 
   if (!editingEvent) return <div className="p-8 text-center">Loading editor...</div>;
 

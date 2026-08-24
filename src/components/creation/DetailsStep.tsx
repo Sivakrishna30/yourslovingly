@@ -23,53 +23,53 @@ export function DetailsStep({ event, onUpdate, onBack, onNext }: DetailsStepProp
   const [activeTab, setActiveTab] = useState<'basics' | 'venue' | 'message'>('basics');
 
   return (
-    <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="max-w-6xl mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8 space-y-6 max-w-full overflow-x-hidden">
       {/* Step Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase tracking-wider">
-          <span>Step 3 of 6</span>
+          <span>Step 3 of 7</span>
           <span>•</span>
           <span>Invite Details</span>
         </div>
         <h2 className="text-2xl sm:text-4xl font-serif font-bold text-stone-900">
           Enter Your Event Information
         </h2>
-        <p className="text-stone-500 text-sm sm:text-base leading-relaxed">
+        <p className="text-stone-500 text-xs sm:text-base leading-relaxed">
           Fill in your event details below. Everything updates in real time on the live preview canvas.
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-8 items-start">
+      <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-start max-w-full overflow-x-hidden">
         {/* Left: Input Form Controls (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="lg:col-span-7 bg-white rounded-3xl border border-stone-200 p-4 sm:p-6 lg:p-8 shadow-sm space-y-6 relative max-w-full overflow-x-hidden">
           {/* Sub-tabs */}
-          <div className="flex items-center gap-2 p-1 bg-stone-100 rounded-2xl">
+          <div className="flex items-center gap-1 sm:gap-2 p-1 bg-stone-100 rounded-2xl max-w-full overflow-x-auto">
             <button
               onClick={() => setActiveTab('basics')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 activeTab === 'basics' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              <Type className="w-3.5 h-3.5" />
-              <span>1. Title & Host</span>
+              <Type className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">1. Title & Host</span>
             </button>
             <button
               onClick={() => setActiveTab('venue')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 activeTab === 'venue' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>2. Date & Venue</span>
+              <Calendar className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">2. Date & Venue</span>
             </button>
             <button
               onClick={() => setActiveTab('message')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 activeTab === 'message' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              <FileText className="w-3.5 h-3.5" />
-              <span>3. Invitation Note</span>
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">3. Invitation Note</span>
             </button>
           </div>
 
@@ -230,20 +230,24 @@ export function DetailsStep({ event, onUpdate, onBack, onNext }: DetailsStepProp
             </motion.div>
           )}
 
-          {/* Form Actions */}
-          <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
+          {/* Sticky Bottom Navigation Actions */}
+          <div className="sticky -bottom-4 sm:-bottom-6 lg:-bottom-8 -mx-4 sm:-mx-6 lg:-mx-8 -mb-4 sm:-mb-6 lg:-mb-8 bg-white/95 backdrop-blur-xs border-t border-stone-200 p-3 sm:p-4 rounded-b-3xl z-20 shadow-lg flex items-center justify-between gap-2">
             <button
               onClick={onBack}
-              className="px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 sm:px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back</span>
+              <span className="hidden sm:inline">Back to Previous Section</span>
+              <span className="sm:hidden">Back</span>
             </button>
+            <span className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider hidden xs:inline">
+              Step 3 of 7
+            </span>
             <button
               onClick={onNext}
-              className="px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+              className="px-4 sm:px-6 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0"
             >
-              <span>Continue to Elements & Canvas</span>
+              <span>Move to Next Section</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

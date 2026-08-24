@@ -123,7 +123,7 @@ export function StudioInspector({
   };
 
   return (
-    <div className="bg-stone-900 text-white rounded-2xl p-3 sm:p-4 shadow-2xl border border-stone-800 space-y-3.5 my-2 w-full max-w-3xl xl:max-w-4xl mx-auto">
+    <div className="bg-stone-900 text-white rounded-2xl p-3 sm:p-4 shadow-2xl border border-stone-800 space-y-3.5 my-2 w-full max-w-full overflow-x-hidden mx-auto">
       {/* Top Header Bar: Element Selector & Lock/Confirm Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-800">
         <div className="flex items-center gap-2">
@@ -279,7 +279,7 @@ export function StudioInspector({
 
       {/* Tab 1: Position & Numeric Sizing Controls */}
       {activeTab === 'position' && (
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs pt-1">
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 text-xs pt-1">
           <div>
             <label className="block text-[10px] font-bold text-stone-400 mb-1">X Offset (px)</label>
             <input 
@@ -386,7 +386,7 @@ export function StudioInspector({
 
       {/* Tab 3: Colors & Fills */}
       {activeTab === 'colors' && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs pt-1">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 text-xs pt-1">
           <div>
             <label className="block text-[10px] font-bold text-stone-400 mb-1">Text Color</label>
             <div className="flex items-center gap-2 bg-stone-800 p-1.5 border border-stone-700 rounded-lg">

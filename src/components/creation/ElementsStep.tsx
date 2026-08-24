@@ -82,11 +82,11 @@ export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepPr
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="max-w-6xl mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8 space-y-6 max-w-full overflow-x-hidden">
       {/* Step Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase tracking-wider">
-          <span>Step 4 of 6</span>
+          <span>Step 4 of 7</span>
           <span>•</span>
           <span>Elements, Motifs & Styles</span>
         </div>
@@ -101,9 +101,9 @@ export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepPr
       {/* Main Studio Grid */}
       <div className="grid lg:grid-cols-12 gap-8 items-start">
         {/* Left Drawer Controls (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="lg:col-span-7 bg-white rounded-3xl border border-stone-200 p-4 sm:p-6 lg:p-8 shadow-sm space-y-6 max-w-full overflow-x-hidden">
           {/* Category Switcher Tabs */}
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-1.5 bg-stone-100 rounded-2xl">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2 p-1.5 bg-stone-100 rounded-2xl max-w-full">
             {[
               { id: 'palette', label: 'Colors', icon: Palette },
               { id: 'fonts', label: 'Fonts', icon: Type },
@@ -118,12 +118,12 @@ export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepPr
                 <button
                   key={tab.id}
                   onClick={() => setActiveCategory(tab.id as typeof activeCategory)}
-                  className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                  className={`py-2 px-1 sm:px-2 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-1 cursor-pointer min-w-0 ${
                     isActive ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-[11px]">{tab.label}</span>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="text-[10px] sm:text-[11px] truncate w-full text-center">{tab.label}</span>
                 </button>
               );
             })}
@@ -329,27 +329,31 @@ export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepPr
             </motion.div>
           )}
 
-          {/* Bottom Actions */}
-          <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
+          {/* Sticky Bottom Actions */}
+          <div className="sticky -bottom-4 sm:-bottom-6 lg:-bottom-8 -mx-4 sm:-mx-6 lg:-mx-8 -mb-4 sm:-mb-6 lg:-mb-8 bg-white/95 backdrop-blur-xs border-t border-stone-200 p-3 sm:p-4 rounded-b-3xl z-20 shadow-lg flex items-center justify-between gap-2">
             <button
               onClick={onBack}
-              className="px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 sm:px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back</span>
+              <span className="hidden sm:inline">Back to Previous Section</span>
+              <span className="sm:hidden">Back</span>
             </button>
+            <span className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider hidden xs:inline">
+              Step 4 of 7
+            </span>
             <button
               onClick={onNext}
-              className="px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+              className="px-4 sm:px-6 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0"
             >
-              <span>Continue to Live Preview</span>
+              <span>Move to Next Section</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Right Studio Element Inspector (5 cols) */}
-        <div className="lg:col-span-5 sticky top-24 space-y-4">
+        <div className="lg:col-span-5 sticky top-24 space-y-4 max-w-full overflow-x-hidden">
           <StudioInspector 
             event={event}
             activeElementKey={activeElementKey}

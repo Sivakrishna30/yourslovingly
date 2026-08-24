@@ -36,11 +36,11 @@ export function TemplateStep({
   });
 
   return (
-    <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="max-w-6xl mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8 space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase tracking-wider">
-          <span>Step 2 of 6</span>
+          <span>Step 2 of 7</span>
           <span>•</span>
           <span>Template / Canvas</span>
         </div>
@@ -165,20 +165,24 @@ export function TemplateStep({
         })}
       </div>
 
-      {/* Navigation Footer */}
-      <div className="pt-4 border-t border-stone-200 flex items-center justify-between max-w-6xl mx-auto">
+      {/* Sticky Navigation Footer */}
+      <div className="sticky bottom-0 bg-white/95 backdrop-blur-xs border-t border-stone-200 p-3 sm:p-4 rounded-2xl z-20 shadow-lg flex items-center justify-between gap-2 max-w-6xl mx-auto">
         <button
           onClick={onBack}
-          className="px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+          className="px-3.5 sm:px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Event Type</span>
+          <span className="hidden sm:inline">Back to Previous Section</span>
+          <span className="sm:hidden">Back</span>
         </button>
+        <span className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider hidden xs:inline">
+          Step 2 of 7
+        </span>
         <button
           onClick={onNext}
-          className="px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+          className="px-4 sm:px-6 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0"
         >
-          <span>Continue to Details</span>
+          <span>Move to Next Section</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

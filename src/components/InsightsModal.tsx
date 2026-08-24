@@ -267,7 +267,7 @@ export function InsightsModal({ event, onClose }: InsightsModalProps) {
             </div>
 
             {/* Metric KPI Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
               {/* Opens / Views */}
               <div className="p-4 rounded-2xl bg-white border border-stone-200 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-stone-500 mb-2">

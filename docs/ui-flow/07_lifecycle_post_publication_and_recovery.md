@@ -51,7 +51,7 @@ Active Published State (Valid for 15 / 30 / Lifetime Days)
 
 Creators can extend the live hosting period of any published or expired invite directly from the Dashboard:
 
-* **Basic Extension**: **₹14 / 30 Days**
+* **Basic Extension**: **₹49 / 30 Days**
 * **Premium Extension**: **₹99 / 30 Days**
 * **Lifetime Validity**: **₹999 (Permanent Hosting)**
 
