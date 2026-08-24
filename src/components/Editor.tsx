@@ -1116,23 +1116,25 @@ export function EventEditor({
         </aside>
 
         {/* Right Interactive Live Preview Frame */}
-        <main className={`flex-1 relative bg-stone-200/80 overflow-y-auto p-2 sm:p-6 md:p-8 flex flex-col items-center gap-3 ${mobileView === 'preview' ? 'flex' : 'hidden md:flex'}`}>
+        <main className={`flex-1 relative bg-stone-200/80 overflow-y-auto p-2 sm:p-6 md:p-8 flex flex-col items-center justify-start lg:justify-center gap-4 ${mobileView === 'preview' ? 'flex' : 'hidden md:flex'}`}>
           {/* Detailed Studio Element Inspector Toolbar */}
-          <div className="w-full max-w-3xl z-10 shrink-0">
+          <div className="w-full max-w-3xl xl:max-w-4xl mx-auto z-10 shrink-0">
             <StudioInspector 
               activeElementKey={activeElementKey}
               event={event}
               onSelectElement={(key) => setActiveElementKey(key)}
               onUpdateElementStyle={handleUpdateElementStyle}
+              onUpdateEvent={(updates) => onUpdate({ ...event, ...updates })}
             />
           </div>
 
-          <div className="w-full max-w-3xl bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl border border-stone-200 overflow-hidden min-h-[85vh] my-auto">
+          <div className="w-full max-w-3xl xl:max-w-4xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl border border-stone-200 overflow-hidden min-h-[85vh] my-auto">
             <EventViewer 
               event={event} 
               isBuilderMode={true}
               activeElementKey={activeElementKey}
               onSelectElementKey={(key) => setActiveElementKey(key)}
+              onUpdateEvent={(updates) => onUpdate({ ...event, ...updates })}
             />
           </div>
         </main>

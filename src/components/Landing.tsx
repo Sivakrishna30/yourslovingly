@@ -15,13 +15,15 @@ import {
   CreditCard,
   FileText,
   Check,
-  Clock
+  Clock,
+  Eye
 } from 'lucide-react';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { useState } from 'react';
 import { creationCategories } from '../lib/constants';
 import type { CreationCategory, DesignStyle } from '../types';
 import koreanHeartLogo from '../assets/images/korean_heart_golden_logo_1786820911376.jpg';
+import { SamplesShowcase, type SampleInvite } from './SamplesShowcase';
 
 interface NavbarProps {
   user: FirebaseUser | null;
@@ -56,6 +58,7 @@ export function Navbar({ user, onSignIn, onSignOut, onLogoClick }: NavbarProps) 
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-stone-600">
+          <a href="#samples" className="hover:text-primary transition-colors">Samples</a>
           <a href="#features" className="hover:text-primary transition-colors">Features</a>
           <a href="#how-it-works" className="hover:text-secondary transition-colors">How It Works</a>
           <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
@@ -183,17 +186,28 @@ export function Hero({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4">
               <button 
                 onClick={onStart}
-                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Plus className="w-5 h-5" />
                 Start Creating Free
               </button>
               <a 
-                href="#pricing"
-                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white text-stone-700 border border-stone-200 rounded-xl font-bold text-base sm:text-lg hover:bg-stone-50 hover:text-secondary hover:border-brand-teal/30 transition-all text-center flex items-center justify-center gap-2"
+                href="#samples"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('samples')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white text-stone-700 border border-stone-200 rounded-xl font-bold text-base sm:text-lg hover:bg-stone-50 hover:text-primary hover:border-rose-200 transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
               >
-                View Plans and Pricing
-                <ArrowRight className="w-4 h-4 text-secondary" />
+                <Eye className="w-4 h-4 text-primary" />
+                View Samples
+              </a>
+              <a 
+                href="#pricing"
+                className="w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 bg-stone-100 text-stone-700 border border-stone-200/80 rounded-xl font-semibold text-sm sm:text-base hover:bg-stone-200 hover:text-stone-900 transition-all text-center flex items-center justify-center gap-1.5"
+              >
+                Pricing
+                <ArrowRight className="w-4 h-4 text-stone-500" />
               </a>
             </div>
           </motion.div>
@@ -298,6 +312,7 @@ function FAQItem({ question, answer }: { question: string, answer: string }) {
 export function Landing({ 
   onStart, 
   onStartWithCategory,
+  onSelectSample,
   onNavigateToPricing,
   user, 
   onSignIn, 
@@ -305,6 +320,7 @@ export function Landing({
 }: { 
   onStart: () => void;
   onStartWithCategory?: (cat: CreationCategory, style?: DesignStyle) => void;
+  onSelectSample?: (sample: SampleInvite) => void;
   onNavigateToPricing?: () => void;
   user: FirebaseUser | null;
   onSignIn: () => void;
@@ -317,7 +333,7 @@ export function Landing({
         <img 
           src={koreanHeartLogo} 
           alt="" 
-          className="w-full h-full object-contain filter drop-shadow-xl"
+          className="w-full h-full object-contain filter drop-shadow-xl" 
           referrerPolicy="no-referrer"
         />
       </div>
@@ -336,43 +352,64 @@ export function Landing({
         onNavigateToPricing={onNavigateToPricing}
       />
 
+      {/* Live Samples Showcase Section */}
+      <SamplesShowcase 
+        onSelectSample={(sample) => {
+          if (onSelectSample) {
+            onSelectSample(sample);
+          } else {
+            onStart();
+          }
+        }} 
+      />
+
       {/* Features Section */}
       <section id="features" className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-stone-50/60 border-t border-stone-200/80">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
+        <div className="max-w-7xl mx-auto flex flex-col items-center">
+          <div className="text-center mb-12 sm:mb-16 max-w-2xl mx-auto">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-stone-900">Why Choose Yours Lovingly?</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            <FeatureCard 
-              icon={<MapPin />}
-              title="Get Directions on One Click"
-              description="Guests and customers open navigation in Google Maps instantly."
-              accentColor="red"
-            />
-            <FeatureCard 
-              icon={<BarChart3 />}
-              title="Page Insights and WhatsApp Reports"
-              description="Track live page opens, guest headcounts, direct inquiries, and get reports in WhatsApp."
-              accentColor="teal"
-            />
-            <FeatureCard 
-              icon={<FileDown />}
-              title="Export as PDF to Print Anything"
-              description="Download print ready PDFs and high quality cards for invitations, business cards, flyers, and pamphlets."
-              accentColor="orange"
-            />
-            <FeatureCard 
-              icon={<IndianRupee />}
-              title="Digital Gifts via UPI"
-              description="Receive direct gifts and payments with integrated GPay and PhonePe UPI links."
-              accentColor="red"
-            />
-            <FeatureCard 
-              icon={<Music />}
-              title="Spotify Music and Playlists"
-              description="Embed your favorite Spotify track or celebration playlist directly on your page."
-              accentColor="teal"
-            />
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-8 w-full max-w-6xl">
+            <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-sm flex">
+              <FeatureCard 
+                icon={<MapPin />}
+                title="Get Directions on One Click"
+                description="Guests and customers open navigation in Google Maps instantly."
+                accentColor="red"
+              />
+            </div>
+            <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-sm flex">
+              <FeatureCard 
+                icon={<BarChart3 />}
+                title="Page Insights and WhatsApp Reports"
+                description="Track live page opens, guest headcounts, direct inquiries, and get reports in WhatsApp."
+                accentColor="teal"
+              />
+            </div>
+            <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-sm flex">
+              <FeatureCard 
+                icon={<FileDown />}
+                title="Export as PDF to Print Anything"
+                description="Download print ready PDFs and high quality cards for invitations, business cards, flyers, and pamphlets."
+                accentColor="orange"
+              />
+            </div>
+            <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-sm flex">
+              <FeatureCard 
+                icon={<IndianRupee />}
+                title="Digital Gifts via UPI"
+                description="Receive direct gifts and payments with integrated GPay and PhonePe UPI links."
+                accentColor="red"
+              />
+            </div>
+            <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-sm flex">
+              <FeatureCard 
+                icon={<Music />}
+                title="Spotify Music and Playlists"
+                description="Embed your favorite Spotify track or celebration playlist directly on your page."
+                accentColor="teal"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -411,43 +448,45 @@ export function Landing({
           <div className="text-center max-w-3xl mx-auto space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-red/5 text-primary border border-brand-red/10 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
-              Simple & Transparent Pricing
+              Pay-As-You-Need Transactional Pricing
             </div>
             <h2 className="text-2xl sm:text-4xl lg:text-5xl font-serif font-bold text-stone-900 leading-tight">
-              1st Site Free. Scale with Extra Basic, Premium, or Pro Creator Packs.
+              Start Free. Scale with Basic Pages, Premium Upgrades, or Lifetime Hosting.
             </h2>
             <p className="text-sm sm:text-base lg:text-lg text-stone-600 leading-relaxed">
-              Standard features included everywhere. Upgrade to Premium or Pro for Page Insights, WhatsApp reports, and UPI gift QR codes.
+              Every published page begins with 15 days of live hosting. No monthly recurring fees. Upgrade to Premium for Google Maps, RSVP, UPI QR, and a 100% Watermark-Free experience.
             </p>
           </div>
 
-          {/* 4 Main Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch max-w-7xl mx-auto">
-            {/* Free Starter */}
-            <div className="relative rounded-3xl p-6 flex flex-col justify-between transition-all bg-white border border-stone-200 shadow-sm hover:shadow-xl">
+          {/* Main Pricing Cards */}
+          <div className="flex flex-wrap justify-center gap-6 items-stretch max-w-5xl mx-auto w-full">
+            {/* 1. Free Basic Page */}
+            <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] max-w-sm relative rounded-3xl p-6 flex flex-col justify-between transition-all bg-white border border-stone-200 shadow-sm hover:shadow-xl">
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border bg-stone-100 text-stone-700 border-stone-200">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border bg-stone-100 text-stone-700 border-stone-200">
                     100% Free
                   </span>
                 </div>
-                <h3 className="text-xl font-serif font-bold text-stone-900">Free Starter</h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed min-h-[36px]">
-                  1st page free to create and share.
+                <h3 className="text-xl font-serif font-bold text-stone-900">Free Basic Page</h3>
+                <p className="text-xs text-stone-500 mt-1 leading-relaxed min-h-[32px]">
+                  1st basic page free to create and publish.
                 </p>
-                <div className="my-5 pb-5 border-b border-stone-100 flex items-baseline gap-1.5">
-                  <span className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">₹0</span>
+                <div className="my-4 pb-4 border-b border-stone-100 flex items-baseline gap-1.5">
+                  <span className="text-3xl font-serif font-bold text-stone-900">₹0</span>
                   <span className="text-xs text-stone-500 font-medium">1st page free</span>
                 </div>
                 <ul className="space-y-2.5 mb-6">
                   {[
-                    '1 Live Page (15 Days hosting)',
-                    'Google Maps Directions Link',
-                    'Spotify Music Player',
+                    '1 Basic Page (15 Days hosting)',
+                    'Spotify Music Player (1 track)',
+                    'Photo Gallery (Up to 10 photos)',
+                    'Venue Text & Event Details',
+                    'Optional Password Protection',
                     'Print-Ready PDF Export',
                     'Includes Page Watermark'
                   ].map((feat, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-stone-600 leading-relaxed">
+                    <li key={i} className="flex items-start gap-1.5 text-xs text-stone-600 leading-relaxed">
                       <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                       <span>{feat}</span>
                     </li>
@@ -463,31 +502,33 @@ export function Landing({
               </button>
             </div>
 
-            {/* Extra Basic Page */}
-            <div className="relative rounded-3xl p-6 flex flex-col justify-between transition-all bg-white border border-stone-200 shadow-sm hover:shadow-xl">
+            {/* 2. Basic Page */}
+            <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] max-w-sm relative rounded-3xl p-6 flex flex-col justify-between transition-all bg-white border border-stone-200 shadow-sm hover:shadow-xl">
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border bg-brand-orange/5 text-accent border-brand-orange/10">
-                    Basic Add-On
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border bg-brand-orange/5 text-accent border-brand-orange/10">
+                    Basic Single
                   </span>
                 </div>
-                <h3 className="text-xl font-serif font-bold text-stone-900">Extra Basic Page</h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed min-h-[36px]">
-                  Add extra pages with standard features.
+                <h3 className="text-xl font-serif font-bold text-stone-900">Basic Page</h3>
+                <p className="text-xs text-stone-500 mt-1 leading-relaxed min-h-[32px]">
+                  Publish additional basic pages with essential features.
                 </p>
-                <div className="my-5 pb-5 border-b border-stone-100 flex items-baseline gap-1.5">
-                  <span className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">₹49</span>
-                  <span className="text-xs text-stone-500 font-medium">per extra page</span>
+                <div className="my-4 pb-4 border-b border-stone-100 flex items-baseline gap-1.5">
+                  <span className="text-3xl font-serif font-bold text-stone-900">₹49</span>
+                  <span className="text-xs text-stone-500 font-medium">per published page</span>
                 </div>
                 <ul className="space-y-2.5 mb-6">
                   {[
-                    '1 Extra Live Page (30 Days hosting)',
-                    'Google Maps Directions Link',
-                    'Spotify Music Player',
+                    '1 Basic Page (15 Days hosting)',
+                    'Spotify Music Player (1 track)',
+                    'Photo Gallery (Up to 10 photos)',
+                    'Venue Text & Event Details',
+                    'Optional Password Protection',
                     'Print-Ready PDF Export',
                     'Includes Page Watermark'
                   ].map((feat, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-stone-600 leading-relaxed">
+                    <li key={i} className="flex items-start gap-1.5 text-xs text-stone-600 leading-relaxed">
                       <Check className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" />
                       <span>{feat}</span>
                     </li>
@@ -503,36 +544,36 @@ export function Landing({
               </button>
             </div>
 
-            {/* Premium Single Page */}
-            <div className="relative rounded-3xl p-6 flex flex-col justify-between transition-all bg-white border-2 border-primary shadow-xl ring-4 ring-primary/10">
-              <div className="absolute -top-3.5 right-4 px-3 py-0.5 bg-gradient-to-r from-brand-red to-brand-orange text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-xs">
+            {/* 3. Premium Page */}
+            <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] max-w-sm relative rounded-3xl p-6 flex flex-col justify-between transition-all bg-white border-2 border-primary shadow-xl ring-4 ring-primary/10">
+              <div className="absolute -top-3.5 right-4 px-2.5 py-0.5 bg-gradient-to-r from-brand-red to-brand-orange text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-xs">
                 Most Popular
               </div>
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border bg-brand-red/5 text-primary border-brand-red/10">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border bg-brand-red/5 text-primary border-brand-red/10">
                     Full Pro Features
                   </span>
                 </div>
                 <h3 className="text-xl font-serif font-bold text-stone-900">Premium Page</h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed min-h-[36px]">
-                  Page with Page Insights, WhatsApp & UPI options.
+                <p className="text-xs text-stone-500 mt-1 leading-relaxed min-h-[32px]">
+                  All Pro interactive features & Watermark-Free.
                 </p>
-                <div className="my-5 pb-5 border-b border-stone-100 flex items-baseline gap-1.5">
-                  <span className="text-3xl sm:text-4xl font-serif font-bold text-primary">₹99</span>
-                  <span className="text-xs text-stone-500 font-medium">per page</span>
+                <div className="my-4 pb-4 border-b border-stone-100 flex items-baseline gap-1.5">
+                  <span className="text-3xl font-serif font-bold text-primary">₹99</span>
+                  <span className="text-xs text-stone-500 font-medium">per published page</span>
                 </div>
                 <ul className="space-y-2.5 mb-6">
                   {[
-                    '1 Live Page (30 Days hosting)',
+                    '1 Premium Page (15 Days hosting)',
                     'Watermark-Free Experience',
-                    'Page Insights, Analytics & WhatsApp Reports',
-                    'UPI Gift QR & Transaction Logging',
-                    'Google Maps Directions Link & Location QR Code',
-                    'Spotify Music Player',
-                    'Print-Ready PDF Export'
+                    'Google Maps & Location QR Code',
+                    'Interactive RSVP & Headcount',
+                    'UPI Gift QR Scanner (Direct)',
+                    'Page Insights & WhatsApp Reports',
+                    'Spotify Music & 10-Photo Gallery'
                   ].map((feat, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-stone-800 leading-relaxed font-semibold">
+                    <li key={i} className="flex items-start gap-1.5 text-xs text-stone-800 leading-relaxed font-semibold">
                       <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
                       <span>{feat}</span>
                     </li>
@@ -543,97 +584,84 @@ export function Landing({
                 onClick={onStart}
                 className="w-full py-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-gradient-to-r from-brand-red to-brand-orange hover:from-primary/90 hover:to-accent/90 text-white shadow-md shadow-brand-red/20 cursor-pointer"
               >
-                <span>Get Premium Page ₹99</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Pro Creator Pack */}
-            <div className="relative rounded-3xl p-6 flex flex-col justify-between transition-all bg-white border border-stone-200 shadow-sm hover:shadow-xl">
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border bg-brand-teal/5 text-secondary border-brand-teal/10">
-                    Best Value Pro
-                  </span>
-                </div>
-                <h3 className="text-xl font-serif font-bold text-stone-900">Pro Creator Pack</h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed min-h-[36px]">
-                  1 free + 6 additional pages (7 total).
-                </p>
-                <div className="my-5 pb-5 border-b border-stone-100 flex items-baseline gap-1.5">
-                  <span className="text-3xl sm:text-4xl font-serif font-bold text-secondary">₹499</span>
-                  <span className="text-xs text-stone-500 font-medium">for 7 pages</span>
-                </div>
-                <ul className="space-y-2.5 mb-6">
-                  {[
-                    '7 Total Live Pages (1 Free + 6 Extra)',
-                    '60 Days hosting per page',
-                    'Watermark-Free Experience',
-                    'Page Insights, Analytics & WhatsApp Reports',
-                    'UPI Gift QR & Transaction Logging',
-                    'Google Maps Directions Link & Location QR Code',
-                    'Spotify Music Player',
-                    'Print-Ready PDF Export'
-                  ].map((feat, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-stone-600 leading-relaxed">
-                      <Check className="w-3.5 h-3.5 text-secondary shrink-0 mt-0.5" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <button
-                onClick={onStart}
-                className="w-full py-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-secondary hover:bg-secondary/90 text-white shadow-sm cursor-pointer"
-              >
-                <span>Get Pro 7 Pages Pack</span>
+                <span>Get Premium ₹99</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          {/* Single Page Extension Card */}
-          <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-10 shadow-xl max-w-5xl mx-auto space-y-6">
+          {/* Hosting Extensions & Upgrades Panel */}
+          <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-10 shadow-xl max-w-5xl mx-auto space-y-6 flex flex-col items-center">
             <div className="text-center max-w-2xl mx-auto space-y-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-800 text-amber-300 text-xs font-bold uppercase tracking-wider border border-stone-700">
                 <Clock className="w-3.5 h-3.5" />
-                Page Hosting Extensions
+                Hosting Extensions & Page Upgrades
               </div>
               <h3 className="text-xl sm:text-3xl font-serif font-bold">
-                Need More Time For A Specific Page?
+                Extend Validity or Upgrade Any Page Anytime
               </h3>
               <p className="text-stone-300 text-xs sm:text-sm leading-relaxed">
-                If your hosting duration expires, extend validity for that specific page anytime directly from your dashboard.
+                If your initial 15-day hosting duration expires, extend validity for that specific page or unlock permanent lifetime hosting directly from your dashboard.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              <div className="bg-stone-800/80 border border-stone-700/80 rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-3">
-                <div className="space-y-2">
+            <div className="flex flex-wrap justify-center gap-4 w-full">
+              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      +30 Days Extension
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      Basic Extension
                     </span>
-                    <span className="text-xl sm:text-2xl font-bold text-white">₹49</span>
+                    <span className="text-lg font-bold text-white">₹14</span>
                   </div>
-                  <h4 className="text-sm sm:text-base font-bold text-white mt-1">30 Days Extra Live Hosting</h4>
-                  <p className="text-xs text-stone-300 leading-relaxed">
-                    Adds 30 extra days of live hosting to any active or expired page alone.
+                  <h4 className="text-xs font-bold text-white mt-1">+30 Days Basic Hosting</h4>
+                  <p className="text-[11px] text-stone-300 leading-relaxed">
+                    Adds 30 extra days of live hosting to an active or expired Basic page.
                   </p>
                 </div>
               </div>
 
-              <div className="bg-stone-800/80 border border-stone-700/80 rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-3">
-                <div className="space-y-2">
+              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-500/30">
-                      Life Long Hosting
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/30">
+                      Premium Extension
                     </span>
-                    <span className="text-xl sm:text-2xl font-bold text-teal-300">₹299</span>
+                    <span className="text-lg font-bold text-red-300">₹99</span>
                   </div>
-                  <h4 className="text-sm sm:text-base font-bold text-white mt-1">Permanent Lifetime Hosting</h4>
-                  <p className="text-xs text-stone-300 leading-relaxed">
-                    Unlocks permanent lifetime hosting for that single page alone. Never expires.
+                  <h4 className="text-xs font-bold text-white mt-1">+30 Days Premium Hosting</h4>
+                  <p className="text-[11px] text-stone-300 leading-relaxed">
+                    Adds 30 extra days of live hosting with all Pro features & Insights.
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Page Upgrade
+                    </span>
+                    <span className="text-lg font-bold text-emerald-300">₹49</span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white mt-1">Basic → Premium Upgrade</h4>
+                  <p className="text-[11px] text-stone-300 leading-relaxed">
+                    Upgrade an existing published Basic page to Premium with no watermark.
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                      Lifetime Single
+                    </span>
+                    <span className="text-lg font-bold text-teal-300">₹999</span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white mt-1">Permanent Lifetime Hosting</h4>
+                  <p className="text-[11px] text-stone-300 leading-relaxed">
+                    Unlocks permanent lifetime hosting for this page alone. Never expires.
                   </p>
                 </div>
               </div>
@@ -648,24 +676,32 @@ export function Landing({
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold mb-8 sm:mb-12 text-center text-stone-900">Frequently Asked Questions</h2>
           <div className="divide-y divide-stone-200/80 border-t border-stone-200/80">
             <FAQItem 
-              question="What is included in the Free Starter plan?"
-              answer="Your first site is 100% free with 15 days of live hosting and includes a platform watermark. Essential features—including Google Maps directions link, Spotify music player, and print-ready PDF export—are fully included."
+              question="What is included in the Free Basic Page?"
+              answer="Your first site is 100% free with 15 days of live hosting and includes a platform watermark. Free features include Spotify music player (1 track), photo gallery (up to 10 photos), venue information & details, full typography/colors customization, password protection, and print-ready PDF export."
             />
             <FAQItem 
-              question="What is the difference between Extra Basic (₹49) and Premium (₹99) pages?"
-              answer="An Extra Basic page (₹49 for 30 days) includes Google Maps Directions Link, Spotify Music Player, Print-Ready PDF Export, and a page watermark. A Premium page (₹99 for 30 days) unlocks a completely Watermark-Free experience, Page Insights, Analytics & WhatsApp Reports, UPI Gift QR & Transaction Logging, and Google Maps Directions Link & Location QR Code."
+              question="What is the difference between Basic (₹49) and Premium (₹99) pages?"
+              answer="A Basic Page (₹49 for 15 days) includes essential features (Spotify, 10-image gallery, venue text, PDF export) with a platform watermark. A Premium Page (₹99 for 15 days) unlocks a completely Watermark-Free experience, Interactive Google Maps & Directions, auto-generated Location QR Code, Interactive RSVP & attendance tracking, UPI Gift Scanner / QR (direct to your UPI), and Page Insights & WhatsApp Reports."
             />
             <FAQItem 
-              question="What is included in the Pro Creator Pack (₹499)?"
-              answer="The Pro Creator Pack is ₹499 and includes 7 Total Live Pages (1 Free + 6 Extra) with 60 days of active hosting per page and all Pro features included across all pages."
+              question="How do hosting extensions and Lifetime Hosting work?"
+              answer="Every newly published page starts with 15 days of hosting. You can extend hosting anytime from your dashboard for ₹14 (+30 days for Basic) or ₹99 (+30 days for Premium). You can also unlock permanent Lifetime Hosting for ₹999 so your page never expires."
+            />
+            <FAQItem 
+              question="Can I upgrade an existing Basic page to Premium?"
+              answer="Yes! An existing published Basic page can be converted to Premium anytime by paying a ₹49 upgrade fee. You do not need to buy a whole new page, preserving your original page URL and details while removing the watermark and activating all Pro features."
+            />
+            <FAQItem 
+              question="Can I edit details after publishing?"
+              answer="Yes! Text corrections, time updates, and typo fixes on published invites are 100% free and update in real-time. Significant structure changes or converting to a new design can be done effortlessly using 'Copy to New'."
+            />
+            <FAQItem 
+              question="What happens if a page expires or is deleted?"
+              answer="When hosting expires, your original URL remains reserved and visitors see a clean 'Page Expired' screen. Extending hosting immediately restores public access. Deleted pages enter a 30-day recovery window before permanent removal."
             />
             <FAQItem 
               question="Can I print my business cards, flyers, and pamphlets?"
-              answer="Yes. You can export your page design and print ready QR codes as PDF to print physical cards, flyers, pamphlets, and stands."
-            />
-            <FAQItem 
-              question="How do Page Insights and WhatsApp Reports work?"
-              answer="On Premium and Pro pages, guests confirm attendance, headcounts, or gift transactions directly on your live page. You can view real-time insights in your dashboard and generate formatted reports for WhatsApp anytime."
+              answer="Yes. Eligible published pages can be downloaded as print-ready PDFs and high-resolution images for single-page designs or full-document PDFs for multi-page designs."
             />
           </div>
         </div>

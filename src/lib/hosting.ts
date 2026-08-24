@@ -1,4 +1,4 @@
-import type { LovinglyEvent, PlanTier, HostingStatus, HostingExtensionRecord } from '../types';
+import type { LovinglyEvent, PlanTier, HostingStatus, HostingExtensionRecord, HostingExtensionType } from '../types';
 
 export interface PlanConfig {
   id: PlanTier;
@@ -12,54 +12,46 @@ export interface PlanConfig {
 export const HOSTING_PLANS: Record<PlanTier, PlanConfig> = {
   free: {
     id: 'free',
-    name: 'Free Starter',
+    name: 'Free Basic Page',
     days: 15,
     sites: 1,
     price: 0,
-    description: '1st page free with 15 days of live hosting (includes watermark)',
+    description: '1 Basic Page with 15 days of live hosting (includes watermark)',
   },
   basic_49: {
     id: 'basic_49',
-    name: 'Extra Basic Page',
-    days: 30,
+    name: 'Basic Page',
+    days: 15,
     sites: 1,
     price: 49,
-    description: '30 days live hosting for 1 extra basic page (includes watermark)',
+    description: '1 Basic Page publishing entitlement with 15 days live hosting (includes watermark)',
+  },
+  single_49: {
+    id: 'single_49',
+    name: 'Basic Page',
+    days: 15,
+    sites: 1,
+    price: 49,
+    description: '1 Basic Page publishing entitlement with 15 days live hosting (includes watermark)',
   },
   premium_99: {
     id: 'premium_99',
     name: 'Premium Page',
-    days: 30,
+    days: 15,
     sites: 1,
     price: 99,
-    description: '30 days live hosting with all pro features & Watermark-Free experience',
-  },
-  pro_499: {
-    id: 'pro_499',
-    name: 'Pro Creator Pack',
-    days: 60,
-    sites: 7,
-    price: 499,
-    description: '1 free page + 6 additional pages (7 total) with pro features & Watermark-Free experience',
-  },
-  single_49: {
-    id: 'single_49',
-    name: 'Extra Basic Page',
-    days: 30,
-    sites: 1,
-    price: 49,
-    description: '30 days live hosting for 1 extra basic page (includes watermark)',
+    description: '1 Premium Page with 15 days live hosting, all pro features & Watermark-Free experience',
   },
 };
 
 /**
  * Determines whether a page should display a platform watermark based on its plan tier.
- * Free Starter (free) and Extra Basic Page (basic_49, single_49) include watermarks.
- * Premium Page (premium_99) and Pro Creator Pack (pro_499) are Watermark-Free.
+ * Free Basic Page (free) and Basic Page (basic_49, single_49) include watermarks.
+ * Premium Page (premium_99) is Watermark-Free.
  */
 export function hasWatermark(event: Partial<LovinglyEvent>): boolean {
   if (event.isLifetime) return false;
-  if (event.planTier === 'premium_99' || event.planTier === 'pro_499') return false;
+  if (event.planTier === 'premium_99') return false;
   if (event.tier === 'premium' || event.tier === 'standard') return false;
   return true;
 }
@@ -67,17 +59,31 @@ export function hasWatermark(event: Partial<LovinglyEvent>): boolean {
 export const EXTENSION_PRICING = {
   extend_30_days: {
     type: 'extension_30_days' as const,
-    label: '+30 Days Hosting Extension',
+    label: '+30 Days Basic Hosting Extension',
     days: 30,
     price: 49,
-    description: 'Add 30 extra days of live hosting to this page alone',
+    description: 'Add 30 extra days of live hosting to a Basic page',
+  },
+  extend_30_days_premium: {
+    type: 'extension_premium_30' as const,
+    label: '+30 Days Premium Hosting Extension',
+    days: 30,
+    price: 99,
+    description: 'Add 30 extra days of live hosting to a Premium page with all Pro features',
+  },
+  upgrade_to_premium: {
+    type: 'upgrade_premium_49' as const,
+    label: 'Upgrade to Premium Page',
+    days: 0,
+    price: 49,
+    description: 'Upgrade an existing published Basic page to Premium with Watermark-Free & Pro features',
   },
   lifetime_single: {
     type: 'lifetime_single' as const,
-    label: 'Life Long Hosting (Single Page)',
+    label: 'Lifetime Hosting (Single Page)',
     days: Infinity,
     isLifetime: true,
-    price: 299,
+    price: 999,
     description: 'Permanent lifetime hosting for this page alone, never expires',
   },
 };
@@ -192,9 +198,9 @@ export function getHostingStatus(event: LovinglyEvent, referenceDate: Date = new
   const planLabel = event.planTier
     ? HOSTING_PLANS[event.planTier]?.name || 'Standard Hosting'
     : event.tier === 'premium'
-    ? 'Pro Creator Pack (60 Days)'
+    ? 'Premium Page (15 Days)'
     : event.tier === 'standard'
-    ? 'Premium Page (30 Days)'
+    ? 'Basic Page (15 Days)'
     : 'Free Starter (15 Days)';
 
   return {
@@ -221,15 +227,20 @@ export function getHostingStatus(event: LovinglyEvent, referenceDate: Date = new
  */
 export function applyHostingExtension(
   event: LovinglyEvent,
-  extensionType: 'extension_30_days' | 'lifetime_single',
+  extensionType: HostingExtensionType,
   now: Date = new Date(),
   paymentReference?: string
 ): LovinglyEvent {
   const currentStatus = getHostingStatus(event, now);
+  const amount = 
+    extensionType === 'lifetime_single' ? 999 :
+    extensionType === 'extension_premium_30' ? 99 :
+    extensionType === 'upgrade_premium_49' ? 49 : 49;
+
   const extensionRecord: HostingExtensionRecord = {
     id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
     type: extensionType,
-    amountPaid: extensionType === 'extension_30_days' ? 49 : 299,
+    amountPaid: amount,
     extendedAt: now.toISOString(),
     previousExpiresAt: event.expiresAt || null,
     paymentReference: paymentReference || 'PAY_' + Date.now(),
@@ -245,7 +256,16 @@ export function applyHostingExtension(
     };
   }
 
-  // extension_30_days (+30 days)
+  if (extensionType === 'upgrade_premium_49') {
+    return {
+      ...event,
+      planTier: 'premium_99',
+      tier: 'standard',
+      hostingExtensions: [...(event.hostingExtensions || []), extensionRecord],
+    };
+  }
+
+  // +30 days extension
   let baseDate: Date;
   if (!currentStatus.isExpired && currentStatus.expiresAtDate) {
     // Stack onto existing expiration date

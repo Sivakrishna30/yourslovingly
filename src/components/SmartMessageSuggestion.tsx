@@ -8,16 +8,29 @@ import {
 } from '../lib/presetMessages';
 
 interface SmartMessageSuggestionProps {
-  pageType: string;
-  onApplyMessage: (text: string) => void;
+  pageType?: string;
+  eventType?: string;
+  onApplyMessage?: (text: string) => void;
+  onSelectSuggestion?: (text: string) => void;
 }
 
-export function SmartMessageSuggestion({ pageType, onApplyMessage }: SmartMessageSuggestionProps) {
+export function SmartMessageSuggestion({ 
+  pageType, 
+  eventType, 
+  onApplyMessage, 
+  onSelectSuggestion 
+}: SmartMessageSuggestionProps) {
+  const activeType = eventType || pageType || 'wedding';
+  const handleApply = (msgText: string) => {
+    if (onSelectSuggestion) onSelectSuggestion(msgText);
+    if (onApplyMessage) onApplyMessage(msgText);
+  };
+
   const [selectedTone, setSelectedTone] = useState<MessageTone>('traditional');
   const [refreshSeed, setRefreshSeed] = useState<number>(0);
 
   // Get single candidate message derived from page type + selected tone + seed
-  const currentSuggestion = getSingleSuggestedMessage(pageType, selectedTone, refreshSeed);
+  const currentSuggestion = getSingleSuggestedMessage(activeType, selectedTone, refreshSeed);
 
   const handleRefresh = () => {
     setRefreshSeed(prev => prev + 1);
@@ -76,7 +89,7 @@ export function SmartMessageSuggestion({ pageType, onApplyMessage }: SmartMessag
       <SuggestionEditor 
         key={`${currentSuggestion.id}-${refreshSeed}`}
         suggestion={currentSuggestion}
-        onApplyMessage={onApplyMessage}
+        onApplyMessage={handleApply}
         onRefresh={handleRefresh}
       />
     </div>

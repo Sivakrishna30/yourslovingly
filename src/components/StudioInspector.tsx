@@ -20,7 +20,8 @@ import { elementGlyphs } from '../lib/constants';
 export interface StudioInspectorProps {
   event: LovinglyEvent;
   activeElementKey: StudioElementKey;
-  onSelectElement: (key: StudioElementKey) => void;
+  onSelectElement?: (key: StudioElementKey) => void;
+  onSelectElementKey?: (key: StudioElementKey) => void;
   onUpdateElementStyle: (key: StudioElementKey, newStyle: Partial<StudioElementStyle>) => void;
   onUpdateEvent?: (updates: Partial<LovinglyEvent>) => void;
 }
@@ -29,9 +30,11 @@ export function StudioInspector({
   event,
   activeElementKey,
   onSelectElement,
+  onSelectElementKey,
   onUpdateElementStyle,
   onUpdateEvent
 }: StudioInspectorProps) {
+  const handleSelect = onSelectElementKey || onSelectElement || (() => {});
   const [activeTab, setActiveTab] = useState<'position' | 'typography' | 'colors' | 'animation' | 'elements'>('position');
 
   const elementSequence = useMemo(() => {
@@ -73,7 +76,7 @@ export function StudioInspector({
   
   // Update active element if it's no longer in the sequence
   if (currentIndex === -1 && elementSequence.length > 0 && activeElementKey !== currentElemInfo.key) {
-    setTimeout(() => onSelectElement(currentElemInfo.key), 0);
+    setTimeout(() => handleSelect(currentElemInfo.key), 0);
   }
 
   const currentStyles: StudioElementStyle = (event.elementStyles && event.elementStyles[activeElementKey]) || {};
@@ -82,13 +85,13 @@ export function StudioInspector({
   const handlePrev = () => {
     if (elementSequence.length === 0) return;
     const prevIdx = (currentIndex - 1 + elementSequence.length) % elementSequence.length;
-    onSelectElement(elementSequence[prevIdx].key);
+    handleSelect(elementSequence[prevIdx].key);
   };
 
   const handleNext = () => {
     if (elementSequence.length === 0) return;
     const nextIdx = (currentIndex + 1) % elementSequence.length;
-    onSelectElement(elementSequence[nextIdx].key);
+    handleSelect(elementSequence[nextIdx].key);
   };
 
   const toggleLock = () => {
@@ -120,7 +123,7 @@ export function StudioInspector({
   };
 
   return (
-    <div className="bg-stone-900 text-white rounded-2xl p-3 sm:p-4 shadow-2xl border border-stone-800 space-y-3.5 my-2">
+    <div className="bg-stone-900 text-white rounded-2xl p-3 sm:p-4 shadow-2xl border border-stone-800 space-y-3.5 my-2 w-full max-w-3xl xl:max-w-4xl mx-auto">
       {/* Top Header Bar: Element Selector & Lock/Confirm Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-800">
         <div className="flex items-center gap-2">
@@ -208,7 +211,7 @@ export function StudioInspector({
             <button
               key={item.key}
               type="button"
-              onClick={() => onSelectElement(item.key)}
+              onClick={() => handleSelect(item.key)}
               className={`px-2 py-1 rounded-lg shrink-0 font-medium transition-all flex items-center gap-1 ${
                 isSelected
                   ? 'bg-accent text-stone-950 font-bold shadow-xs'

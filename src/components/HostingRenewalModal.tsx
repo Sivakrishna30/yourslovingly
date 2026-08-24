@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { LovinglyEvent, HostingExtensionType } from '../types';
 import { getHostingStatus, applyHostingExtension, EXTENSION_PRICING } from '../lib/hosting';
+import { EntitlementService } from '../domain/entitlement/entitlementService';
 
 interface HostingRenewalModalProps {
   event: LovinglyEvent;
@@ -119,11 +120,11 @@ export function HostingRenewalModal({
                 Choose Extension Option for this Page Alone
               </label>
 
-              {/* Option 1: +30 Days Extension (₹49) */}
+              {/* Option 1: Basic / Premium +30 Days Extension */}
               <div
-                onClick={() => setSelectedOption('extension_30_days')}
+                onClick={() => setSelectedOption(event.planTier === 'premium_99' || event.tier === 'premium' ? 'extension_premium_30' : 'extension_30_days')}
                 className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                  selectedOption === 'extension_30_days'
+                  selectedOption === 'extension_30_days' || selectedOption === 'extension_premium_30'
                     ? 'border-primary bg-brand-red/5 shadow-sm ring-2 ring-brand-red/10'
                     : 'border-stone-200 bg-white hover:border-stone-300'
                 }`}
@@ -131,14 +132,14 @@ export function HostingRenewalModal({
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedOption === 'extension_30_days' ? 'border-primary bg-primary' : 'border-stone-300'
+                      selectedOption === 'extension_30_days' || selectedOption === 'extension_premium_30' ? 'border-primary bg-primary' : 'border-stone-300'
                     }`}>
-                      {selectedOption === 'extension_30_days' && <Check className="w-3 h-3 text-white" />}
+                      {(selectedOption === 'extension_30_days' || selectedOption === 'extension_premium_30') && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-stone-900 text-sm">
-                          {EXTENSION_PRICING.extend_30_days.label}
+                          +30 Days Hosting Extension
                         </span>
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-100 text-stone-600">
                           +30 Days
@@ -152,13 +153,54 @@ export function HostingRenewalModal({
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-stone-900">₹49</div>
+                    <div className="text-lg font-bold text-stone-900">
+                      ₹{event.planTier === 'premium_99' || event.tier === 'premium' ? EntitlementService.getExtensionPrice('premium', false) : EntitlementService.getExtensionPrice('basic', false)}
+                    </div>
                     <div className="text-[10px] text-stone-400">One-time</div>
                   </div>
                 </div>
               </div>
 
-              {/* Option 2: Life Long Permanent Hosting (₹299) */}
+              {/* Option 2: Upgrade to Premium for Basic/Free pages */}
+              {(!event.planTier || event.planTier === 'free' || event.planTier === 'basic_49' || event.planTier === 'single_49') && (
+                <div
+                  onClick={() => setSelectedOption('upgrade_premium_49')}
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                    selectedOption === 'upgrade_premium_49'
+                      ? 'border-emerald-600 bg-emerald-50/50 shadow-sm ring-2 ring-emerald-600/10'
+                      : 'border-stone-200 bg-white hover:border-stone-300'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        selectedOption === 'upgrade_premium_49' ? 'border-emerald-600 bg-emerald-600' : 'border-stone-300'
+                      }`}>
+                        {selectedOption === 'upgrade_premium_49' && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-stone-900 text-sm">
+                            Upgrade to Premium Page
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                            Pro Features
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-500 mt-0.5">
+                          Removes watermark and unlocks Google Maps, RSVP, and UPI QR
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-emerald-700">₹{EntitlementService.getUpgradePrice('basic', 'premium')}</div>
+                      <div className="text-[10px] text-stone-400">Upgrade</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Option 3: Lifetime Permanent Hosting (₹999) */}
               <div
                 onClick={() => setSelectedOption('lifetime_single')}
                 className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
@@ -190,7 +232,7 @@ export function HostingRenewalModal({
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-secondary">₹299</div>
+                    <div className="text-lg font-bold text-secondary">₹{EntitlementService.getExtensionPrice('premium', true)}</div>
                     <div className="text-[10px] text-stone-400">Lifetime</div>
                   </div>
                 </div>
@@ -220,7 +262,7 @@ export function HostingRenewalModal({
                 ) : (
                   <>
                     <span>
-                      Pay {selectedOption === 'extension_30_days' ? '₹49' : '₹299'} & Extend Page
+                      Pay ₹{selectedOption === 'lifetime_single' ? EntitlementService.getExtensionPrice('premium', true) : selectedOption === 'extension_premium_30' ? EntitlementService.getExtensionPrice('premium', false) : selectedOption === 'upgrade_premium_49' ? EntitlementService.getUpgradePrice('basic', 'premium') : EntitlementService.getExtensionPrice('basic', false)} & Confirm
                     </span>
                     <ArrowRight className="w-4 h-4" />
                   </>

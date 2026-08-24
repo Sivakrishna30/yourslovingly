@@ -40,9 +40,14 @@ export type BackgroundPattern = 'none' | 'hearts' | 'stars' | 'gifts' | 'flowers
 export type BorderStyle = 'none' | 'soft' | 'solid' | 'glow' | 'dashed' | 'double';
 export type PageVisibility = 'anyone' | 'restricted';
 
-export type PlanTier = 'free' | 'basic_49' | 'premium_99' | 'pro_499' | 'single_49';
+/** @deprecated Use EntitlementTier from domain/entitlement/types instead */
+export type PlanTier = 'free' | 'basic_49' | 'premium_99' | 'single_49';
+
+/** @deprecated Replaced by expiresAt logic on Invite model */
 export type HostingStatus = 'active' | 'expiring_soon' | 'expired' | 'lifetime';
-export type HostingExtensionType = 'extension_30_days' | 'lifetime_single';
+
+/** @deprecated Obsolete pricing tiers. Use PricingModel static properties instead. */
+export type HostingExtensionType = 'extension_30_days' | 'extension_basic_30' | 'extension_premium_30' | 'upgrade_premium_49' | 'lifetime_single';
 
 export interface HostingExtensionRecord {
   id: string;
@@ -162,6 +167,37 @@ export interface PhotoBlock extends ContentBlockBase {
 
 export type ContentBlock = MessageBlock | PhotoBlock;
 
+export interface RsvpFormConfig {
+  enabled: boolean;
+  collectPhone: boolean;
+  collectGuestCount: boolean;
+  collectDietary: boolean;
+  collectAccommodation: boolean;
+  deadline?: string;
+  customQuestions?: string[];
+}
+
+/** @deprecated Use EntitlementTier from domain/entitlement/types instead */
+export type TierType = 'basic' | 'extended' | 'lifetime' | 'free' | 'standard' | 'premium';
+
+export interface MasterTemplatePreset {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  primaryColor: string;
+  secondaryColor: string;
+  highlightColor: string;
+  frameType?: FrameType;
+  decorativeMotif?: DecorativeMotif;
+  textureType?: BackgroundTexture;
+  elementStyles?: StudioElementMap;
+}
+
+/**
+ * @deprecated Legacy monolithic document model. 
+ * Use normalized `Invite` -> `Page` -> `ElementInstance` from domain/ instead.
+ */
 export interface LovinglyEvent {
   id: string;
   slug: string;
@@ -187,6 +223,8 @@ export interface LovinglyEvent {
   photoSize: PhotoSize;
   backgroundPattern: BackgroundPattern;
   isPublished: boolean;
+  isDeleted?: boolean;
+  deletedAt?: string;
   createdAt: string;
   spotifyUrl?: string;
   showAds?: boolean;
@@ -208,10 +246,14 @@ export interface LovinglyEvent {
   showLocationQrCode?: boolean;
   whatsappNumber?: string;
   upiId?: string;
+  upiName?: string;
   showUpiQrCode?: boolean;
   upiQrImageUrl?: string;
   isPasscodeProtected?: boolean;
   passcode?: string;
+  password?: string;
+  rsvpConfig?: RsvpFormConfig;
+  templateId?: string;
   elementStyles?: CanvaElementMap;
   activeElementKey?: CanvaElementKey;
   elementOrder?: string[];

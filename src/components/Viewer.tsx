@@ -322,7 +322,7 @@ export function EventViewer({
 
   return (
     <div 
-      className="min-h-screen w-full relative selection:bg-brand-red/10 selection:text-primary overflow-x-hidden print:bg-white print:min-h-0 print:p-0"
+      className="min-h-screen w-full relative selection:bg-brand-red/10 selection:text-primary overflow-x-hidden print:bg-white print:min-h-0 print:p-0 flex flex-col items-center justify-center"
       style={{ backgroundColor: event.secondaryColor || styleInfo.secondary }}
     >
       {/* Export as PDF / Print Action for Visitors (Only after published) */}

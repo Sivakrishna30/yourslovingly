@@ -1086,3 +1086,82 @@ export function filterMasterTemplates(category?: string, searchTerm?: string): M
     return matchesCategory && matchesSearch;
   });
 }
+
+// Aliases & Preset collections
+export const COLOR_PALETTES = PALETTES;
+export const MASTER_TEMPLATE_PRESETS = MASTER_TEMPLATES;
+
+export interface FramePresetOption {
+  id: FrameType;
+  name: string;
+  category: string;
+  previewUrl?: string;
+  badge?: string;
+  icon?: string;
+}
+
+export const FRAME_PRESETS: FramePresetOption[] = [
+  { id: 'none', name: 'No Frame', category: 'minimal', icon: '🖼️' },
+  { id: 'grand-rangoli-mandala', name: 'Grand Rangoli Mandala', category: 'traditional', badge: '🪷 Traditional', icon: '🪷' },
+  { id: 'royal-rose-garden', name: 'Royal Rose Garden', category: 'wedding', badge: '🌹 Floral', icon: '🌹' },
+  { id: 'grand-kolam-heritage', name: 'Grand Kolam Heritage', category: 'traditional', badge: '🛕 Heritage', icon: '🛕' },
+  { id: 'traditional-marigold-gold', name: 'Marigold & Gold Garland', category: 'traditional', badge: '🌼 Marigold', icon: '🌼' },
+  { id: 'royal-rajasthani-mandap', name: 'Rajasthani Royal Mandap', category: 'traditional', badge: '🏰 Royal', icon: '🏰' },
+  { id: 'south-temple-arch', name: 'South Indian Temple Gopuram', category: 'traditional', badge: '🛕 Temple', icon: '🛕' },
+  { id: 'botanical-peony-gold', name: 'Botanical Peony Gold', category: 'wedding', badge: '🌿 Botanical', icon: '🌿' },
+  { id: 'banana-leaf-traditional', name: 'Verdant Banana Leaf', category: 'traditional', badge: '🍃 Leaf', icon: '🍃' },
+  { id: 'royal-peacock-crest-frame', name: 'Royal Peacock Crest', category: 'luxury', badge: '🦚 Peacock', icon: '🦚' },
+  { id: 'vintage-eucalyptus-wreath', name: 'Vintage Eucalyptus Wreath', category: 'wedding', badge: '🌱 Wreath', icon: '🌱' },
+  { id: 'mughal-jharokha', name: 'Mughal Jharokha Scallop', category: 'luxury', badge: '🕌 Mughal', icon: '🕌' },
+  { id: 'art-deco-geometric', name: 'Art Deco Golden Geometric', category: 'luxury', badge: '✨ Deco', icon: '✨' },
+  { id: 'modern-minimal-filigree', name: 'Modern Filigree Border', category: 'minimal', badge: '📐 Minimal', icon: '📐' },
+  { id: 'baby-pastel-floral', name: 'Baby Pastel Floral Dream', category: 'kids', badge: '🍼 Pastel', icon: '🍼' },
+  { id: 'festive-diwali-diya', name: 'Diwali Diya Golden Border', category: 'traditional', badge: '🪔 Festive', icon: '🪔' },
+  { id: 'luxury-damask', name: 'Luxury Damask Silk', category: 'luxury', badge: '👑 Damask', icon: '👑' },
+];
+
+export interface MotifPresetOption {
+  id: DecorativeMotif;
+  name: string;
+  icon: string;
+  category: string;
+}
+
+export const MOTIF_PRESETS: MotifPresetOption[] = [
+  { id: 'none', name: 'None', icon: '✨', category: 'minimal' },
+  { id: 'grand-rangoli-center', name: 'Grand Rangoli Mandala', icon: '🪷', category: 'traditional' },
+  { id: 'auspicious-kalash', name: 'Auspicious Kalash', icon: '🏺', category: 'traditional' },
+  { id: 'royal-peacock', name: 'Royal Twin Peacock', icon: '🦚', category: 'traditional' },
+  { id: 'sacred-lotus', name: 'Sacred Lotus Blossom', icon: '🌸', category: 'traditional' },
+  { id: 'brass-diya', name: 'Brass Diya Flame', icon: '🪔', category: 'traditional' },
+  { id: 'ganesha-minimal', name: 'Lord Ganesha Line Art', icon: '🐘', category: 'traditional' },
+  { id: 'temple-bells', name: 'Brass Temple Bells', icon: '🔔', category: 'traditional' },
+  { id: 'botanical-rose-wreath', name: 'Botanical Rose Wreath', icon: '🌹', category: 'wedding' },
+  { id: 'gilded-rings', name: 'Gilded Intertwined Rings', icon: '💍', category: 'wedding' },
+  { id: 'doves-peace', name: 'Twin Peace Doves', icon: '🕊️', category: 'wedding' },
+  { id: 'champagne-toast', name: 'Sparkling Champagne Toast', icon: '🥂', category: 'party' },
+  { id: 'monogram-crest', name: 'Royal Monogram Crest', icon: '👑', category: 'luxury' },
+  { id: 'sparkle-burst', name: 'Gold Sparkle Explosion', icon: '✨', category: 'party' },
+  { id: 'party-confetti', name: 'Festive Confetti', icon: '🎉', category: 'party' },
+  { id: 'cradle-baby', name: 'Pastel Baby Cradle', icon: '🍼', category: 'kids' },
+];
+
+export interface TexturePresetOption {
+  id: BackgroundTexture;
+  name: string;
+  description: string;
+  icon?: string;
+  intensity?: string;
+}
+
+export const TEXTURE_PRESETS: TexturePresetOption[] = [
+  { id: 'none', name: 'Solid Color', description: 'Clean solid background', icon: '🎨', intensity: 'Smooth' },
+  { id: 'rangoli-mandala', name: 'Rangoli Watermark', description: 'Subtle mandala linework background', icon: '🪷', intensity: 'Subtle Pattern' },
+  { id: 'royal-kolam', name: 'Kolam Pattern', description: 'South Indian geometric kolam watermark', icon: '🛕', intensity: 'Traditional' },
+  { id: 'gold-dust', name: 'Gold Dust Stardust', description: 'Shimmering fine golden speckles', icon: '✨', intensity: 'Shimmering' },
+  { id: 'floral-damask', name: 'Damask Floral Silk', description: 'Royal damask embossed texture', icon: '🌹', intensity: 'Luxury Silk' },
+  { id: 'jali-lattice', name: 'Mughal Jaali Lattice', description: 'Intricate royal lattice shadow', icon: '🕌', intensity: 'Geometric' },
+  { id: 'banana-palm', name: 'Banana Palm Leaf', description: 'Verdant fresh palm texture', icon: '🍃', intensity: 'Organic' },
+  { id: 'parchment', name: 'Vintage Parchment', description: 'Warm organic textured paper', icon: '📜', intensity: 'Vintage Paper' },
+  { id: 'silk-linen', name: 'Luxury Linen Silk', description: 'Soft fabric weave background', icon: '🧵', intensity: 'Soft Weave' },
+];
