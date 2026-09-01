@@ -152,7 +152,7 @@ export const eventTypes: Array<{ id: EventKind; label: string; description: stri
   { id: 'wedding', label: 'Wedding', description: 'Ceremony and reception invitations' },
   { id: 'engagement', label: 'Engagement', description: 'Ring ceremony and celebrations' },
   { id: 'birthday', label: 'Birthday and Milestone', description: 'Warm wishes and party photos' },
-  { id: 'housewarming', label: 'Housewarming (Griha Pravesham)', description: 'Invite family home' },
+  { id: 'housewarming', label: 'Housewarming', description: 'Invite family and friends home' },
   { id: 'baby-shower', label: 'Baby Shower', description: 'Welcome the little one' },
   { id: 'naming-ceremony', label: 'Naming Ceremony', description: 'Blessings for the newborn' },
   { id: 'anniversary', label: 'Anniversary', description: 'A page for shared years' },

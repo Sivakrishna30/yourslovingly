@@ -14,7 +14,8 @@ import {
   Sliders,
   Eye,
   Calendar,
-  MapPin
+  MapPin,
+  Save
 } from 'lucide-react';
 import type { 
   LovinglyEvent, 
@@ -30,16 +31,53 @@ import {
   TEXTURE_PRESETS 
 } from '../../lib/designSystem';
 
-
 interface ElementsStepProps {
   event: LovinglyEvent;
   onUpdate: (updates: Partial<LovinglyEvent>) => void;
   onBack: () => void;
   onNext: () => void;
+  onSaveDraft?: () => void;
 }
 
-export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepProps) {
+const CATEGORIES: Array<'palette' | 'fonts' | 'frames' | 'motifs' | 'textures' | 'photos'> = [
+  'palette',
+  'fonts',
+  'frames',
+  'motifs',
+  'textures',
+  'photos'
+];
+
+export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: ElementsStepProps) {
   const [activeCategory, setActiveCategory] = useState<'palette' | 'fonts' | 'frames' | 'motifs' | 'textures' | 'photos'>('palette');
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const currentIndex = CATEGORIES.indexOf(activeCategory);
+
+  const handleNextClick = () => {
+    if (currentIndex < CATEGORIES.length - 1) {
+      setActiveCategory(CATEGORIES[currentIndex + 1]);
+    } else {
+      onNext();
+    }
+  };
+
+  const handleBackClick = () => {
+    if (currentIndex > 0) {
+      setActiveCategory(CATEGORIES[currentIndex - 1]);
+    } else {
+      onBack();
+    }
+  };
+
+  const handleSaveDraftClick = () => {
+    if (onSaveDraft) {
+      onSaveDraft();
+    }
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2500);
+  };
+
 
   const handleAddPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,7 +106,7 @@ export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepPr
       {/* Step Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase tracking-wider">
-          <span>Step 4 of 7</span>
+          <span>Step 3 of 6</span>
           <span>•</span>
           <span>Elements, Motifs & Styles</span>
         </div>
@@ -79,6 +117,14 @@ export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepPr
           Select auspicious Indian motifs, decorative frames, textured backgrounds, color palettes, and custom typography.
         </p>
       </div>
+
+      {/* Save Draft Toast */}
+      {saveSuccess && (
+        <div className="bg-emerald-600 text-white px-4 py-2.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-xs font-bold animate-in fade-in slide-in-from-top-2 max-w-xl mx-auto">
+          <Check className="w-4 h-4 text-emerald-200" />
+          <span>Draft Saved Successfully! You can resume anytime from your Dashboard.</span>
+        </div>
+      )}
 
       {/* Main Studio Grid */}
       <div className="grid lg:grid-cols-12 gap-8 items-start">
@@ -312,23 +358,29 @@ export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepPr
           )}
 
           {/* Sticky Bottom Actions */}
-          <div className="sticky -bottom-4 sm:-bottom-6 lg:-bottom-8 -mx-4 sm:-mx-6 lg:-mx-8 -mb-4 sm:-mb-6 lg:-mb-8 bg-white/95 backdrop-blur-xs border-t border-stone-200 p-3 sm:p-4 rounded-b-3xl z-20 shadow-lg flex items-center justify-between gap-2">
+          <div className="sticky -bottom-4 sm:-bottom-6 lg:-bottom-8 -mx-4 sm:-mx-6 lg:-mx-8 -mb-4 sm:-mb-6 lg:-mb-8 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 sm:p-4 rounded-b-3xl z-20 shadow-lg flex items-center justify-between gap-2">
             <button
-              onClick={onBack}
+              onClick={handleBackClick}
               className="px-3.5 sm:px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Back to Previous Section</span>
               <span className="sm:hidden">Back</span>
             </button>
-            <span className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider hidden xs:inline">
-              Step 4 of 7
-            </span>
+
             <button
-              onClick={onNext}
+              onClick={handleSaveDraftClick}
+              className="px-3 sm:px-4 py-2.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50/60 hover:bg-rose-100 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+            >
+              <Save className="w-4 h-4 text-rose-600" />
+              <span>Save Draft</span>
+            </button>
+
+            <button
+              onClick={handleNextClick}
               className="px-4 sm:px-6 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0"
             >
-              <span>Move to Next Section</span>
+              <span>{currentIndex === CATEGORIES.length - 1 ? 'Continue to Guest Preview' : 'Move to Next Section'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

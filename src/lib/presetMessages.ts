@@ -21,7 +21,7 @@ export const PRESET_MESSAGE_CATEGORIES = [
   { id: "all", label: "All Presets", icon: "✨" },
   { id: "wedding", label: "💍 Wedding & Ceremony", icon: "💍" },
   { id: "birthday", label: "🎂 Birthday & Milestone", icon: "🎂" },
-  { id: "housewarming", label: "🏡 Housewarming (Griha Pravesham)", icon: "🏡" },
+  { id: "housewarming", label: "🏡 Housewarming", icon: "🏡" },
   { id: "blessings", label: "💐 Blessings & Gratitude", icon: "💐" },
   { id: "business", label: "💼 Business & Store", icon: "💼" },
   { id: "flyer", label: "🏷️ Pamphlet & Offer", icon: "🏷️" },
@@ -198,7 +198,7 @@ export const PRESET_MESSAGES: PresetMessageItem[] = [
     "category": "housewarming",
     "categoryIcon": "\ud83c\udfe1",
     "title": "Traditional Housewarming Message",
-    "text": "We invite you to the Griha Pravesham ceremony of our new home.",
+    "text": "We invite you to the housewarming ceremony of our new home.",
     "tone": "traditional"
   },
   {

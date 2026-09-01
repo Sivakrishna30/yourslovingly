@@ -4,6 +4,7 @@ import type { Invite } from './types';
 import type { EntitlementTier } from '../entitlement/types';
 import type { Page, ElementInstance } from '../element/types';
 import type { LovinglyEvent } from '../../types';
+import { sanitizeForFirestore } from '../../lib/utils';
 
 export class InviteRepository {
   /**
@@ -111,18 +112,18 @@ export class InviteRepository {
     
     // Save Invite
     const inviteRef = doc(db, 'users', uid, 'invites', invite.id);
-    batch.set(inviteRef, { ...invite, updatedAt: serverTimestamp() }, { merge: true });
+    batch.set(inviteRef, sanitizeForFirestore({ ...invite, updatedAt: serverTimestamp() }), { merge: true });
 
     // Save Pages
     for (const page of pages) {
       const pageRef = doc(db, 'users', uid, 'invites', invite.id, 'pages', page.id);
-      batch.set(pageRef, page, { merge: true });
+      batch.set(pageRef, sanitizeForFirestore(page), { merge: true });
       
       // Save Elements for this Page
       const pageElements = elements.filter(e => e.pageId === page.id);
       for (const element of pageElements) {
         const elRef = doc(db, 'users', uid, 'invites', invite.id, 'pages', page.id, 'elements', element.id);
-        batch.set(elRef, element, { merge: true });
+        batch.set(elRef, sanitizeForFirestore(element), { merge: true });
       }
     }
 

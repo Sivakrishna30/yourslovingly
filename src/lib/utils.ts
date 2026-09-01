@@ -2,6 +2,31 @@ import type { User } from 'firebase/auth';
 import type { LovinglyEvent, MessageBlock, PhotoBlock, EventKind } from '../types';
 import { RESERVED_PUBLIC_PATHS } from './constants';
 
+export function sanitizeForFirestore<T>(obj: T): T {
+  if (obj === null || obj === undefined) {
+    return obj as T;
+  }
+  if (typeof obj !== 'object') {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj
+      .map(item => sanitizeForFirestore(item))
+      .filter(item => item !== undefined) as unknown as T;
+  }
+  const isPlainObject = obj.constructor === Object || !obj.constructor;
+  if (!isPlainObject) {
+    return obj;
+  }
+  const sanitized: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      sanitized[key] = sanitizeForFirestore(value);
+    }
+  }
+  return sanitized as T;
+}
+
 export function createSlug() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let result = '';

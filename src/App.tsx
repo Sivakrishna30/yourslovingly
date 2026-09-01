@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
@@ -11,10 +11,10 @@ import { createBlankEvent, getEventCreatorPath, getEventTypePath } from './lib/u
 import type { SampleInvite } from './data/samples';
 import { Landing } from './components/Landing';
 import { Dashboard } from './components/Dashboard';
+import type { DashboardTab } from './components/Dashboard';
 import { EventEditor } from './components/Editor';
 
 // Note: creation components are imported here for the next phase.
-import { EventTypeStep } from './components/creation/EventTypeStep';
 import { TemplateStep } from './components/creation/TemplateStep';
 import { DetailsStep } from './components/creation/DetailsStep';
 import { ElementsStep } from './components/creation/ElementsStep';
@@ -99,19 +99,26 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
   if (!event) return <div>Loading...</div>;
 
   const stepNames: Record<string, string> = {
-    'event-type': '1. Event Category',
-    'template': '2. Template Canvas',
-    'details': '3. Invite Details',
-    'elements': '4. Motifs & Styles',
-    'preview': '5. Guest Preview',
-    'features': '6. Integrations',
-    'publish': '7. Publish & Share'
+    'template': '1. Event & Template',
+    'details': '2. Invite Details',
+    'elements': '3. Motifs & Styles',
+    'preview': '4. Guest Preview',
+    'features': '5. Integrations',
+    'publish': '6. Publish & Share'
   };
+
+  const currentStepKey = (step === 'event-type' || !step) ? 'template' : step;
 
   const getStepNumber = (s: string) => {
     const keys = Object.keys(stepNames);
     const idx = keys.indexOf(s);
     return idx >= 0 ? idx + 1 : 1;
+  };
+
+  const handleSaveDraft = () => {
+    if (event) {
+      handleUpdate({});
+    }
   };
 
   return (
@@ -122,39 +129,101 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
            <div className="flex items-center gap-2 min-w-0">
              <button 
                onClick={() => navigate(user ? '/dashboard' : '/')} 
-               className="text-xs font-bold text-stone-500 hover:text-stone-800 transition-colors shrink-0"
+               className="text-xs font-bold text-stone-500 hover:text-stone-800 transition-colors shrink-0 flex items-center gap-1"
              >
                &larr; Exit
              </button>
-             <span className="text-stone-300 font-light">|</span>
+             <span className="text-stone-300 font-light">•</span>
              <h2 className="font-serif font-bold text-stone-900 text-xs sm:text-base truncate">
                Yours Lovingly Creator
              </h2>
            </div>
 
            <div className="flex items-center gap-2 shrink-0">
+             <button
+               onClick={handleSaveDraft}
+               className="px-3 py-1 bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold rounded-full hover:bg-rose-100 transition-colors hidden sm:flex items-center gap-1 cursor-pointer"
+             >
+               Save Draft
+             </button>
              <span className="px-2.5 py-1 bg-rose-50 border border-rose-200/80 text-rose-700 text-[10px] sm:text-xs font-bold rounded-full">
-               Step {getStepNumber(step || 'event-type')} of 7
+               Step {getStepNumber(currentStepKey)} of 6
              </span>
              <span className="text-[11px] font-medium text-stone-500 hidden md:inline">
-               {stepNames[step || 'event-type']}
+               {stepNames[currentStepKey]}
              </span>
            </div>
          </div>
 
          {/* Step Content */}
          <div className="flex-1 p-2 sm:p-6 overflow-y-auto overflow-x-hidden max-w-full">
-            {step === 'event-type' && <EventTypeStep selectedEventType={event.eventType} onSelectEventType={(type, data) => { handleUpdate({ eventType: type, ...data }); handleNext('template'); }} onNext={() => handleNext('template')} />}
-            {step === 'template' && <TemplateStep event={event} onSelectTemplate={(t) => { handleUpdate({ templateId: t.id, designStyle: t.id as DesignStyle }); handleNext('details'); }} onSelectBlank={() => { handleUpdate({ templateId: undefined }); handleNext('details'); }} onBack={() => handleBack('event-type')} onNext={() => handleNext('details')} />}
-            {step === 'details' && <DetailsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('elements')} onBack={() => handleBack('template')} />}
-            {step === 'elements' && <ElementsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('preview')} onBack={() => handleBack('details')} />}
-            {step === 'preview' && <PreviewStep event={event} onNext={() => handleNext('features')} onBack={() => handleBack('elements')} />}
-            {step === 'features' && <FeaturesStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('publish')} onBack={() => handleBack('preview')} />}
+            {(step === 'event-type' || step === 'template' || !step) && (
+              <TemplateStep 
+                event={event} 
+                onUpdateEvent={handleUpdate}
+                onSelectTemplate={(t) => { handleUpdate({ templateId: t.id, designStyle: t.id as DesignStyle }); handleNext('details'); }} 
+                onSelectBlank={() => { handleUpdate({ templateId: undefined }); handleNext('details'); }} 
+                onBack={() => navigate(user ? '/dashboard' : '/')} 
+                onNext={() => handleNext('details')} 
+                onSaveDraft={handleSaveDraft}
+              />
+            )}
+            {step === 'details' && <DetailsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('elements')} onBack={() => handleBack('template')} onSaveDraft={handleSaveDraft} />}
+            {step === 'elements' && <ElementsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('preview')} onBack={() => handleBack('details')} onSaveDraft={handleSaveDraft} />}
+            {step === 'preview' && <PreviewStep event={event} onNext={() => handleNext('features')} onBack={() => handleBack('elements')} onSaveDraft={handleSaveDraft} />}
+            {step === 'features' && <FeaturesStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('publish')} onBack={() => handleBack('preview')} onSaveDraft={handleSaveDraft} />}
             {step === 'publish' && <PublishStep event={event} user={user} onSignIn={handleSignIn} onPublish={handlePublish} onBack={() => handleBack('features')} />}
             {step === 'payment' && <div className="text-center p-12">Payment Boundary (T12 Skipped) <br/><button onClick={() => navigate('/dashboard')} className="mt-4 px-4 py-2 bg-slate-900 text-white rounded">Go to Dashboard</button></div>}
          </div>
       </div>
     </div>
+  );
+}
+
+function DashboardRouteWrapper({
+  user,
+  events,
+  handleEdit,
+  handleSoftDelete,
+  handleRestore,
+  handlePermanentDelete,
+  handleStartGuestCreation,
+  handleExtendHosting,
+  handleSignOut
+}: {
+  user: User | null;
+  events: LovinglyEvent[];
+  handleEdit: (e: LovinglyEvent) => void;
+  handleSoftDelete: (e: LovinglyEvent) => Promise<void>;
+  handleRestore: (e: LovinglyEvent) => Promise<void>;
+  handlePermanentDelete: (e: LovinglyEvent) => Promise<void>;
+  handleStartGuestCreation: (sampleOrCat?: SampleInvite | { category: CreationCategory }) => void;
+  handleExtendHosting: (e: LovinglyEvent) => Promise<void>;
+  handleSignOut: () => void;
+}) {
+  const { tab } = useParams<{ tab?: string }>();
+  const navigate = useNavigate();
+
+  const validTab: DashboardTab = (['all', 'drafts', 'published', 'expired', 'trash', 'account'].includes(tab || '')
+    ? (tab as DashboardTab)
+    : 'all');
+
+  if (!user) return <Navigate to="/" replace />;
+
+  return (
+    <Dashboard
+      user={user}
+      events={events}
+      onEdit={handleEdit}
+      onDelete={handleSoftDelete}
+      onRestore={handleRestore}
+      onPermanentDelete={handlePermanentDelete}
+      onNew={() => handleStartGuestCreation()}
+      onExtendHosting={handleExtendHosting}
+      onSignOut={handleSignOut}
+      activeTab={validTab}
+      onTabChange={(newTab) => navigate(newTab === 'all' ? '/dashboard' : `/dashboard/${newTab}`)}
+    />
   );
 }
 
@@ -165,29 +234,21 @@ function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: { u
     const newId = 'evt_' + Date.now().toString(36);
     
     if (sampleOrCategory && 'title' in sampleOrCategory) {
-      // It's a SampleInvite
       const sample = sampleOrCategory as SampleInvite;
-      // Create a draft based on the sample
       const draft = createBlankEvent(user?.uid || 'guest', sample.category || 'wedding', user?.displayName || 'guest');
       draft.id = newId;
       draft.title = sample.title || '';
       draft.eventDate = sample.date || '';
       draft.location = sample.location || '';
       draft.messages = sample.messages || [];
-      // Set to sample's template if one matches, else a default
-      draft.templateId = 'wedding-standard'; // generic fallback
+      draft.templateId = 'wedding-standard';
       draft.primaryColor = sample.primaryColor;
       draft.secondaryColor = sample.secondaryColor;
       
       localStorage.setItem(`draft_${newId}`, JSON.stringify(draft));
-      
-      // Navigate to details step since sample provides the initial configuration
       navigate(`/create/${newId}/details`);
     } else {
-      // Regular start or category start
       if (sampleOrCategory && 'category' in sampleOrCategory) {
-        // We have a category, but we don't have enough to bypass event-type step yet (unless we strictly map it)
-        // For now, save it in local storage so the event-type step can pick it up
         const draft = createBlankEvent(user?.uid || 'guest', 'wedding', user?.displayName || 'guest');
         draft.id = newId;
         draft.creationCategory = sampleOrCategory.category;
@@ -198,7 +259,6 @@ function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: { u
   };
 
   const handleEdit = (event: LovinglyEvent) => {
-    // Legacy edit route
     navigate(`/edit/${event.id}`);
   };
 
@@ -242,31 +302,31 @@ function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: { u
       } />
       
       <Route path="/dashboard" element={
-        user ? <Dashboard 
-          events={events} 
-          onEdit={handleEdit} 
-          onDelete={handleSoftDelete} 
-          onRestore={handleRestore}
-          onPermanentDelete={handlePermanentDelete}
-          onNew={() => handleStartGuestCreation()} 
-          onExtendHosting={handleExtendHosting}
-          activeTab="all"
-          onTabChange={(tab) => navigate(tab === 'all' ? '/dashboard' : `/dashboard/${tab}`)}
-        /> : <Navigate to="/" replace />
+        <DashboardRouteWrapper 
+          user={user}
+          events={events}
+          handleEdit={handleEdit}
+          handleSoftDelete={handleSoftDelete}
+          handleRestore={handleRestore}
+          handlePermanentDelete={handlePermanentDelete}
+          handleStartGuestCreation={handleStartGuestCreation}
+          handleExtendHosting={handleExtendHosting}
+          handleSignOut={handleSignOut}
+        />
       } />
 
       <Route path="/dashboard/:tab" element={
-        user ? <Dashboard 
-          events={events} 
-          onEdit={handleEdit} 
-          onDelete={handleSoftDelete} 
-          onRestore={handleRestore}
-          onPermanentDelete={handlePermanentDelete}
-          onNew={() => handleStartGuestCreation()} 
-          onExtendHosting={handleExtendHosting}
-          activeTab="all" // Will be overridden inside Dashboard based on URL params
-          onTabChange={(tab) => navigate(tab === 'all' ? '/dashboard' : `/dashboard/${tab}`)}
-        /> : <Navigate to="/" replace />
+        <DashboardRouteWrapper 
+          user={user}
+          events={events}
+          handleEdit={handleEdit}
+          handleSoftDelete={handleSoftDelete}
+          handleRestore={handleRestore}
+          handlePermanentDelete={handlePermanentDelete}
+          handleStartGuestCreation={handleStartGuestCreation}
+          handleExtendHosting={handleExtendHosting}
+          handleSignOut={handleSignOut}
+        />
       } />
 
       {/* Legacy Editor path for compatibility during migration */}

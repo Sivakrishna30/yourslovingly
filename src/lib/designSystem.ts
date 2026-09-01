@@ -869,24 +869,24 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     }
   },
 
-  // ---------------- HOUSEWARMING / GRIHA PRAVESH ----------------
+  // ---------------- HOUSEWARMING ----------------
   {
     id: 'tmpl-housewarming-traditional-kolam',
-    name: 'Auspicious Griha Pravesham (Housewarming)',
+    name: 'Auspicious Housewarming Celebration',
     category: 'housewarming',
     categoryLabel: 'Housewarming',
     layoutCode: 'L11',
     paletteId: 'pal-marigold-saffron',
     fontPairingId: 'font-cinzel-outfit',
-    tagline: 'Traditional sacred brass diya lamp, mango leaf toran, and welcoming kolam',
-    badge: '🏡 Griha Pravesh',
+    tagline: 'Traditional welcome lamp, floral decor, and auspicious entry',
+    badge: '🏡 Housewarming',
     defaultTitle: 'The Sharma Family Home',
-    defaultRecipient: 'Warmly Invites You to Our Griha Pravesham',
+    defaultRecipient: 'Warmly Invites You to Our Housewarming',
     defaultDate: '2026-09-08',
     defaultLocation: 'Villa 42, Green Meadows Enclave, OMR, Chennai',
     defaultMessages: [
       'With the blessings of Almighty and our elders, we are stepping into our new dream home.',
-      'Puja & Ganapathi Homam: 6:00 AM onwards. Followed by traditional feast & house tour.',
+      'Blessing Ceremony & Gathering: 6:00 AM onwards. Followed by lunch feast & house tour.',
       'Your presence and warm prayers will bring prosperity and light to our abode.'
     ],
     defaultElements: ['home', 'flowers', 'sparkles', 'sun'],
@@ -895,7 +895,7 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     highlightColor: '#EA580C',
     frameType: 'traditional-marigold-gold',
     decorativeMotif: 'brass-diya',
-    shlokaText: 'Auspicious Griha Pravesh & Housewarming',
+    shlokaText: 'Auspicious Housewarming Celebration',
     textureType: 'gold-dust',
     animations: {
       title: 'slide-up',

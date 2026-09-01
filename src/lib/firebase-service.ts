@@ -2,6 +2,7 @@ import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, serverTimestamp, i
 import { db, auth } from '../firebase';
 import type { LovinglyEvent, EventRSVP, EventTransaction, EventInsights } from '../types';
 import { DashboardAggregationService } from '../domain/engage/aggregationService';
+import { sanitizeForFirestore } from './utils';
 
 export enum OperationType {
   CREATE = 'create',
@@ -70,11 +71,12 @@ export const firebaseService = {
   async saveUserEvent(uid: string, event: LovinglyEvent) {
     const path = `users/${uid}/events/${event.id}`;
     try {
-      await setDoc(doc(db, 'users', uid, 'events', event.id), {
+      const payload = sanitizeForFirestore({
         ...event,
         ownerId: uid,
         updatedAt: serverTimestamp()
       });
+      await setDoc(doc(db, 'users', uid, 'events', event.id), payload);
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, path);
     }
@@ -103,11 +105,11 @@ export const firebaseService = {
   async publishEvent(event: LovinglyEvent) {
     const path = `public_invites/${event.slug}`;
     try {
-      const payload = {
+      const payload = sanitizeForFirestore({
         ...event,
         isPublished: true,
         lastPublishedAt: serverTimestamp()
-      };
+      });
       await setDoc(doc(db, 'public_invites', event.slug), payload);
       return payload;
     } catch (error) {
@@ -121,18 +123,20 @@ export const firebaseService = {
   ): Promise<LovinglyEvent> {
     try {
       // 1. Update user private collection
-      await setDoc(doc(db, 'users', uid, 'events', updatedEvent.id), {
+      const userPayload = sanitizeForFirestore({
         ...updatedEvent,
         ownerId: uid,
         updatedAt: serverTimestamp()
-      }, { merge: true });
+      });
+      await setDoc(doc(db, 'users', uid, 'events', updatedEvent.id), userPayload, { merge: true });
 
       // 2. If published, sync to public_invites collection
       if (updatedEvent.isPublished && updatedEvent.slug) {
-        await setDoc(doc(db, 'public_invites', updatedEvent.slug), {
+        const publicPayload = sanitizeForFirestore({
           ...updatedEvent,
           lastUpdated: serverTimestamp()
-        }, { merge: true });
+        });
+        await setDoc(doc(db, 'public_invites', updatedEvent.slug), publicPayload, { merge: true });
       }
 
       return updatedEvent;
@@ -188,7 +192,8 @@ export const firebaseService = {
       createdAt: new Date().toISOString()
     };
     try {
-      await setDoc(doc(db, 'public_invites', slug, 'rsvps', rsvpId), newRSVP);
+      const payload = sanitizeForFirestore(newRSVP);
+      await setDoc(doc(db, 'public_invites', slug, 'rsvps', rsvpId), payload);
       return newRSVP;
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, path);
@@ -217,7 +222,8 @@ export const firebaseService = {
       createdAt: new Date().toISOString()
     };
     try {
-      await setDoc(doc(db, 'public_invites', slug, 'transactions', txId), newTx);
+      const payload = sanitizeForFirestore(newTx);
+      await setDoc(doc(db, 'public_invites', slug, 'transactions', txId), payload);
       return newTx;
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, path);

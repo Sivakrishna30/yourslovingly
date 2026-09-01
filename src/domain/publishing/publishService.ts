@@ -3,6 +3,7 @@ import { db } from '../../firebase';
 import type { Invite, PublicationSnapshot } from '../invite/types';
 import type { Page, ElementInstance } from '../element/types';
 import { EntitlementService } from '../entitlement/entitlementService';
+import { sanitizeForFirestore } from '../../lib/utils';
 
 export class PublishService {
   /**
@@ -56,23 +57,27 @@ export class PublishService {
 
     // 2. Write the canonical projection document (for routing and fast fetching)
     const projectionRef = doc(db, 'public_invites', invite.slug);
-    batch.set(projectionRef, {
+    batch.set(projectionRef, sanitizeForFirestore({
       ...snapshot,
       ownerId: uid // required for RSVP updates
-    });
+    }));
 
     // 3. Write immutable version history
     const versionRef = doc(db, 'public_invites', invite.slug, 'versions', snapshotId);
-    batch.set(versionRef, snapshot);
+    batch.set(versionRef, sanitizeForFirestore({
+      ...snapshot,
+      ownerId: uid
+    }));
 
     // 4. Update the source invite to mark as published
     const sourceRef = doc(db, 'users', uid, 'invites', invite.id);
-    batch.update(sourceRef, {
+    batch.set(sourceRef, sanitizeForFirestore({
+      ...inviteCopy,
       status: 'published',
       publishedAt,
       expiresAt,
       updatedAt: serverTimestamp(),
-    });
+    }), { merge: true });
 
     await batch.commit();
 

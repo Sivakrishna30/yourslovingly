@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Calendar, MapPin, Share2, Trash2, Edit3, ExternalLink, BarChart3, Check, FileDown, Clock, Plus, Copy, RotateCcw, ShieldCheck, User as UserIcon, Globe, Lock } from 'lucide-react';
+import { Calendar, MapPin, Share2, Trash2, Edit3, ExternalLink, BarChart3, Check, FileDown, Clock, Plus, Copy, RotateCcw, ShieldCheck, Globe, Lock, LogOut, ArrowRight, FolderKanban } from 'lucide-react';
+import type { User } from 'firebase/auth';
 import type { LovinglyEvent } from '../types';
 import { getEventCreatorPath, getEventTypePath } from '../lib/utils';
 import { getHostingStatus, hasWatermark } from '../lib/hosting';
@@ -12,6 +13,7 @@ import koreanHeartLogo from '../assets/images/korean_heart_golden_logo_178682091
 export type DashboardTab = 'all' | 'drafts' | 'published' | 'expired' | 'trash' | 'account';
 
 interface DashboardProps {
+  user?: User | null;
   events: LovinglyEvent[];
   onEdit: (event: LovinglyEvent) => void;
   onDelete: (event: LovinglyEvent) => void;
@@ -19,11 +21,13 @@ interface DashboardProps {
   onPermanentDelete?: (event: LovinglyEvent) => void;
   onNew: () => void;
   onExtendHosting?: (updatedEvent: LovinglyEvent) => Promise<void>;
+  onSignOut?: () => void;
   activeTab?: DashboardTab;
   onTabChange?: (tab: DashboardTab) => void;
 }
 
 export function Dashboard({ 
+  user,
   events, 
   onEdit, 
   onDelete, 
@@ -31,6 +35,7 @@ export function Dashboard({
   onPermanentDelete, 
   onNew, 
   onExtendHosting,
+  onSignOut,
   activeTab: externalTab = 'all',
   onTabChange
 }: DashboardProps) {
@@ -86,6 +91,13 @@ export function Dashboard({
     setSelectedEventForHosting(null);
   };
 
+  // Tab counts
+  const allCount = events.filter(e => !e.isDeleted).length;
+  const draftCount = events.filter(e => !e.isPublished && !e.isDeleted).length;
+  const publishedCount = events.filter(e => e.isPublished && !getHostingStatus(e).isExpired && !e.isDeleted).length;
+  const expiredCount = events.filter(e => e.isPublished && getHostingStatus(e).isExpired && !e.isDeleted).length;
+  const trashCount = events.filter(e => e.isDeleted === true).length;
+
   // Filter events based on active tab
   const filteredEvents = events.filter(e => {
     if (activeTab === 'trash') return e.isDeleted === true;
@@ -102,8 +114,6 @@ export function Dashboard({
     }
     return true;
   });
-
-  const draftCount = events.filter(e => !e.isPublished && !e.isDeleted).length;
 
   return (
     <div className="bg-stone-50/30 min-h-screen">
@@ -123,13 +133,15 @@ export function Dashboard({
               Yours Lovingly
             </span>
           </div>
-          <button
-            onClick={onNew}
-            className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shadow-brand-red/20 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Creation</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onNew}
+              className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shadow-brand-red/20 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Creation</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -152,25 +164,32 @@ export function Dashboard({
         {/* Sub-Navigation Tabs */}
         <div className="flex items-center gap-1.5 p-1.5 bg-stone-100 rounded-2xl overflow-x-auto mb-8 border border-stone-200/80 no-scrollbar">
           {[
-            { id: 'all', label: 'All Invites' },
-            { id: 'drafts', label: 'Working Drafts' },
-            { id: 'published', label: 'Live Published' },
-            { id: 'expired', label: 'Expired Hosting' },
-            { id: 'trash', label: '30-Day Trash' },
-            { id: 'account', label: 'Account Profile' },
+            { id: 'all', label: 'All Invites', count: allCount },
+            { id: 'drafts', label: 'Working Drafts', count: draftCount },
+            { id: 'published', label: 'Live Published', count: publishedCount },
+            { id: 'expired', label: 'Expired Hosting', count: expiredCount },
+            { id: 'trash', label: '30-Day Trash', count: trashCount },
+            { id: 'account', label: 'Account Profile', count: null },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setTab(tab.id as DashboardTab)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   isActive
                     ? 'bg-white text-stone-900 shadow-xs ring-1 ring-stone-200'
                     : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
                 }`}
               >
-                {tab.label}
+                <span>{tab.label}</span>
+                {tab.count !== null && (
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                    isActive ? 'bg-stone-900 text-white' : 'bg-stone-200 text-stone-600'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -179,59 +198,115 @@ export function Dashboard({
         {activeTab === 'account' ? (
           /* Account Tab View */
           <div className="bg-white rounded-3xl border border-stone-200 p-8 max-w-2xl mx-auto space-y-6 shadow-sm">
-            <div className="flex items-center gap-4 border-b border-stone-100 pb-6">
-              <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-700 border border-rose-200 flex items-center justify-center font-bold text-2xl font-serif">
-                <UserIcon className="w-8 h-8" />
+            <div className="flex items-center justify-between border-b border-stone-100 pb-6">
+              <div className="flex items-center gap-4">
+                {user?.photoURL ? (
+                  <img src={user.photoURL} alt={user.displayName || 'User'} className="w-16 h-16 rounded-full border border-rose-200 object-cover shadow-xs" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-700 border border-rose-200 flex items-center justify-center font-bold text-2xl font-serif">
+                    {(user?.displayName || user?.email || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <h3 className="font-bold text-xl text-stone-900">{user?.displayName || 'Valued Creator'}</h3>
+                  <p className="text-xs text-stone-500 mt-0.5">{user?.email || 'Authenticated User'}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-xl text-stone-900">Your Account Profile</h3>
-                <p className="text-xs text-stone-500 mt-0.5">Logged in & protected via Google Security</p>
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Verified</span>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">Total Creations</span>
-                  <span className="text-2xl font-serif font-bold text-stone-900">{events.length}</span>
-                </div>
-                <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">Active Live Invites</span>
-                  <span className="text-2xl font-serif font-bold text-emerald-600">
-                    {events.filter(e => e.isPublished && !getHostingStatus(e).isExpired && !e.isDeleted).length}
-                  </span>
-                </div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400">Workspace Overview</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <button onClick={() => setTab('all')} className="bg-stone-50 hover:bg-stone-100 p-4 rounded-2xl border border-stone-200 text-left transition-colors cursor-pointer group">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Total Pages</span>
+                  <span className="text-2xl font-serif font-bold text-stone-900 group-hover:text-primary transition-colors">{allCount}</span>
+                </button>
+                <button onClick={() => setTab('published')} className="bg-emerald-50/50 hover:bg-emerald-50 p-4 rounded-2xl border border-emerald-200/80 text-left transition-colors cursor-pointer group">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Live Invites</span>
+                  <span className="text-2xl font-serif font-bold text-emerald-700">{publishedCount}</span>
+                </button>
+                <button onClick={() => setTab('drafts')} className="bg-amber-50/50 hover:bg-amber-50 p-4 rounded-2xl border border-amber-200/80 text-left transition-colors cursor-pointer group">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">Drafts</span>
+                  <span className="text-2xl font-serif font-bold text-amber-800">{draftCount}</span>
+                </button>
+                <button onClick={() => setTab('trash')} className="bg-rose-50/50 hover:bg-rose-50 p-4 rounded-2xl border border-rose-200/80 text-left transition-colors cursor-pointer group">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">Trash</span>
+                  <span className="text-2xl font-serif font-bold text-rose-800">{trashCount}</span>
+                </button>
               </div>
 
-              <div className="bg-rose-50/50 border border-rose-200 p-4 rounded-2xl space-y-1">
+              <div className="bg-rose-50/50 border border-rose-200/80 p-4 rounded-2xl space-y-1">
                 <h4 className="text-xs font-bold text-rose-900 flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-rose-600" />
-                  <span>Transactional Account Status</span>
+                  <span>Transactional Account Model</span>
                 </h4>
-                <p className="text-xs text-rose-700">
-                  Pay-As-You-Need model active. Zero recurring monthly charges or hidden subscriptions.
+                <p className="text-xs text-rose-700 leading-relaxed">
+                  Pay-As-You-Need model active. Zero recurring subscription commitments or hidden charges.
                 </p>
+              </div>
+
+              <div className="pt-4 border-t border-stone-100 flex items-center justify-between gap-4">
+                <button
+                  onClick={onNew}
+                  className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create New Page</span>
+                </button>
+                {onSignOut && (
+                  <button
+                    onClick={onSignOut}
+                    className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 text-stone-500" />
+                    <span>Sign Out</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-stone-200 shadow-xs">
-            <Calendar className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+          <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-stone-200 shadow-xs max-w-2xl mx-auto px-6">
+            <div className="w-16 h-16 rounded-full bg-rose-50 text-primary flex items-center justify-center mx-auto mb-4 border border-rose-100 shadow-xs">
+              {activeTab === 'trash' ? <Trash2 className="w-8 h-8" /> : activeTab === 'published' ? <Globe className="w-8 h-8" /> : activeTab === 'drafts' ? <FolderKanban className="w-8 h-8" /> : <Calendar className="w-8 h-8" />}
+            </div>
             <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">
-              {activeTab === 'trash' ? 'Trash is empty' : 'No pages in this view'}
+              {activeTab === 'trash' && 'Trash is empty'}
+              {activeTab === 'drafts' && 'No working drafts found'}
+              {activeTab === 'published' && 'No live published pages yet'}
+              {activeTab === 'expired' && 'No expired hosting pages'}
+              {activeTab === 'all' && 'Your workspace is empty'}
             </h3>
-            <p className="text-stone-500 mb-8 text-sm">
-              {activeTab === 'trash' 
-                ? 'Soft-deleted invites remain in trash for 30 days before automatic purge.' 
-                : 'Start by creating your first Yours Lovingly page.'}
+            <p className="text-stone-500 mb-8 text-sm max-w-md mx-auto leading-relaxed">
+              {activeTab === 'trash' && 'Soft-deleted invites remain in trash for 30 days before automatic purge.'}
+              {activeTab === 'drafts' && 'Start a new draft to customize digital invitations, flyers, or memory pages.'}
+              {activeTab === 'published' && 'Complete your draft details and publish to launch your live invitation link.'}
+              {activeTab === 'expired' && 'All your published invitations are active and hosted smoothly.'}
+              {activeTab === 'all' && 'Create your first Yours Lovingly digital event page or invitation in minutes.'}
             </p>
             {activeTab !== 'trash' && (
-              <button
-                onClick={onNew}
-                className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
-              >
-                Create Page
-              </button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  onClick={onNew}
+                  className="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Start New Creation</span>
+                </button>
+                {activeTab !== 'all' && (
+                  <button
+                    onClick={() => setTab('all')}
+                    className="w-full sm:w-auto px-6 py-3 bg-stone-100 text-stone-700 rounded-xl font-bold hover:bg-stone-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>View All Invites</span>
+                    <ArrowRight className="w-4 h-4 text-stone-400" />
+                  </button>
+                )}
+              </div>
             )}
           </div>
         ) : (

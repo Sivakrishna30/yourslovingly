@@ -30,7 +30,7 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
   {
     id: 'wedding',
     title: 'Wedding & Reception',
-    subtitle: 'Royal ceremonies, Anand Karaj, Nikah, Sangeet & Reception',
+    subtitle: 'Wedding ceremony, dinner party, and reception celebrations',
     icon: Heart,
     popular: true,
     category: 'traditional',
@@ -55,16 +55,16 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
   },
   {
     id: 'housewarming',
-    title: 'Griha Pravesh & Housewarming',
-    subtitle: 'New home pooja, housewarming feast, family gathering',
+    title: 'Housewarming Celebration',
+    subtitle: 'New home blessing, housewarming feast, family gathering',
     icon: Home,
     popular: true,
     category: 'traditional',
     color: 'text-emerald-700',
     bgLight: 'bg-emerald-50 border-emerald-200',
-    defaultTitle: 'Griha Pravesh & Housewarming',
+    defaultTitle: 'Housewarming & Blessing Ceremony',
     defaultRecipient: 'With blessings of elders',
-    defaultMessage: 'We request your auspicious presence to grace our new home and share our joy.'
+    defaultMessage: 'We request your gracious presence to grace our new home and share our joy.'
   },
   {
     id: 'anniversary',
@@ -82,7 +82,7 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
   {
     id: 'engagement',
     title: 'Engagement & Ring Ceremony',
-    subtitle: 'Roka ceremony, Sagai, Ring exchange, Cocktails',
+    subtitle: 'Ring exchange ceremony, cocktail party, family celebration',
     icon: Sparkles,
     category: 'personal',
     color: 'text-pink-700',
@@ -93,27 +93,27 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
   },
   {
     id: 'baby-shower',
-    title: 'Baby Shower & Godh Bharai',
-    subtitle: 'Seemantham, Naming ceremony, Cradle ceremony',
+    title: 'Baby Shower & Celebration',
+    subtitle: 'Baby shower, Naming ceremony, Cradle ceremony',
     icon: Baby,
     category: 'personal',
     color: 'text-purple-700',
     bgLight: 'bg-purple-50 border-purple-200',
-    defaultTitle: 'Baby Shower & Godh Bharai',
+    defaultTitle: 'Baby Shower Celebration',
     defaultRecipient: 'Welcoming our little blessing',
     defaultMessage: 'Join us to shower blessings and love on the mom-to-be and the baby on the way.'
   },
   {
     id: 'festival',
-    title: 'Festive Gathering & Pooja',
-    subtitle: 'Diwali party, Satyanarayan Pooja, Ganesh Utsav, Dandiya',
+    title: 'Festive Gathering & Party',
+    subtitle: 'Holiday party, seasonal celebration, festive dinner',
     icon: Flame,
     category: 'traditional',
     color: 'text-orange-700',
     bgLight: 'bg-orange-50 border-orange-200',
-    defaultTitle: 'Auspicious Festive Pooja & Feast',
+    defaultTitle: 'Auspicious Festive Gathering & Feast',
     defaultRecipient: 'Cordial Invitation',
-    defaultMessage: 'May the divine light bring prosperity and health to all of us. Join us for pooja and prasad.'
+    defaultMessage: 'May joy and light bring prosperity and health to all of us. Join us for celebrations and lunch.'
   },
   {
     id: 'corporate',

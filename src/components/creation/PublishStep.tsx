@@ -38,6 +38,15 @@ export function PublishStep({
     ? `${window.location.origin}/${getEventCreatorPath(event, user)}/${getEventTypePath(event)}/${event.slug}`
     : `https://yourslovingly.in/${getEventCreatorPath(event, user)}/${getEventTypePath(event)}/${event.slug}`;
 
+  // Premium Feature Detection
+  const premiumFeaturesUsed: string[] = [];
+  if (event.rsvpConfig?.enabled) premiumFeaturesUsed.push('Interactive RSVP Form');
+  if (event.upiId || event.upiQrImageUrl) premiumFeaturesUsed.push('UPI Shagun / Gift Scanner');
+  if (event.showLocationQrCode) premiumFeaturesUsed.push('Venue Directions QR Code');
+  if (event.password) premiumFeaturesUsed.push('Passcode Privacy Lock');
+
+  const hasPremiumFeatures = premiumFeaturesUsed.length > 0;
+
   const handlePublishClick = async () => {
     if (!user) {
       const signedInUser = await onSignIn();
@@ -58,17 +67,17 @@ export function PublishStep({
   const tiers: { id: TierType; name: string; price: string; validity: string; badge?: string; features: string[] }[] = [
     {
       id: 'basic',
-      name: 'Basic Page',
-      price: `₹${EntitlementService.getPublishingPrice('basic')}`,
-      validity: '15 Days Active Hosting',
-      badge: 'Standard',
+      name: 'Free 1st Page Publish',
+      price: '₹0',
+      validity: '15 Days Free Active Hosting',
+      badge: '1st Page Free',
       features: [
-        'Instant live web link',
+        '100% Free instant page publish',
         'Mobile responsive invite',
         'Google Maps venue directions',
-        'Spotify celebration music',
-        'Standard template access',
-        'Platform watermark included'
+        'Spotify celebration music player',
+        'All template styles included',
+        'Share link on WhatsApp & Socials'
       ]
     },
     {
@@ -76,14 +85,14 @@ export function PublishStep({
       name: 'Premium Page',
       price: `₹${EntitlementService.getPublishingPrice('premium')}`,
       validity: '15 Days Active Hosting',
-      badge: 'Most Popular',
+      badge: 'Watermark-Free',
       features: [
-        'Everything in Basic Page',
-        '15 Days active hosting',
+        'Everything in Free Page',
         'Watermark-Free experience',
         'Interactive RSVP form & guest responses',
         'UPI Shagun / Gift collection module',
-        'High-res PNG & Vector PDF download'
+        'High-res PNG & Vector PDF export',
+        'Priority customer support'
       ]
     },
     {
@@ -91,7 +100,7 @@ export function PublishStep({
       name: 'Lifetime Keepsake',
       price: `₹${EntitlementService.getExtensionPrice('premium', true)}`,
       validity: 'Lifetime Perpetual Hosting',
-      badge: 'Best Value',
+      badge: 'Permanent URL',
       features: [
         'Everything in Premium Page',
         'Lifetime permanent URL',
@@ -107,22 +116,74 @@ export function PublishStep({
       {/* Step Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase tracking-wider">
-          <span>Step 7 of 7</span>
+          <span>Step 6 of 6</span>
           <span>•</span>
           <span>Publish & Share</span>
         </div>
         <h2 className="text-2xl sm:text-4xl font-serif font-bold text-stone-900">
-          {isSuccess ? 'Your Invite is Live!' : 'Choose Hosting Plan & Publish'}
+          {isSuccess ? 'Your Invite is Live!' : 'Publish Your Event Page'}
         </h2>
         <p className="text-stone-500 text-sm sm:text-base leading-relaxed">
           {isSuccess 
             ? 'Share your custom digital invite via WhatsApp, Instagram, or print QR codes.' 
-            : 'Start free for 3 days or upgrade for extended hosting and watermark-free sharing.'}
+            : 'Your first event page is 100% Free to publish! Select your hosting option below.'}
         </p>
       </div>
 
       {!isSuccess ? (
         <div className="space-y-8">
+          {/* Free 1st Page Announcement Banner */}
+          <div className="bg-gradient-to-r from-rose-50 via-amber-50 to-rose-50 border border-rose-200 rounded-3xl p-5 sm:p-6 text-center shadow-xs space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-700 text-white text-xs font-bold uppercase tracking-wide">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>Free 1st Page Included</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-stone-900">
+              Publish Your First Event Page Completely Free (₹0)
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-600 max-w-xl mx-auto">
+              Every Yours Lovingly account gets 1 free page publication with 15 days active hosting. No hidden charges or payment details required to go live!
+            </p>
+          </div>
+
+          {/* Premium Features Callout Alert */}
+          {hasPremiumFeatures && (
+            <div className={`rounded-3xl p-5 border transition-all space-y-3 ${
+              selectedTier === 'basic' 
+                ? 'bg-amber-50/90 border-amber-300 text-amber-900 shadow-sm'
+                : 'bg-emerald-50/90 border-emerald-300 text-emerald-900 shadow-sm'
+            }`}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span className="text-xs font-bold uppercase tracking-wider">
+                      {selectedTier === 'basic' ? 'Premium Features Enabled' : 'Premium Plan Selected'}
+                    </span>
+                  </div>
+                  <p className="text-xs font-medium leading-relaxed">
+                    Your invitation currently includes: <strong className="font-bold">{premiumFeaturesUsed.join(', ')}</strong>.
+                    {selectedTier === 'basic' && ' Switch to Premium Page to unlock these features on your published invite.'}
+                  </p>
+                </div>
+
+                {selectedTier === 'basic' ? (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTier('extended')}
+                    className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-xl shadow-md transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-300" />
+                    <span>1-Click Upgrade to Premium (₹299)</span>
+                  </button>
+                ) : (
+                  <span className="px-3 py-1 bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1 shrink-0">
+                    <Check className="w-3.5 h-3.5" /> Premium Enabled
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
           {/* Tier Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {tiers.map((t) => {
