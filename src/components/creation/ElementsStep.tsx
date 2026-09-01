@@ -11,12 +11,13 @@ import {
   ArrowLeft,
   Upload,
   Check,
-  Sliders
+  Sliders,
+  Eye,
+  Calendar,
+  MapPin
 } from 'lucide-react';
 import type { 
   LovinglyEvent, 
-  StudioElementKey, 
-  StudioElementStyle, 
   FrameType, 
   DecorativeMotif, 
   BackgroundTexture 
@@ -28,7 +29,7 @@ import {
   MOTIF_PRESETS, 
   TEXTURE_PRESETS 
 } from '../../lib/designSystem';
-import { StudioInspector } from '../StudioInspector';
+
 
 interface ElementsStepProps {
   event: LovinglyEvent;
@@ -39,25 +40,6 @@ interface ElementsStepProps {
 
 export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepProps) {
   const [activeCategory, setActiveCategory] = useState<'palette' | 'fonts' | 'frames' | 'motifs' | 'textures' | 'photos'>('palette');
-  const [activeElementKey, setActiveElementKey] = useState<StudioElementKey>('title');
-
-  const handleUpdateElementStyle = (key: StudioElementKey, styleUpdates: Partial<StudioElementStyle>) => {
-    const currentStylesMap = event.elementStyles || {};
-    const existingElementStyle = currentStylesMap[key] || {};
-
-    const updatedStylesMap = {
-      ...currentStylesMap,
-      [key]: {
-        ...existingElementStyle,
-        ...styleUpdates
-      }
-    };
-
-    onUpdate({
-      elementStyles: updatedStylesMap,
-      activeElementKey: key
-    });
-  };
 
   const handleAddPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -352,14 +334,54 @@ export function ElementsStep({ event, onUpdate, onBack, onNext }: ElementsStepPr
           </div>
         </div>
 
-        {/* Right Studio Element Inspector (5 cols) */}
-        <div className="lg:col-span-5 sticky top-24 space-y-4 max-w-full overflow-x-hidden">
-          <StudioInspector 
-            event={event}
-            activeElementKey={activeElementKey}
-            onSelectElementKey={(k) => setActiveElementKey(k)}
-            onUpdateElementStyle={handleUpdateElementStyle}
-          />
+        {/* Right: Real-time Synchronized Preview Card (5 cols) */}
+        <div className="lg:col-span-5 sticky top-24">
+          <div className="bg-stone-100 rounded-3xl p-4 border border-stone-200 space-y-3">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-[11px] font-bold text-stone-600 uppercase tracking-wider flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-stone-500" />
+                Live Canvas Sync
+              </span>
+              <span className="text-[10px] text-stone-400 font-medium">Updates as you type</span>
+            </div>
+
+            {/* Simulated Live Viewport Card */}
+            <div 
+              style={{ backgroundColor: event.primaryColor || '#881337' }}
+              className="rounded-2xl p-6 text-white text-center space-y-4 shadow-md overflow-hidden relative"
+            >
+              {event.shlokaText && (
+                <p className="text-[10px] text-amber-200/90 font-serif italic tracking-wide">
+                  {event.shlokaText}
+                </p>
+              )}
+
+              <div className="space-y-1">
+                <p className="text-[11px] uppercase tracking-widest text-amber-200 font-semibold">
+                  {event.recipientName || 'Together with their families'}
+                </p>
+                <h3 className="font-serif font-bold text-2xl text-white tracking-tight leading-tight">
+                  {event.title || 'Event Title'}
+                </h3>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-xs border border-white/20 rounded-xl p-3 text-left space-y-1.5 text-xs">
+                <div className="flex items-center gap-2 text-amber-100">
+                  <Calendar className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                  <span className="truncate">{event.eventDate || 'Date & Time'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/90">
+                  <MapPin className="w-3.5 h-3.5 text-rose-300 shrink-0" />
+                  <span className="truncate">{event.location || 'Venue Location'}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1 text-xs text-white/80 italic font-serif leading-relaxed">
+                {event.messages && event.messages[0] && <p>"{event.messages[0]}"</p>}
+                {event.messages && event.messages[1] && <p className="text-[11px]">"{event.messages[1]}"</p>}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

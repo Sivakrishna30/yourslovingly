@@ -101,14 +101,14 @@ export const firebaseService = {
   },
 
   async publishEvent(event: LovinglyEvent) {
-    const path = `published_events/${event.slug}`;
+    const path = `public_invites/${event.slug}`;
     try {
       const payload = {
         ...event,
         isPublished: true,
         lastPublishedAt: serverTimestamp()
       };
-      await setDoc(doc(db, 'published_events', event.slug), payload);
+      await setDoc(doc(db, 'public_invites', event.slug), payload);
       return payload;
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, path);
@@ -127,9 +127,9 @@ export const firebaseService = {
         updatedAt: serverTimestamp()
       }, { merge: true });
 
-      // 2. If published, sync to published_events collection
+      // 2. If published, sync to public_invites collection
       if (updatedEvent.isPublished && updatedEvent.slug) {
-        await setDoc(doc(db, 'published_events', updatedEvent.slug), {
+        await setDoc(doc(db, 'public_invites', updatedEvent.slug), {
           ...updatedEvent,
           lastUpdated: serverTimestamp()
         }, { merge: true });
@@ -143,18 +143,18 @@ export const firebaseService = {
   },
 
   async unpublishEvent(slug: string) {
-    const path = `published_events/${slug}`;
+    const path = `public_invites/${slug}`;
     try {
-      await deleteDoc(doc(db, 'published_events', slug));
+      await deleteDoc(doc(db, 'public_invites', slug));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, path);
     }
   },
 
   async getPublishedEvent(slug: string): Promise<LovinglyEvent | null> {
-    const path = `published_events/${slug}`;
+    const path = `public_invites/${slug}`;
     try {
-      const snap = await getDoc(doc(db, 'published_events', slug));
+      const snap = await getDoc(doc(db, 'public_invites', slug));
       return snap.exists() ? (snap.data() as LovinglyEvent) : null;
     } catch (error) {
       handleFirestoreError(error, OperationType.GET, path);
@@ -165,7 +165,7 @@ export const firebaseService = {
   async recordPageView(slug: string): Promise<void> {
     try {
       await setDoc(
-        doc(db, 'published_events', slug, 'insights', 'general'),
+        doc(db, 'public_invites', slug, 'insights', 'general'),
         {
           views: increment(1),
           lastViewedAt: serverTimestamp()
@@ -180,7 +180,7 @@ export const firebaseService = {
 
   async submitRSVP(slug: string, rsvpData: Omit<EventRSVP, 'id' | 'createdAt'>): Promise<EventRSVP> {
     const rsvpId = 'rsvp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-    const path = `published_events/${slug}/rsvps/${rsvpId}`;
+    const path = `public_invites/${slug}/rsvps/${rsvpId}`;
     const newRSVP: EventRSVP = {
       ...rsvpData,
       id: rsvpId,
@@ -188,7 +188,7 @@ export const firebaseService = {
       createdAt: new Date().toISOString()
     };
     try {
-      await setDoc(doc(db, 'published_events', slug, 'rsvps', rsvpId), newRSVP);
+      await setDoc(doc(db, 'public_invites', slug, 'rsvps', rsvpId), newRSVP);
       return newRSVP;
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, path);
@@ -198,7 +198,7 @@ export const firebaseService = {
 
   async getEventRSVPs(slug: string): Promise<EventRSVP[]> {
     try {
-      const snap = await getDocs(collection(db, 'published_events', slug, 'rsvps'));
+      const snap = await getDocs(collection(db, 'public_invites', slug, 'rsvps'));
       const rsvps = snap.docs.map(d => d.data() as EventRSVP);
       return rsvps.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } catch (error) {
@@ -209,7 +209,7 @@ export const firebaseService = {
 
   async submitTransaction(slug: string, txData: Omit<EventTransaction, 'id' | 'createdAt'>): Promise<EventTransaction> {
     const txId = 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-    const path = `published_events/${slug}/transactions/${txId}`;
+    const path = `public_invites/${slug}/transactions/${txId}`;
     const newTx: EventTransaction = {
       ...txData,
       id: txId,
@@ -217,7 +217,7 @@ export const firebaseService = {
       createdAt: new Date().toISOString()
     };
     try {
-      await setDoc(doc(db, 'published_events', slug, 'transactions', txId), newTx);
+      await setDoc(doc(db, 'public_invites', slug, 'transactions', txId), newTx);
       return newTx;
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, path);

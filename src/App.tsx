@@ -5,9 +5,10 @@ import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { doc, getDocFromServer } from 'firebase/firestore';
 import { auth, googleProvider, db, firebaseReady } from './firebase';
-import type { LovinglyEvent, DesignStyle, TierType, PlanTier } from './types';
+import type { LovinglyEvent, DesignStyle, TierType, PlanTier, CreationCategory } from './types';
 import { firebaseService } from './lib/firebase-service';
 import { createBlankEvent, getEventCreatorPath, getEventTypePath } from './lib/utils';
+import type { SampleInvite } from './data/samples';
 import { Landing } from './components/Landing';
 import { Dashboard } from './components/Dashboard';
 import { EventEditor } from './components/Editor';
@@ -160,11 +161,40 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
 function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: { user: User | null, handleSignIn: () => Promise<User | null>, handleSignOut: () => void, events: LovinglyEvent[], setEvents: React.Dispatch<React.SetStateAction<LovinglyEvent[]>> }) {
   const navigate = useNavigate();
 
-  const handleStartGuestCreation = () => {
-    // Generate a temporary ID and redirect to the creation flow
-    // A proper autosave draft will be created when we implement the new CreationFlow layout
+  const handleStartGuestCreation = (sampleOrCategory?: SampleInvite | { category: CreationCategory }) => {
     const newId = 'evt_' + Date.now().toString(36);
-    navigate(`/create/${newId}/event-type`);
+    
+    if (sampleOrCategory && 'title' in sampleOrCategory) {
+      // It's a SampleInvite
+      const sample = sampleOrCategory as SampleInvite;
+      // Create a draft based on the sample
+      const draft = createBlankEvent(user?.uid || 'guest', sample.category || 'wedding', user?.displayName || 'guest');
+      draft.id = newId;
+      draft.title = sample.title || '';
+      draft.eventDate = sample.date || '';
+      draft.location = sample.location || '';
+      draft.messages = sample.messages || [];
+      // Set to sample's template if one matches, else a default
+      draft.templateId = 'wedding-standard'; // generic fallback
+      draft.primaryColor = sample.primaryColor;
+      draft.secondaryColor = sample.secondaryColor;
+      
+      localStorage.setItem(`draft_${newId}`, JSON.stringify(draft));
+      
+      // Navigate to details step since sample provides the initial configuration
+      navigate(`/create/${newId}/details`);
+    } else {
+      // Regular start or category start
+      if (sampleOrCategory && 'category' in sampleOrCategory) {
+        // We have a category, but we don't have enough to bypass event-type step yet (unless we strictly map it)
+        // For now, save it in local storage so the event-type step can pick it up
+        const draft = createBlankEvent(user?.uid || 'guest', 'wedding', user?.displayName || 'guest');
+        draft.id = newId;
+        draft.creationCategory = sampleOrCategory.category;
+        localStorage.setItem(`draft_${newId}`, JSON.stringify(draft));
+      }
+      navigate(`/create/${newId}/event-type`);
+    }
   };
 
   const handleEdit = (event: LovinglyEvent) => {
@@ -206,8 +236,8 @@ function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: { u
           onSignIn={handleSignIn} 
           onSignOut={handleSignOut} 
           onStart={() => handleStartGuestCreation()}
-          onStartWithCategory={() => handleStartGuestCreation()}
-          onSelectSample={() => handleStartGuestCreation()}
+          onStartWithCategory={(cat) => handleStartGuestCreation({ category: cat })}
+          onSelectSample={(sample) => handleStartGuestCreation(sample)}
         />
       } />
       

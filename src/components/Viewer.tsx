@@ -325,8 +325,8 @@ export function EventViewer({
       className="min-h-screen w-full relative selection:bg-brand-red/10 selection:text-primary overflow-x-hidden print:bg-white print:min-h-0 print:p-0 flex flex-col items-center justify-center"
       style={{ backgroundColor: event.secondaryColor || styleInfo.secondary }}
     >
-      {/* Export as PDF / Print Action for Visitors (Only after published) */}
-      {event.isPublished && (
+      {/* Export as PDF / Print Action for Visitors (Premium only, published only) */}
+      {event.isPublished && !hasWatermark(event) && (
         <div className="absolute top-4 right-4 z-30 print:hidden">
           <button
             onClick={handlePrint}
