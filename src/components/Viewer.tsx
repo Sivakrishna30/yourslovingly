@@ -14,6 +14,7 @@ export interface ViewerProps {
   activeElementKey?: StudioElementKey;
   onSelectElementKey?: (key: StudioElementKey) => void;
   isBuilderMode?: boolean;
+  isCompact?: boolean;
 }
 
 export function EventViewer({
@@ -21,7 +22,8 @@ export function EventViewer({
   activeElementKey,
   onSelectElementKey,
   onUpdateEvent,
-  isBuilderMode = false
+  isBuilderMode = false,
+  isCompact = false
 }: ViewerProps) {
   // RSVP State
   const storageKey = `rsvp_${event.slug}`;
@@ -120,11 +122,11 @@ export function EventViewer({
 
   // Record page view on load and check for auto print query parameter
   useEffect(() => {
-    if (event.slug) {
+    if (event.slug && !isCompact && !event.slug.startsWith('sample-')) {
       firebaseService.recordPageView(event.slug);
     }
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !isCompact) {
       const params = new URLSearchParams(window.location.search);
       if (params.get('print') === 'true') {
         setTimeout(() => {
@@ -132,7 +134,7 @@ export function EventViewer({
         }, 800);
       }
     }
-  }, [event.slug]);
+  }, [event.slug, isCompact]);
 
   // Find design style details or default to botanical rose
   const styleInfo = useMemo(() => {
@@ -210,7 +212,7 @@ export function EventViewer({
       return x - Math.floor(x);
     };
 
-    return event.elements.map((el, i) => ({
+    return (event.elements || []).map((el, i) => ({
       glyph: elementGlyphs[el] || '✨',
       top: `${pseudoRandom(i * 10) * 100}%`,
       left: `${pseudoRandom(i * 20) * 100}%`,
@@ -322,11 +324,15 @@ export function EventViewer({
 
   return (
     <div 
-      className="min-h-screen w-full relative selection:bg-brand-red/10 selection:text-primary overflow-x-hidden print:bg-white print:min-h-0 print:p-0 flex flex-col items-center justify-center"
+      className={`${
+        isCompact 
+          ? 'w-full relative overflow-hidden flex flex-col items-center' 
+          : 'min-h-screen w-full relative selection:bg-brand-red/10 selection:text-primary overflow-x-hidden print:bg-white print:min-h-0 print:p-0 flex flex-col items-center justify-center'
+      }`}
       style={{ backgroundColor: event.secondaryColor || styleInfo.secondary }}
     >
       {/* Export as PDF / Print Action for Visitors (Premium only, published only) */}
-      {event.isPublished && !hasWatermark(event) && (
+      {!isCompact && event.isPublished && !hasWatermark(event) && (
         <div className="absolute top-4 right-4 z-30 print:hidden">
           <button
             onClick={handlePrint}
@@ -340,26 +346,30 @@ export function EventViewer({
         </div>
       )}
 
-      {/* Floating Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20 z-0 print:hidden">
-        {elements.map((el, i) => (
-          <div 
-            key={i}
-            className="absolute animate-pulse text-4xl"
-            style={{ 
-              top: el.top, 
-              left: el.left,
-              animationDelay: el.delay,
-              animationDuration: el.duration
-            }}
-          >
-            {el.glyph}
-          </div>
-        ))}
-      </div>
+      {/* Floating Elements (hidden in compact preview) */}
+      {!isCompact && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20 z-0 print:hidden">
+          {elements.map((el, i) => (
+            <div 
+              key={i}
+              className="absolute animate-pulse text-4xl"
+              style={{ 
+                top: el.top, 
+                left: el.left,
+                animationDelay: el.delay,
+                animationDuration: el.duration
+              }}
+            >
+              {el.glyph}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Main Inner Frame / Designer Card Wrapper */}
-      <div className="relative max-w-4xl mx-auto px-3 sm:px-6 py-8 md:py-16 z-10 print:py-2 print:px-0 print:max-w-none">
+      <div className={`relative max-w-4xl mx-auto w-full z-10 print:py-2 print:px-0 print:max-w-none ${
+        isCompact ? 'px-2 py-3' : 'px-3 sm:px-6 py-8 md:py-16'
+      }`}>
         <DecorativeFrame
           frameType={event.frameType || 'traditional-marigold-gold'}
           primaryColor={event.primaryColor || styleInfo.primary}
@@ -368,7 +378,11 @@ export function EventViewer({
           className="shadow-2xl print:shadow-none"
         >
           <div 
-            className="rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-14 space-y-6 sm:space-y-10 md:space-y-12 relative overflow-hidden print:p-6"
+            className={`rounded-2xl sm:rounded-3xl relative overflow-hidden print:p-6 ${
+              isCompact 
+                ? 'p-4 sm:p-6 space-y-4 text-center' 
+                : 'p-4 sm:p-8 md:p-14 space-y-6 sm:space-y-10 md:space-y-12'
+            }`}
             style={{
               backgroundColor: event.secondaryColor || '#FFFDF7',
               color: event.primaryColor || styleInfo.primary || '#1c1917'
@@ -567,24 +581,31 @@ export function EventViewer({
 
             {/* Spotify Player */}
             {spotifyEmbedUrl && (
-              <section style={{ order: getOrder('spotify') }} className="bg-stone-50/80 rounded-2xl p-4 sm:p-6 border border-stone-200/80 shadow-sm space-y-3 print:hidden w-full">
-                <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs tracking-wide">
-                  <Music className="w-4 h-4 text-emerald-600 animate-pulse" />
-                  <span>Featured Spotify Playlist and Music</span>
+              isCompact ? (
+                <div style={{ order: getOrder('spotify') }} className="bg-stone-50/90 rounded-2xl p-2.5 sm:p-3 border border-emerald-200 shadow-xs flex items-center justify-center gap-2 text-emerald-800 font-bold text-xs w-full">
+                  <Music className="w-4 h-4 text-emerald-600 animate-pulse shrink-0" />
+                  <span className="truncate">Featured Spotify Song: {event.spotifyUrl?.split('/').pop() || 'Celebration Track'}</span>
                 </div>
-                <div className="w-full rounded-xl overflow-hidden shadow-xs border border-stone-200">
-                  <iframe
-                    src={spotifyEmbedUrl}
-                    width="100%"
-                    height="152"
-                    frameBorder="0"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    className="w-full rounded-xl"
-                    title="Spotify Music Player"
-                  />
-                </div>
-              </section>
+              ) : (
+                <section style={{ order: getOrder('spotify') }} className="bg-stone-50/80 rounded-2xl p-4 sm:p-6 border border-stone-200/80 shadow-sm space-y-3 print:hidden w-full">
+                  <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs tracking-wide">
+                    <Music className="w-4 h-4 text-emerald-600 animate-pulse" />
+                    <span>Featured Spotify Playlist and Music</span>
+                  </div>
+                  <div className="w-full rounded-xl overflow-hidden shadow-xs border border-stone-200">
+                    <iframe
+                      src={spotifyEmbedUrl}
+                      width="100%"
+                      height="152"
+                      frameBorder="0"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      className="w-full rounded-xl"
+                      title="Spotify Music Player"
+                    />
+                  </div>
+                </section>
+              )
             )}
 
             {/* Photos Showcase */}
@@ -691,12 +712,22 @@ export function EventViewer({
                             fontFamily: detElem.style.fontFamily || undefined
                           }}
                         >
-                          {new Date(event.eventDate).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}
+                          {(() => {
+                            try {
+                              const d = new Date(event.eventDate);
+                              if (!isNaN(d.getTime())) {
+                                return d.toLocaleDateString('en-US', { 
+                                  weekday: 'long', 
+                                  year: 'numeric', 
+                                  month: 'long', 
+                                  day: 'numeric' 
+                                });
+                              }
+                            } catch {
+                              // fallback
+                            }
+                            return event.eventDate;
+                          })()}
                         </p>
                       </div>
                     )}
@@ -782,7 +813,8 @@ export function EventViewer({
                   </div>
 
                 {/* In-Page RSVP Submission Box */}
-                <div className="pt-8 border-t border-stone-200/80 w-full text-left print:hidden">
+                {!isCompact && (
+                  <div className="pt-8 border-t border-stone-200/80 w-full text-left print:hidden">
                   <div className="max-w-md mx-auto bg-white rounded-2xl p-6 sm:p-7 border border-stone-200 shadow-sm space-y-4">
                     <div className="text-center space-y-1">
                       <div className="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-2">
@@ -927,6 +959,14 @@ export function EventViewer({
                     )}
                   </div>
                 </div>
+              )}
+
+              {isCompact && event.rsvpConfig?.enabled && (
+                <div className="pt-3 border-t border-stone-200/80 w-full flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50/60 py-2 px-3 rounded-xl">
+                  <Heart className="w-3.5 h-3.5 fill-rose-600 text-rose-600 shrink-0" />
+                  <span>RSVP & Headcount Tracking Included</span>
+                </div>
+              )}
 
                 {/* UPI Gift Section & Transaction Form */}
                 {(event.upiQrImageUrl || event.upiId) && (() => {
@@ -995,7 +1035,8 @@ export function EventViewer({
                       )}
 
                       {/* Record / Confirm Transaction Form */}
-                      <div className="w-full pt-3 border-t border-stone-100 text-left print:hidden">
+                      {!isCompact && (
+                        <div className="w-full pt-3 border-t border-stone-100 text-left print:hidden">
                         {txSubmitted ? (
                           <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 text-center space-y-1">
                             <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto mb-1">
@@ -1059,6 +1100,7 @@ export function EventViewer({
                           </form>
                         )}
                       </div>
+                    )}
                     </div>
                   </div>
                 );

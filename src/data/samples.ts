@@ -1,5 +1,11 @@
 import { Heart, Cake, Home, Sparkles, PartyPopper, Briefcase } from 'lucide-react';
-import type { EventKind } from '../types';
+import type { 
+  EventKind, 
+  FrameType, 
+  DecorativeMotif, 
+  BackgroundTexture, 
+  DesignStyle 
+} from '../types';
 
 export interface SampleInvite {
   id: string;
@@ -25,12 +31,19 @@ export interface SampleInvite {
   hasRsvp: boolean;
   hasMap: boolean;
   hasQr: boolean;
+  templateId?: string;
+  frameType?: FrameType;
+  decorativeMotif?: DecorativeMotif;
+  textureType?: BackgroundTexture;
+  shlokaText?: string;
+  designStyle?: DesignStyle;
+  elements?: string[];
 }
 
 export const SAMPLE_INVITES: SampleInvite[] = [
   {
     id: 'sample-wedding-priya-rahul',
-    title: 'The Wedding Celebration',
+    title: 'Priya & Rahul',
     subtitle: 'Together with their families',
     category: 'wedding',
     categoryLabel: 'Royal Wedding',
@@ -47,14 +60,21 @@ export const SAMPLE_INVITES: SampleInvite[] = [
       'Dinner, music & celebration to follow.'
     ],
     primaryColor: '#881337',
-    secondaryColor: '#D97706',
-    highlightColor: '#F59E0B',
+    secondaryColor: '#FFFDF7',
+    highlightColor: '#D97706',
     bgGradient: 'from-rose-950 via-rose-900 to-amber-950',
     musicTrack: 'Mangalyam Tantunanena • Royal Shehnai',
     spotifySong: 'https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT',
     hasRsvp: true,
     hasMap: true,
-    hasQr: true
+    hasQr: true,
+    templateId: 'tmpl-wedding-traditional-marigold',
+    frameType: 'grand-rangoli-mandala',
+    decorativeMotif: 'auspicious-kalash',
+    textureType: 'gold-dust',
+    shlokaText: 'Under the Auspicious Divine Blessings',
+    designStyle: 'royal-heritage',
+    elements: ['sparkles', 'flowers', 'rings']
   },
   {
     id: 'sample-birthday-aarav',
@@ -75,19 +95,26 @@ export const SAMPLE_INVITES: SampleInvite[] = [
       'Cake cutting sharp at 6:00 PM.'
     ],
     primaryColor: '#B45309',
-    secondaryColor: '#F59E0B',
-    highlightColor: '#10B981',
+    secondaryColor: '#FFFDF5',
+    highlightColor: '#F59E0B',
     bgGradient: 'from-amber-900 via-amber-800 to-orange-950',
     musicTrack: 'Happy Birthday Celebration Beat',
     spotifySong: 'https://open.spotify.com/track/7iN1Perform6052026',
     hasRsvp: true,
     hasMap: true,
-    hasQr: true
+    hasQr: true,
+    templateId: 'tmpl-birthday-luxury-gold',
+    frameType: 'art-deco-geometric',
+    decorativeMotif: 'party-confetti',
+    textureType: 'gold-dust',
+    shlokaText: 'A Special Milestone Birthday Celebration',
+    designStyle: 'sunlit-marigold',
+    elements: ['sparkles', 'cake', 'party-popper']
   },
   {
     id: 'sample-housewarming-mehta',
-    title: 'Housewarming Celebration',
-    subtitle: 'Blessings for our new abode',
+    title: 'The Mehta Family Abode',
+    subtitle: 'Blessings for our new home',
     category: 'housewarming',
     categoryLabel: 'Housewarming',
     icon: Home,
@@ -103,18 +130,25 @@ export const SAMPLE_INVITES: SampleInvite[] = [
       'Your warm presence will make our new house a home.'
     ],
     primaryColor: '#065F46',
-    secondaryColor: '#047857',
+    secondaryColor: '#F0FDF4',
     highlightColor: '#FBBF24',
     bgGradient: 'from-emerald-950 via-emerald-900 to-teal-950',
     musicTrack: 'Vedic Shanti Mantra & Classical Flute',
     spotifySong: 'https://open.spotify.com/track/1PFluteTrack2026',
     hasRsvp: true,
     hasMap: true,
-    hasQr: true
+    hasQr: true,
+    templateId: 'tmpl-housewarming-traditional-kolam',
+    frameType: 'banana-leaf-traditional',
+    decorativeMotif: 'brass-diya',
+    textureType: 'banana-palm',
+    shlokaText: 'Auspicious Housewarming & Blessings',
+    designStyle: 'emerald-gold',
+    elements: ['sparkles', 'sun', 'flowers']
   },
   {
     id: 'sample-anniversary-sharma',
-    title: '25th Silver Jubilee Anniversary',
+    title: 'Ananya & Rajesh Sharma',
     subtitle: 'Celebrating 25 Years of Love',
     category: 'anniversary',
     categoryLabel: 'Silver Jubilee',
@@ -131,13 +165,20 @@ export const SAMPLE_INVITES: SampleInvite[] = [
       'Dress code: Formal / Cocktail Attire.'
     ],
     primaryColor: '#0F766E',
-    secondaryColor: '#0D9488',
+    secondaryColor: '#F0FDFA',
     highlightColor: '#F59E0B',
     bgGradient: 'from-teal-950 via-teal-900 to-cyan-950',
     musicTrack: 'Romantic Violin & Piano Symphony',
     hasRsvp: true,
     hasMap: true,
-    hasQr: true
+    hasQr: true,
+    templateId: 'tmpl-wedding-ivory-botanical',
+    frameType: 'botanical-peony-gold',
+    decorativeMotif: 'gilded-rings',
+    textureType: 'floral-damask',
+    shlokaText: 'Celebrating 25 Years of Togetherness',
+    designStyle: 'botanical-rose',
+    elements: ['hearts', 'sparkles', 'flowers']
   },
   {
     id: 'sample-reunion-alumni',
@@ -158,13 +199,20 @@ export const SAMPLE_INVITES: SampleInvite[] = [
       'Live DJ set & open bar.'
     ],
     primaryColor: '#581C87',
-    secondaryColor: '#7E22CE',
-    highlightColor: '#EC4899',
+    secondaryColor: '#FAF5FF',
+    highlightColor: '#F59E0B',
     bgGradient: 'from-purple-950 via-purple-900 to-pink-950',
     musicTrack: 'Retro Nostalgia Pop Playlist',
     hasRsvp: true,
     hasMap: true,
-    hasQr: true
+    hasQr: true,
+    templateId: 'tmpl-wedding-obsidian-gold',
+    frameType: 'modern-minimal-filigree',
+    decorativeMotif: 'sparkle-burst',
+    textureType: 'gold-dust',
+    shlokaText: 'A Decade of Cherished Memories & Friendships',
+    designStyle: 'midnight-luxe',
+    elements: ['sparkles', 'stars', 'champagne']
   },
   {
     id: 'sample-corporate-summit',
@@ -185,12 +233,19 @@ export const SAMPLE_INVITES: SampleInvite[] = [
       'Valet parking and private security passes provided.'
     ],
     primaryColor: '#1E293B',
-    secondaryColor: '#334155',
+    secondaryColor: '#F8FAFC',
     highlightColor: '#38BDF8',
     bgGradient: 'from-slate-950 via-slate-900 to-zinc-950',
     musicTrack: 'Ambient Corporate Lounge Beats',
     hasRsvp: true,
     hasMap: true,
-    hasQr: true
+    hasQr: true,
+    templateId: 'tmpl-business-card-studio',
+    frameType: 'art-deco-geometric',
+    decorativeMotif: 'monogram-crest',
+    textureType: 'none',
+    shlokaText: 'Exclusive Keynote & Networking Gala',
+    designStyle: 'emerald-gold',
+    elements: ['sparkles', 'briefcase']
   }
 ];

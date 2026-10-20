@@ -10,9 +10,10 @@ import { firebaseService } from './lib/firebase-service';
 import { createBlankEvent, getEventCreatorPath, getEventTypePath } from './lib/utils';
 import type { SampleInvite } from './data/samples';
 import { Landing } from './components/Landing';
-import { Dashboard } from './components/Dashboard';
-import type { DashboardTab } from './components/Dashboard';
+import { Dashboard, type DashboardTab } from './components/Dashboard';
 import { EventEditor } from './components/Editor';
+import { SampleCanvasEditor } from './components/sample-editor/SampleCanvasEditor';
+import { createDraftFromSample } from './lib/sampleAdapter';
 
 // Note: creation components are imported here for the next phase.
 import { TemplateStep } from './components/creation/TemplateStep';
@@ -227,6 +228,11 @@ function DashboardRouteWrapper({
   );
 }
 
+function SampleEditorRouteWrapper({ user, onSignIn }: { user: User | null; onSignIn?: () => Promise<User | null> }) {
+  const { sampleId } = useParams<{ sampleId: string }>();
+  return <SampleCanvasEditor key={sampleId || 'sample'} user={user} onSignIn={onSignIn} />;
+}
+
 function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: { user: User | null, handleSignIn: () => Promise<User | null>, handleSignOut: () => void, events: LovinglyEvent[], setEvents: React.Dispatch<React.SetStateAction<LovinglyEvent[]>> }) {
   const navigate = useNavigate();
 
@@ -235,18 +241,9 @@ function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: { u
     
     if (sampleOrCategory && 'title' in sampleOrCategory) {
       const sample = sampleOrCategory as SampleInvite;
-      const draft = createBlankEvent(user?.uid || 'guest', sample.category || 'wedding', user?.displayName || 'guest');
-      draft.id = newId;
-      draft.title = sample.title || '';
-      draft.eventDate = sample.date || '';
-      draft.location = sample.location || '';
-      draft.messages = sample.messages || [];
-      draft.templateId = 'wedding-standard';
-      draft.primaryColor = sample.primaryColor;
-      draft.secondaryColor = sample.secondaryColor;
-      
-      localStorage.setItem(`draft_${newId}`, JSON.stringify(draft));
-      navigate(`/create/${newId}/details`);
+      const draft = createDraftFromSample(sample, user?.uid || 'guest', user?.displayName || 'guest');
+      localStorage.setItem(`draft_${draft.id}`, JSON.stringify(draft));
+      navigate(`/create/${draft.id}/details`);
     } else {
       if (sampleOrCategory && 'category' in sampleOrCategory) {
         const draft = createBlankEvent(user?.uid || 'guest', 'wedding', user?.displayName || 'guest');
@@ -297,10 +294,15 @@ function AppRoutes({ user, handleSignIn, handleSignOut, events, setEvents }: { u
           onSignOut={handleSignOut} 
           onStart={() => handleStartGuestCreation()}
           onStartWithCategory={(cat) => handleStartGuestCreation({ category: cat })}
-          onSelectSample={(sample) => handleStartGuestCreation(sample)}
+          onSelectSample={(sample) => navigate(`/customize/sample/${sample.id}`)}
         />
       } />
       
+      {/* Dedicated Isolated Canvas Editor for Landing Page Samples */}
+      <Route path="/customize/sample/:sampleId" element={
+        <SampleEditorRouteWrapper user={user} onSignIn={handleSignIn} />
+      } />
+
       <Route path="/dashboard" element={
         <DashboardRouteWrapper 
           user={user}

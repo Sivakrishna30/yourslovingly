@@ -7,12 +7,15 @@ and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
 ### Added
+- **Dedicated Canvas-Based Sample Customization**: Implemented `src/components/sample-editor/SampleCanvasEditor.tsx` and mapped route `/customize/sample/:sampleId` in `src/App.tsx`. When a user clicks "Customize" on any landing page sample card, it opens a dedicated canvas editor featuring a live responsive viewport, text editing, bottom horizontal toolbar tabs (Text, Elements, Background, Borders, Features), a clearly labeled "Enable full customize" switch, and seamless transition to publish without altering the normal 6-step wizard or dashboard workflows.
+- **Real Invitation Sample Gallery Rendering**: Added `src/lib/sampleAdapter.ts` and updated `src/components/SamplesShowcase.tsx` to render real, production-quality invitation designs (mandala/marigold frames, motifs, shlokas, backgrounds) in both miniature scaled card thumbnails and full-screen preview modals using `EventViewer`.
 - Created `src/lib/svgLibrary.tsx` to provide a programmatic set of high-quality vector assets (Auspicious Kalash, Diya, Mandala, Peacock, Geometric Borders) fulfilling Item 2 without resorting to simple mock SVGs or copyrighted material.
 - Authored `/docs/FINAL_VERIFICATION_REPORT.md` capturing Phase 1 completion outcomes.
 - Created `CHANGELOG.md` to track QA phase version tags, timestamps, and modified files in accordance with the 4-phase Repo-Aware AI Engineering workflow.
 - Adopted the PM ──► Architect ──► Developer ──► QA simulated multi-agent lifecycle in `AGENTS.md`.
 
 ### Changed
+- **Fixed**: Updated "Griha Pravesh" filter tab label in the Landing Page Sample Gallery (`src/components/SamplesShowcase.tsx`) to "Housewarming".
 - **Fixed**: Browser tab title and metadata updated to `Yours Lovingly` (removed all `|` pipe characters from `index.html`, `<title>`, `og:title`, `twitter:title`, and UI creation header).
 - **Fixed**: Tab favicon icon updated to feature the official golden finger heart brand logo (`/logo.jpg`, `/public/favicon.jpg`, `/public/favicon.svg`).
 - **Fixed**: Firestore security rules permission denial on publication and user document operations. Updated `/firestore.rules` to allow owner creation of public snapshots, version histories under `public_invites/{slug}/versions/{snapshotId}`, proper user document management, and atomic insights updates.
