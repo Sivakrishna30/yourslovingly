@@ -60,14 +60,13 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
     setTimeout(() => setSaveSuccess(false), 2500);
   };
 
-  // RSVP disabled by default per requirement 7
-  const defaultRsvpConfig: RsvpFormConfig = event.rsvpConfig || {
-    enabled: false,
-    collectPhone: true,
-    collectGuestCount: true,
-    collectDietary: true,
-    collectAccommodation: false,
-    customQuestions: []
+  const defaultRsvpConfig: RsvpFormConfig = {
+    enabled: event.rsvpConfig?.enabled ?? true,
+    collectPhone: event.rsvpConfig?.collectPhone ?? true,
+    collectGuestCount: event.rsvpConfig?.collectGuestCount ?? true,
+    collectDietary: event.rsvpConfig?.collectDietary ?? true,
+    collectAccommodation: event.rsvpConfig?.collectAccommodation ?? false,
+    customQuestions: event.rsvpConfig?.customQuestions ?? []
   };
 
   const handleUpdateRsvp = (updates: Partial<RsvpFormConfig>) => {
@@ -166,90 +165,95 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
         {/* Tab 2: RSVP Config */}
         {activeTab === 'rsvp' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-rose-50/50 rounded-2xl border border-rose-200">
+            <div className="flex items-center justify-between p-4 bg-amber-50/70 rounded-2xl border border-amber-200">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-stone-900">Enable Interactive Guest RSVP</span>
-                  <span className="px-2 py-0.5 bg-rose-700 text-white text-[10px] font-bold rounded-md flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Premium Feature
+                  <span className="text-sm font-bold text-stone-900">Interactive Guest RSVP Form</span>
+                  <span className="px-2 py-0.5 bg-amber-200 text-amber-900 text-[10px] font-bold rounded-md flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-700" /> Premium Feature
                   </span>
                 </div>
-                <p className="text-xs text-stone-500">Collect attendance responses, dietary choices, and headcount directly to your dashboard</p>
+                <p className="text-xs text-amber-800">
+                  Collect attendance responses, dietary choices, and headcount directly to your live dashboard.
+                </p>
               </div>
-              <input
-                type="checkbox"
-                checked={defaultRsvpConfig.enabled}
-                onChange={(e) => handleUpdateRsvp({ enabled: e.target.checked })}
-                className="w-5 h-5 text-rose-600 rounded-md focus:ring-rose-500 border-stone-300 cursor-pointer"
-              />
+              <button
+                type="button"
+                onClick={() => handleUpdateRsvp({ enabled: !defaultRsvpConfig.enabled })}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  defaultRsvpConfig.enabled
+                    ? 'bg-rose-700 text-white shadow-xs'
+                    : 'bg-stone-200 text-stone-700 hover:bg-stone-300'
+                }`}
+              >
+                {defaultRsvpConfig.enabled ? <Check className="w-3.5 h-3.5" /> : null}
+                <span>{defaultRsvpConfig.enabled ? 'Enabled' : 'Disabled'}</span>
+              </button>
             </div>
 
-            {defaultRsvpConfig.enabled ? (
-              <div className="space-y-4 pl-2">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
                   Information to Collect from Guests
                 </h4>
+                <span className="text-[11px] text-stone-400">Customizable form fields</span>
+              </div>
 
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <label className="p-3.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between cursor-pointer">
-                    <span className="text-xs font-semibold text-stone-800">Phone Number for WhatsApp Updates</span>
-                    <input
-                      type="checkbox"
-                      checked={defaultRsvpConfig.collectPhone}
-                      onChange={(e) => handleUpdateRsvp({ collectPhone: e.target.checked })}
-                      className="w-4 h-4 text-rose-600 rounded-md"
-                    />
-                  </label>
-
-                  <label className="p-3.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between cursor-pointer">
-                    <span className="text-xs font-semibold text-stone-800">Total Attending Guest Count</span>
-                    <input
-                      type="checkbox"
-                      checked={defaultRsvpConfig.collectGuestCount}
-                      onChange={(e) => handleUpdateRsvp({ collectGuestCount: e.target.checked })}
-                      className="w-4 h-4 text-rose-600 rounded-md"
-                    />
-                  </label>
-
-                  <label className="p-3.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between cursor-pointer">
-                    <span className="text-xs font-semibold text-stone-800">Meal Preference (Veg / Non-Veg)</span>
-                    <input
-                      type="checkbox"
-                      checked={defaultRsvpConfig.collectDietary}
-                      onChange={(e) => handleUpdateRsvp({ collectDietary: e.target.checked })}
-                      className="w-4 h-4 text-rose-600 rounded-md"
-                    />
-                  </label>
-
-                  <label className="p-3.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between cursor-pointer">
-                    <span className="text-xs font-semibold text-stone-800">Stay & Accommodation Required</span>
-                    <input
-                      type="checkbox"
-                      checked={defaultRsvpConfig.collectAccommodation}
-                      onChange={(e) => handleUpdateRsvp({ collectAccommodation: e.target.checked })}
-                      className="w-4 h-4 text-rose-600 rounded-md"
-                    />
-                  </label>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
-                    RSVP Deadline Date (Optional)
-                  </label>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <label className="p-3.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between cursor-pointer bg-white">
+                  <span className="text-xs font-semibold text-stone-800">Phone Number for WhatsApp Updates</span>
                   <input
-                    type="text"
-                    value={defaultRsvpConfig.deadline || ''}
-                    onChange={(e) => handleUpdateRsvp({ deadline: e.target.value })}
-                    placeholder="e.g. Please confirm by December 10, 2026"
-                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:bg-white focus:outline-none focus:border-rose-600"
+                    type="checkbox"
+                    checked={defaultRsvpConfig.collectPhone}
+                    onChange={(e) => handleUpdateRsvp({ collectPhone: e.target.checked })}
+                    className="w-4 h-4 text-rose-600 rounded-md"
                   />
-                </div>
+                </label>
+
+                <label className="p-3.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between cursor-pointer bg-white">
+                  <span className="text-xs font-semibold text-stone-800">Total Attending Guest Count</span>
+                  <input
+                    type="checkbox"
+                    checked={defaultRsvpConfig.collectGuestCount}
+                    onChange={(e) => handleUpdateRsvp({ collectGuestCount: e.target.checked })}
+                    className="w-4 h-4 text-rose-600 rounded-md"
+                  />
+                </label>
+
+                <label className="p-3.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between cursor-pointer bg-white">
+                  <span className="text-xs font-semibold text-stone-800">Meal Preference (Veg / Non-Veg)</span>
+                  <input
+                    type="checkbox"
+                    checked={defaultRsvpConfig.collectDietary}
+                    onChange={(e) => handleUpdateRsvp({ collectDietary: e.target.checked })}
+                    className="w-4 h-4 text-rose-600 rounded-md"
+                  />
+                </label>
+
+                <label className="p-3.5 rounded-xl border border-stone-200 hover:bg-stone-50 flex items-center justify-between cursor-pointer bg-white">
+                  <span className="text-xs font-semibold text-stone-800">Stay & Accommodation Required</span>
+                  <input
+                    type="checkbox"
+                    checked={defaultRsvpConfig.collectAccommodation}
+                    onChange={(e) => handleUpdateRsvp({ collectAccommodation: e.target.checked })}
+                    className="w-4 h-4 text-rose-600 rounded-md"
+                  />
+                </label>
               </div>
-            ) : (
-              <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-stone-500 text-xs text-center">
-                RSVP form is currently disabled. Check the box above to enable guest attendance collection.
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
+                  RSVP Deadline Date (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={defaultRsvpConfig.deadline || ''}
+                  onChange={(e) => handleUpdateRsvp({ deadline: e.target.value })}
+                  placeholder="e.g. Please confirm by December 10, 2026"
+                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:bg-white focus:outline-none focus:border-rose-600"
+                />
               </div>
-            )}
+            </div>
           </motion.div>
         )}
 
@@ -378,35 +382,61 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
           </motion.div>
         )}
 
-        {/* Tab 4: Security & Password */}
+        {/* Tab 4: Security & 4-Digit PIN */}
         {activeTab === 'security' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-            <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-stone-700 shrink-0 mt-0.5" />
+            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="text-xs font-bold text-stone-900">Privacy & Password Lock</h4>
-                  <span className="px-2 py-0.5 bg-stone-200 text-stone-800 text-[10px] font-bold rounded-md flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-stone-600" /> Premium Feature
+                  <h4 className="text-xs font-bold text-amber-900">4-Digit Security PIN</h4>
+                  <span className="px-2 py-0.5 bg-amber-200 text-amber-900 text-[10px] font-bold rounded-md flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-700" /> Premium Feature
                   </span>
                 </div>
-                <p className="text-xs text-stone-500 leading-relaxed mt-0.5">
-                  Protect private family photos and venue details with an optional 4-digit PIN or passcode.
+                <p className="text-xs text-amber-800 leading-relaxed mt-0.5">
+                  Protect your private celebration photos, venue details, and invite behind a simple 4-digit numeric PIN.
                 </p>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
-                Access Passcode / PIN (Leave empty for public access)
+            <div className="max-w-md bg-stone-50 border border-stone-200 rounded-2xl p-5 space-y-3">
+              <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
+                Set 4-Digit Guest Access PIN (Numbers Only)
               </label>
-              <input
-                type="text"
-                value={event.password || ''}
-                onChange={(e) => onUpdate({ password: e.target.value })}
-                placeholder="e.g. 2026 or LOVE24"
-                className="w-full max-w-sm px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:bg-white focus:outline-none focus:border-rose-600 transition-all"
-              />
+              <p className="text-xs text-stone-500">
+                Guests will enter these 4 numbers to open your invitation. Leave empty for public access.
+              </p>
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={4}
+                  pattern="[0-9]*"
+                  value={event.password || ''}
+                  onChange={(e) => {
+                    const cleanPin = e.target.value.replace(/\D/g, '').slice(0, 4);
+                    onUpdate({ password: cleanPin });
+                  }}
+                  placeholder="e.g. 2026"
+                  className="w-40 px-4 py-3 bg-white border border-stone-300 rounded-xl text-center font-mono text-xl font-bold tracking-widest text-stone-900 focus:outline-none focus:border-rose-600 focus:ring-2 focus:ring-rose-600/20"
+                />
+                {event.password && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ password: '' })}
+                    className="px-3 py-2 text-xs font-bold text-stone-500 hover:text-rose-700 bg-white border border-stone-200 rounded-lg cursor-pointer"
+                  >
+                    Clear PIN
+                  </button>
+                )}
+              </div>
+              <div className="text-[11px] text-stone-500">
+                {event.password && event.password.length === 4 
+                  ? '✓ 4-Digit PIN active. Guests will need this PIN to view the invite.' 
+                  : event.password ? `${event.password.length}/4 digits entered` : 'No PIN set (Open public access)'}
+              </div>
             </div>
           </motion.div>
         )}
@@ -421,8 +451,8 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
         onSaveDraft={handleSaveDraftClick}
         backLabel="Previous Section"
         mobileBackLabel="Back"
-        nextLabel={currentIndex === FEATURE_TABS.length - 1 ? 'Continue to Hosting & Plan' : 'Move to Next Section'}
-        mobileNextLabel={currentIndex === FEATURE_TABS.length - 1 ? 'Hosting' : 'Next'}
+        nextLabel={currentIndex === FEATURE_TABS.length - 1 ? 'Continue to Live Preview (Step 5)' : 'Move to Next Section'}
+        mobileNextLabel={currentIndex === FEATURE_TABS.length - 1 ? 'Preview' : 'Next'}
       />
     </div>
   );

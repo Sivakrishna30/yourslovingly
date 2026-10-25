@@ -103,8 +103,8 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
     'details': '2. Invite Details',
     'elements': '3. Center Elements & Styles',
     'features': '4. Features & Integrations',
-    'publish': '5. Hosting & Plan',
-    'preview': '6. Final Guest Preview'
+    'preview': '5. Final Guest Preview',
+    'publish': '6. Hosting, Plan & Launch'
   };
 
   const currentStepKey = (step === 'event-type' || !step) ? 'template' : step;
@@ -160,7 +160,7 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
             {(step === 'event-type' || step === 'template' || !step) && (
               <TemplateStep 
                 event={event} 
-                onUpdateEvent={handleUpdate}
+                onUpdateEvent={handleUpdate} 
                 onSelectTemplate={(t) => { 
                   handleUpdate({ 
                     templateId: t.id, 
@@ -207,9 +207,27 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
             )}
             {step === 'details' && <DetailsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('elements')} onBack={() => handleBack('template')} onSaveDraft={handleSaveDraft} />}
             {step === 'elements' && <ElementsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('features')} onBack={() => handleBack('details')} onSaveDraft={handleSaveDraft} />}
-            {step === 'features' && <FeaturesStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('publish')} onBack={() => handleBack('elements')} onSaveDraft={handleSaveDraft} />}
-            {step === 'publish' && <PublishStep event={event} user={user} onSignIn={handleSignIn} onPublish={handlePublish} onNext={() => handleNext('preview')} onBack={() => handleBack('features')} />}
-            {step === 'preview' && <PreviewStep event={event} onNext={() => navigate(user ? '/dashboard' : '/')} onBack={() => handleBack('publish')} onSaveDraft={handleSaveDraft} />}
+            {step === 'features' && <FeaturesStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('preview')} onBack={() => handleBack('elements')} onSaveDraft={handleSaveDraft} />}
+            {step === 'preview' && (
+              <PreviewStep 
+                event={event} 
+                onNext={() => handleNext('publish')} 
+                onBack={() => handleBack('features')} 
+                onSaveDraft={handleSaveDraft} 
+              />
+            )}
+            {step === 'publish' && (
+              <PublishStep 
+                event={event} 
+                user={user} 
+                onSignIn={handleSignIn} 
+                onUpdateEvent={handleUpdate}
+                onPublish={handlePublish} 
+                onNext={() => navigate(user ? '/dashboard' : '/')} 
+                onBack={() => handleBack('preview')} 
+                onSaveDraft={handleSaveDraft}
+              />
+            )}
             {step === 'payment' && <div className="text-center p-12 overflow-y-auto">Payment Boundary (T12 Skipped) <br/><button onClick={() => navigate('/dashboard')} className="mt-4 px-4 py-2 bg-slate-900 text-white rounded">Go to Dashboard</button></div>}
          </div>
       </div>

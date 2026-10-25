@@ -262,8 +262,7 @@ export function AudioUploader({ event, onChange, variant = 'card' }: AudioUpload
           }`}
         >
           <Volume2 className="w-3.5 h-3.5 text-rose-600" />
-          <span>MP3 Audio (Autoplay)</span>
-          <span className="px-1.5 py-0.2 bg-rose-100 text-rose-800 text-[9px] font-extrabold rounded">Instant</span>
+          <span>MP3 Audio Autoplay</span>
         </button>
 
         <button

@@ -7,6 +7,26 @@ and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
 ### Added & Enhanced
+- **Reordered Step Sequence: Step 5 Final Preview & Step 6 Launch Hub (`App.tsx`, `PreviewStep.tsx`, `PublishStep.tsx`, `FeaturesStep.tsx`)**:
+  - Reordered the wizard flow so **Step 5** is the dedicated **Live Guest Preview (`preview`)** featuring the responsive mobile phone / desktop switcher and complete visual inspection.
+  - Set **Step 6** to **Hosting, Plan & Launch (`publish`)**, consolidating user authentication, Firestore quota verification, premium feature resolution, and 1-click publishing.
+- **Features Step Polish & 4-Digit PIN Security (`FeaturesStep.tsx`, `AudioUploader.tsx`)**:
+  - **Audio Tab**: Removed the redundant "Instant" badge from the MP3 tab button, standardizing to "MP3 Audio Autoplay" beside "Spotify Track Link".
+  - **RSVP Form**: Removed restrictive hiding behind master checkboxes; all RSVP configuration options (phone, headcount, meal preference, stay, deadline) remain visible, intuitive, and editable by default with a prominent "⭐ Premium Feature" notification card.
+  - **UPI Gift Scanner**: Options remain open and directly editable; activates automatically whenever UPI ID or QR image is provided, labeled with "⭐ Premium Feature" badge.
+  - **4-Digit Numeric PIN**: Replaced complex password field with a dedicated 4-digit numeric PIN (`maxLength={4}`, `inputMode="numeric"`, `pattern="[0-9]*"`), eliminating forget-password complications while providing crisp PIN protection for guests.
+- **Approved Project Pricing Restoration (`types.ts`, `PublishStep.tsx`, `Landing.tsx`)**:
+  - Restored approved project pricing: **Free 1st Page (₹0)**, **Basic Page (₹49)**, **Premium Page (₹99)**, and **Basic → Premium Upgrade (₹49)**.
+  - In Step 6:
+    - If user has free limit: Free Basic page is **₹0**, and upgrade to Premium is **₹49**.
+    - If user has no free limit: Basic page is **₹49**, and Premium page is **₹99**.
+    - Provided 1-click **"Unselect Premium Features & Launch as Basic (₹0)"** to immediately convert to Basic format and launch for ₹0.
+- **Firestore Connection Resilience & Long-Polling Fix (`firebase.ts`, `firebase-service.ts`)**:
+  - Configured `initializeFirestore` with `experimentalForceLongPolling: true` to prevent WebChannel stream timeouts and eliminate the 10-second backend connection warning in sandboxed iframe web preview environments.
+  - Removed unneeded boot test connection ping to avoid triggering offline timeout logs.
+- **Removed Redundant Fonts Category from Step 3 Elements (`ElementsStep.tsx`)**:
+  - Removed the standalone "Fonts" tab and curated font pairings drawer from Step 3, streamlining the categories to 5 focused tabs: **Colors (`palette`)**, **Frames (`frames`)**, **Center Elements (`motifs`)**, **Textures (`textures`)**, and **Photos (`photos`)**.
+  - All text typography (Font Family, Size, and Color) is now exclusively and cleanly handled per-field directly under each text input in Step 2 (`DetailsStep.tsx`), avoiding UI duplication and conflicting overrides.
 - **Per-Text Inline Collapsible Typography Controls (`FieldTypographyControl.tsx`, `DetailsStep.tsx`, `Viewer.tsx`, `ElementsStep.tsx`)**:
   - Replaced the global subtitle-only font restriction with individual, collapsible micro-toolbars attached directly under each text input (`title`, `recipientName`, `shlokaText`, `eventDate`, `location`, and each message paragraph in `messagesList`).
   - Implemented compact collapsed state (`[A ▾ Customize Font & Size]`) to keep the edit UI clean, lightweight, and clutter-free.

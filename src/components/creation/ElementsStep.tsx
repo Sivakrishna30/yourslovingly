@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { 
   Palette, 
-  Type, 
   Image as ImageIcon, 
   Sparkles, 
   Layers, 
@@ -24,7 +23,6 @@ import { EventViewer } from '../Viewer';
 import { CreationBottomNav } from './CreationBottomNav';
 import { 
   COLOR_PALETTES, 
-  FONT_PAIRINGS, 
   FRAME_PRESETS, 
   MOTIF_PRESETS, 
   TEXTURE_PRESETS 
@@ -38,9 +36,8 @@ interface ElementsStepProps {
   onSaveDraft?: () => void;
 }
 
-const CATEGORIES: Array<'palette' | 'fonts' | 'frames' | 'motifs' | 'textures' | 'photos'> = [
+const CATEGORIES: Array<'palette' | 'frames' | 'motifs' | 'textures' | 'photos'> = [
   'palette',
-  'fonts',
   'frames',
   'motifs',
   'textures',
@@ -48,7 +45,7 @@ const CATEGORIES: Array<'palette' | 'fonts' | 'frames' | 'motifs' | 'textures' |
 ];
 
 export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: ElementsStepProps) {
-  const [activeCategory, setActiveCategory] = useState<'palette' | 'fonts' | 'frames' | 'motifs' | 'textures' | 'photos'>('palette');
+  const [activeCategory, setActiveCategory] = useState<'palette' | 'frames' | 'motifs' | 'textures' | 'photos'>('palette');
   const [previewMode, setPreviewMode] = useState<'mobile' | 'desktop'>('mobile');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -139,7 +136,7 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
           Craft & Style Every Element
         </h2>
         <p className="text-stone-500 text-sm sm:text-base leading-relaxed">
-          Select auspicious center elements, decorative frames, textured backgrounds, color palettes, and custom typography.
+          Select auspicious center elements, decorative frames, textured backgrounds, color palettes, and photos.
         </p>
       </div>
 
@@ -156,10 +153,9 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
         {/* Left Drawer Controls (7 cols) */}
         <div className="lg:col-span-7 bg-white rounded-3xl border border-stone-200 p-4 sm:p-6 lg:p-8 shadow-sm space-y-6 max-w-full overflow-x-hidden">
           {/* Category Switcher Tabs */}
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2 p-1.5 bg-stone-100 rounded-2xl max-w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-2 p-1.5 bg-stone-100 rounded-2xl max-w-full">
             {[
               { id: 'palette', label: 'Colors', icon: Palette },
-              { id: 'fonts', label: 'Fonts', icon: Type },
               { id: 'frames', label: 'Frames', icon: Layers },
               { id: 'motifs', label: 'Center Elements', icon: Sparkles },
               { id: 'textures', label: 'Textures', icon: Sliders },
@@ -219,54 +215,7 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
             </motion.div>
           )}
 
-          {/* 2. Typography Font Pairings */}
-          {activeCategory === 'fonts' && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-              <h3 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
-                Curated Font Pairings
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {FONT_PAIRINGS.map(font => {
-                  const isSelected = event.elementStyles?.title?.fontFamily === font.headingFont;
-                  return (
-                    <button
-                      key={font.id}
-                      onClick={() => {
-                        const cur = event.elementStyles || {};
-                        const nextStyles = { ...cur };
-                        nextStyles.title = { ...(cur.title || {}), fontFamily: font.headingFont };
-                        nextStyles.recipient = { ...(cur.recipient || {}), fontFamily: font.accentFont };
-                        nextStyles.quote = { ...(cur.quote || {}), fontFamily: font.accentFont };
-                        nextStyles.details = { ...(cur.details || {}), fontFamily: font.bodyFont };
-                        nextStyles.date = { ...(cur.date || {}), fontFamily: font.headingFont };
-                        nextStyles.venue = { ...(cur.venue || {}), fontFamily: font.bodyFont };
-                        (event.messages || []).forEach((_, i) => {
-                          nextStyles[`message_${i}`] = { ...(cur[`message_${i}`] || {}), fontFamily: font.bodyFont };
-                        });
-                        onUpdate({ elementStyles: nextStyles });
-                      }}
-                      className={`p-4 rounded-2xl border text-left space-y-2 transition-all cursor-pointer ${
-                        isSelected ? 'border-rose-600 ring-2 ring-rose-600/20 bg-rose-50/40' : 'border-stone-200 hover:border-stone-400'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-stone-900">{font.name}</span>
-                        {isSelected && <Check className="w-4 h-4 text-rose-600" />}
-                      </div>
-                      <p style={{ fontFamily: font.headingFont }} className="text-base font-bold text-stone-800">
-                        Priya & Rahul
-                      </p>
-                      <p style={{ fontFamily: font.bodyFont }} className="text-xs text-stone-500">
-                        Request the honor of your presence
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
-          {/* 3. Decorative Frames */}
+          {/* 2. Decorative Frames */}
           {activeCategory === 'frames' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
               <h3 className="text-xs font-bold text-stone-700 uppercase tracking-wider">

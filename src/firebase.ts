@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { initializeFirestore, doc, getDoc } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import appletConfig from '../firebase-applet-config.json';
 
@@ -19,27 +19,15 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const firestoreDbId = (appletConfig as { firestoreDatabaseId?: string }).firestoreDatabaseId;
 
-// Use initializeFirestore with long-polling for better stability in restricted environments
+// Use initializeFirestore with forced long-polling for stability in sandboxed iframe environments
 const db = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true,
+  experimentalForceLongPolling: true,
 }, firestoreDbId || '(default)');
 
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
 export const firebaseReady = Boolean(firebaseConfig.apiKey);
-
-// Test connection on boot
-async function testConnection() {
-  if (!firebaseReady) return;
-  try {
-    await getDoc(doc(db, 'test', 'connection'));
-    console.log('Firestore connection verified.');
-  } catch {
-    console.log('Firestore operating in cached/offline mode.');
-  }
-}
-testConnection();
 
 export function getAuthErrorMessage(error: unknown): string {
   if (typeof error === 'string') return error;
