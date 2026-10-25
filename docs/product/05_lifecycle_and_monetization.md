@@ -10,11 +10,10 @@ User-facing invite lifecycle consists of 4 clear states:
 ---
 
 ## 2. Hosting Durations & Economics
-- **Initial Hosting Period**: Every newly published invite begins with **15 days of live hosting** (applies across Free Basic, ₹49 Basic, ₹99 Premium, and Pack invites).
+- **Initial Hosting Period**: Every newly published invite begins with **15 days of live hosting** (applies across Free Basic, ₹49 Basic, and ₹99 Premium invites).
 - **Hosting Extensions (Purchased as needed)**:
   - *Basic Invite Extension*: **₹49** for +30 days.
   - *Premium Invite Extension*: **₹99** for +30 days.
-- **Lifetime Hosting**: **₹999** one-time purchase per invite for permanent hosting with no expiry.
 
 ---
 
@@ -34,7 +33,6 @@ User-facing invite lifecycle consists of 4 clear states:
 | **Basic $\rightarrow$ Premium Upgrade** | **₹49** | Upgrade an existing published Basic invite to Premium (removes watermark, adds pro features). |
 | **Basic Hosting Extension** | **₹49** | +30 days hosting for a Basic Invite (stacks onto active or reactivates expired). |
 | **Premium Hosting Extension** | **₹99** | +30 days hosting for a Premium Invite (stacks onto active or reactivates expired). |
-| **Lifetime Hosting** | **₹999** | Permanent hosting for a single invite (never expires). |
 
 > **No Bundles or Packs**: All purchases are strictly per-Invite. There are NO Creator Packs or multi-Invite bundles (e.g. no ₹499 for 7, no ₹999 for 15).
 

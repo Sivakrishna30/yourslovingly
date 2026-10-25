@@ -6,7 +6,72 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
-### Added
+### Added & Enhanced
+- **Per-Text Inline Collapsible Typography Controls (`FieldTypographyControl.tsx`, `DetailsStep.tsx`, `Viewer.tsx`, `ElementsStep.tsx`)**:
+  - Replaced the global subtitle-only font restriction with individual, collapsible micro-toolbars attached directly under each text input (`title`, `recipientName`, `shlokaText`, `eventDate`, `location`, and each message paragraph in `messagesList`).
+  - Implemented compact collapsed state (`[A ▾ Customize Font & Size]`) to keep the edit UI clean, lightweight, and clutter-free.
+  - On expansion, provides instant controls for:
+    - **Font Style**: Family selection including Playfair Display, Cormorant Garamond, Cinzel, Dancing Script, Outfit, Poppins, Inter, and Theme Default.
+    - **Font Size**: Quick presets (`Sm`, `Md`, `Lg`, `Xl`) tailored for headlines and body text.
+    - **Font Color**: Quick aesthetic palette swatches (Maroon, Black, Gold, Emerald, Navy, Rose) plus custom color picker.
+  - Updated `Viewer.tsx` to read and apply individual font styles, sizes, and colors for `title`, `recipient`, `quote`, `date`, `venue`, and all `message_${i}` paragraphs in real time on the live canvas.
+  - Updated Step 3 (`ElementsStep.tsx`) so curated font pairings apply harmoniously across all elements (`title`, `recipient`, `quote`, `date`, `venue`, and all messages).
+- **Fixed Missing Decorative Frames (`DecorativeOrnaments.tsx`)**:
+  - Implemented dedicated SVG and styling branches for:
+    - `festive-diwali-diya` (Diwali Diya Golden Border): Features an ornate Diwali toran header with hanging golden diyas, radiating flames, and gilded corner diya lamps.
+    - `luxury-damask` (Luxury Damask Silk): Elaborate royal damask silk border with baroque acanthus leaf scrolls, gold medallion crest, and double inner borders.
+    - `modern-minimal-filigree` (Modern Filigree Border): Crisp geometric double-hairline filigree with diamond corner accents and center badges.
+- **Fixed Missing Background Textures (`DecorativeOrnaments.tsx`)**:
+  - Implemented dedicated SVG patterns for:
+    - `parchment` (Vintage Parchment): Antique organic fibrous paper texture with subtle stippling and authentic aged crinkles.
+    - `silk-linen` (Luxury Linen Silk): Micro-mesh woven fabric texture with intersecting warp and weft textile threads and silk sheen.
+- **Reordered Create Page Step Sequence (`App.tsx`, `ElementsStep.tsx`, `FeaturesStep.tsx`, `PublishStep.tsx`, `PreviewStep.tsx`)**:
+  - Moved `preview` (Guest Preview) to Step 6 as the final interactive celebration preview before or after publication.
+  - Brought `features` (RSVP, Music/Audio, UPI Gift Collection, Passcode Security) forward to Step 4, immediately after Step 3 Elements.
+  - Set Step 5 to `publish` (Hosting & Plan selection) with direct advancement to Step 6.
+  - Standardized step numbering across all headers and navigation paths:
+    - Step 1 of 6: `template` (Event & Template / Blank Canvas)
+    - Step 2 of 6: `details` (Invite Details + Inline Typography)
+    - Step 3 of 6: `elements` (Elements, Motifs, Frames, Textures & Colors)
+    - Step 4 of 6: `features` (Features & Integrations)
+    - Step 5 of 6: `publish` (Hosting & Plan Selection)
+    - Step 6 of 6: `preview` (Final Interactive Guest Preview & Share)
+- **Removed Background Floating Emojis from Edit Page & Confined Canvas Elements (`Viewer.tsx`, `utils.ts`, `DetailsStep.tsx`, `ElementsStep.tsx`, `PreviewStep.tsx`)**:
+  - Fixed viewport leak where floating element glyphs (stars, hearts, sparkles, flowers) used `fixed inset-0`, unintentionally overlaying and animating across the entire browser window and behind the form fields on the create/edit page.
+  - Replaced `fixed inset-0` with `absolute inset-0` inside the relative `EventViewer` container, ensuring any decorative elements stay strictly confined inside the invitation canvas / phone bezel viewport.
+  - Removed default `elements: ['sparkles']` from `createBlankEvent` (`utils.ts`) so blank canvas starts completely clean with zero unselected floating emojis.
+  - Enforced `elements: []` for blank canvas live previews across all creation wizard steps (`DetailsStep`, `ElementsStep`, `PreviewStep`), eliminating unselected emojis from the edit interface.
+- **Live Canvas Sync Continuity & Step 3 Full Preview (`ElementsStep.tsx` & `DetailsStep.tsx`)**:
+  - Replaced the word "Motif" / "Motifs" ("Continue to Motifs & Styles" / "Motifs") on Step 2's final sub-tab with **"Move to Next Section"** (and mobile label **"Next"**), standardizing navigation.
+  - Eliminated the artificial mini preview card (hardcoded maroon box and static wedding placeholders) in Step 3 (`ElementsStep.tsx`).
+  - Integrated the full production `EventViewer` live canvas sync into Step 3, with responsive viewport modes (`mobile` | `desktop`), phone bezel container, and mobile toggle hiding (`hidden md:flex`) matching Step 2 and `SampleCanvasEditor`.
+  - Guaranteed seamless state travel across Step 1 (Blank Canvas / Template), Step 2 (Invite Details), Step 3 (Elements & Styles), and Step 4 (Guest Preview): all user-entered details (title, host, date, venue, messages, and selected element styles) remain fully preserved and live-synchronized without resetting or reverting.
+- **Mobile View Adaptations in Live Canvas Sync (`DetailsStep.tsx`)**:
+  - Removed/hidden the `Mobile` / `Desktop` toggle buttons in mobile viewport (`hidden md:flex`), matching the responsive model of the sample customize page (`SampleCanvasEditor.tsx`).
+  - Aligned the desktop device toggle styling (`p-0.5 bg-stone-100 rounded-xl border border-stone-200`) and the canvas preview container (`max-w-[340px] sm:max-w-[380px] rounded-[36px] sm:rounded-[44px] border-4 sm:border-[8px] border-stone-900 shadow-2xl`) directly with the sample customize page model.
+  - Removed the default celebration/wedding invitation fallback (`"With joyful hearts, we lovingly invite you to celebrate this auspicious occasion with us."`) from the empty blank canvas live preview and updated the textarea placeholder to be neutral, keeping the blank canvas completely clean.
+- **Full Live Canvas Preview & Generic Placeholders in Step 2 (Invite Details - `DetailsStep.tsx`)**:
+  - Replaced the plain solid-color mini box in "Live Canvas Sync" with the actual production `EventViewer`, providing a live, authentic invitation preview (frames, motifs, textures, typography, and live-updated text as you type).
+  - Added Mobile / Desktop viewport switcher toggles directly in the Live Canvas Sync header.
+  - Replaced hardcoded wedding-specific `'Together with their families'` fallback with the clean generic variable placeholder `'Host / Subtitle'` alongside `'Event Title'`, `'Date & Time'`, and `'Venue Location'`.
+  - Configured Blank Canvas selection (`onSelectBlank` & `createBlankEvent`) to default to a clean white canvas (`#ffffff` background with deep slate `#1c1917` text and no default frames/motifs), eliminating the unwanted maroon background.
+- **Simplified Create Page Step 1 (Event Type & Starting Design - `TemplateStep.tsx`)**:
+  - Removed "POPULAR QUICK CATEGORIES" pills and count labels (`Wedding 12`, `Birthday 3`, `Housewarming 3`, etc.) and the "Auto-prioritizes matching designs" text.
+  - Retained the clean, single `<select>` Event Type dropdown for Section 1.
+  - Removed the Section 2 subheader banner ("X Dedicated for Event", "Templates matching ... placed at the top", "All (Prioritized)" and "Only Event (X)" toggle buttons).
+  - Removed the top-left gold "Recommended for Wedding / {Event}" badge ribbon from the template cards in Section 2, leaving clean, unobstructed previews.
+  - Removed/hidden the hashtags list (`#Wedding`, `#Kalyanam`, `#Heritage`, `#Banana Leaf`, etc.) from template card bodies, resulting in a cleaner, uncluttered card presentation.
+- **Dynamic Event Type Prioritization & Preference Sorting (Step 1 - `TemplateStep.tsx`)**:
+  - Dynamically sorts starting templates based on the user's selected event type (`event.eventType`). Selecting "Wedding" brings wedding templates to the top; selecting "Housewarming" brings housewarming templates directly to the top, followed by other designs.
+  - Added dedicated, production-quality templates for Housewarming (`Traditional Kolam Griha Pravesh`, `Modern Villa Housewarming Celebration`, `Auspicious Vaastu & Milk Boiling`), Anniversary (`Silver Jubilee 25 Years`, `Golden Jubilee 50th Wedding Anniversary`), Festive & Pooja (`Auspicious Deepavali & Festive Pooja`), Party & Reunion (`Midnight Rooftop Gala & Reunion`), Kids Birthday, and Naming Ceremony.
+  - Enriched every template in `MASTER_TEMPLATES` with `compatibleEventTypes` and interactive `#Tags` (e.g., `#Housewarming`, `#Griha Pravesh`, `#Traditional`, `#Wedding`).
+  - Clicking any tag or category pill immediately re-sorts and prioritizes matching templates.
+  - Added visible "Recommended for {Event}" gold badges and a quick preference filter toggle (`All (Prioritized)` vs `Only Matching`).
+- **Fixed Top & Bottom Panels with Responsive Non-Cropping Navigation Across ALL Creation Steps**:
+  - Pinned the top creation header (`shrink-0`) and bottom navigation bar (`shrink-0`) permanently into the viewport, making only the center content area scrollable (`flex-1 overflow-y-auto min-h-0`).
+  - Resolved the mobile view cropping issue where the right side of the bottom panel ("Move to Next Section") was cut off off-screen.
+  - Created standardized `CreationBottomNav.tsx` with mobile-first responsive sizing, concise mobile labels (`Exit` / `Back`, `Save`, `Next`), safe horizontal padding, and truncation protection (`max-w-[50%]`) ensuring 100% visibility on all phone screens.
+  - Applied the fixed bottom navigation bar and mobile alignment consistently across all 6 creation wizard steps (`TemplateStep`, `DetailsStep`, `ElementsStep`, `PreviewStep`, `FeaturesStep`, `PublishStep`).
 - **Dedicated Canvas-Based Sample Customization**: Implemented `src/components/sample-editor/SampleCanvasEditor.tsx` and mapped route `/customize/sample/:sampleId` in `src/App.tsx`. When a user clicks "Customize" on any landing page sample card, it opens a dedicated canvas editor featuring a live responsive viewport, text editing, bottom horizontal toolbar tabs (Text, Elements, Background, Borders, Features), a clearly labeled "Enable full customize" switch, and seamless transition to publish without altering the normal 6-step wizard or dashboard workflows.
 - **Real Invitation Sample Gallery Rendering**: Added `src/lib/sampleAdapter.ts` and updated `src/components/SamplesShowcase.tsx` to render real, production-quality invitation designs (mandala/marigold frames, motifs, shlokas, backgrounds) in both miniature scaled card thumbnails and full-screen preview modals using `EventViewer`.
 - Created `src/lib/svgLibrary.tsx` to provide a programmatic set of high-quality vector assets (Auspicious Kalash, Diya, Mandala, Peacock, Geometric Borders) fulfilling Item 2 without resorting to simple mock SVGs or copyrighted material.
@@ -14,7 +79,21 @@ and this project adheres to Semantic Versioning.
 - Created `CHANGELOG.md` to track QA phase version tags, timestamps, and modified files in accordance with the 4-phase Repo-Aware AI Engineering workflow.
 - Adopted the PM ──► Architect ──► Developer ──► QA simulated multi-agent lifecycle in `AGENTS.md`.
 
-### Changed
+- **Removed Lifetime Hosting & Standardized 30-Day Extension Model**:
+  - Permanently removed the Lifetime Hosting option (`₹999` permanent keepsake) from all user-facing pricing tables, modals, publishing steps, domain entitlement services, and project specifications.
+  - Retained clean, sustainable 30-Day Extensions (`₹49` for Basic Page, `₹99` for Premium Page) that creators can purchase iteratively whenever needed.
+  - Updated `PublishStep.tsx` from a 3-column layout to a centered 2-tier matrix (`Free 1st Page Publish` vs `Premium Page`).
+  - Removed Option 3 (`lifetime_single`) from `HostingRenewalModal.tsx`, leaving only +30 Days Extensions and Basic → Premium Upgrades.
+  - Synchronized all documentation (`01_pricing_monetization_and_entitlements_specification.md`, `03_pricing_tiers_and_upgrades.md`, `05_drafts_expiry_and_refund_rules.md`, `05_lifecycle_and_monetization.md`, `01_landing_and_authentication.md`, `06_publishing_pricing_and_verification.md`, `07_lifecycle_post_publication_and_recovery.md`, `README.md`) to explicitly reflect that no permanent lifetime hosting is promised.
+- **Fixed & Adapted**: Mobile Phone Layout & Button Adaptation in Invitation Canvas Viewer (`src/components/Viewer.tsx`, `src/components/sample-editor/SampleCanvasEditor.tsx`, `src/components/creation/PreviewStep.tsx`). Passed explicit `deviceMode` (`mobile` | `desktop`) to `EventViewer` so simulated phone containers decouple from browser desktop `md:` media query rules. In phone/mobile view:
+  - Transformed the "When & Where" section from an accidental split 2-column desktop grid into a clean, stacked vertical single-column card with proportional padding (`p-4 sm:p-5`).
+  - Scaled large titles, subtitles, quotes, and messages dynamically (`isMobile ? text-2xl sm:text-3xl : text-3xl sm:text-6xl md:text-7xl`) to fit comfortably within mobile containers without clipping.
+  - Redesigned the Google Maps directions button with centered `w-full max-w-[280px]` width, `Get Directions on Maps` concise copy, and text truncation protection so button labels never break awkwardly onto multiple misaligned lines.
+  - Adjusted Venue Directions QR Code card with responsive sizing (`w-24 h-24` image, compact label) to prevent horizontal overflow in mobile mode.
+- **Enhanced & Redesigned**: Canva-Style Element Selection & Contextual Inspector in Sample Canvas Editor (`src/components/sample-editor/SampleCanvasEditor.tsx`, `src/components/Viewer.tsx`). Replaced the static, form-heavy full-input text list with an immersive, Canva-inspired interactive canvas. By default, panels remain closed so the invitation preview occupies a large, prominent full-viewport area. Clicking any text or element on the canvas (Event Title, Subtitle, Quote/Tagline, Date & Venue, Individual Messages, Decorative Motifs) highlights it with a Canva-style bounding box and square corner handles; clicking it again or clicking the background canvas deselects it. When selected, an element-specific contextual inspector slides up with tailored typography, size, color, and alignment options, while simultaneously supporting direct in-place on-canvas typing.
+- **Fixed & Optimized**: Top Header Panel in Sample Canvas Editor (`src/components/sample-editor/SampleCanvasEditor.tsx`). Removed the unlabeled and confusing mystery toggle (`Enable full customize`), made all customization capabilities (interactive canvas editing, typography font pairings, floating sparkle glyphs) permanently active by default, and streamlined the top bar into a single compact responsive row with flexible title truncation and pinned "Save & Proceed" button to ensure 100% visibility with zero cut-off on mobile devices.
+- **Removed**: Horizontal category filter tabs in the Landing Page Sample Showcase (`src/components/SamplesShowcase.tsx`), displaying all interactive sample cards directly in a clean grid without cluttering filter buttons.
+- **Fixed**: Responsive Sample Gallery Previews across all screen sizes (320px to 1440px+). Eliminated blank card areas and fixed desktop scaling on mobile in `src/components/SamplesShowcase.tsx` by introducing `SampleCardThumbnail`, which dynamically computes container width via `ResizeObserver` and scales production invitations edge-to-edge (100% card width, 0px blank side padding) while preserving a proportional 360:260 aspect ratio. Added `isCompact` support across `src/components/DecorativeOrnaments.tsx` and `src/components/Viewer.tsx` to prevent full-screen viewport media queries (`md:text-7xl`, `md:p-16`) from inflating thumbnail titles, arches, and borders.
 - **Fixed**: Updated "Griha Pravesh" filter tab label in the Landing Page Sample Gallery (`src/components/SamplesShowcase.tsx`) to "Housewarming".
 - **Fixed**: Browser tab title and metadata updated to `Yours Lovingly` (removed all `|` pipe characters from `index.html`, `<title>`, `og:title`, `twitter:title`, and UI creation header).
 - **Fixed**: Tab favicon icon updated to feature the official golden finger heart brand logo (`/logo.jpg`, `/public/favicon.jpg`, `/public/favicon.svg`).
@@ -36,5 +115,29 @@ and this project adheres to Semantic Versioning.
 - **Added**: Automatic Google Maps Location Directions QR Code generation (`DetailsStep.tsx`). Displays a scan QR code toggle whenever a Google Maps link is provided.
 - **Added**: Enhanced UPI Gift module (`FeaturesStep.tsx`). Supports uploading/attaching a custom UPI QR Code image file (`upiQrImageUrl`), entering a UPI ID / Phone number, payee display name, and clear validation indicator.
 - **Changed**: Disabled RSVP form by default (`defaultRsvpConfig.enabled: false`) per user preference.
-- **Added**: Clear Premium feature callouts (`⭐ Premium Feature` badges) and a 1-click upgrade banner in `PublishStep.tsx` for users attempting to publish pages with active premium features under the Basic plan.
-
+- **Fixed**: Sample Canvas Editor Reset & Collapsible Inspector Panel (`src/components/sample-editor/SampleCanvasEditor.tsx`).
+  - Fixed the **Reset** button (`handleReset`) to instantly restore the invitation design back to sample default configurations without getting blocked by browser confirmation popups.
+  - Updated **Reset Element** (`handleResetSelectedElement`) to reset ONLY the currently selected element's custom styles, text, and position offsets (`offsetX: 0, offsetY: 0`), leaving all other elements untouched. Added dynamic React key bindings on motion elements in `Viewer.tsx` (`key={`${elementKey}_${offsetX}_${offsetY}`}`) to force Framer Motion DOM node re-initialization so position offsets snap back to (0,0) reliably.
+  - Positioned floating MP3 audio player widget at center-bottom (`fixed bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2`) in `Viewer.tsx` to prevent overlapping bottom panels, and added a **Pause & Hide (X)** button allowing users to pause music and dismiss the widget.
+- **Restored & Streamlined**: Landing Page Hero Section (`src/components/Landing.tsx`).
+  - Restored the original headline ("Create Beautiful Digital Invites, Business Cards and Pamphlets."), description, and action buttons in the Hero section.
+  - Removed only the "Select Page Type" 4-card panel per user request, keeping the Hero content pristine and unhampered.
+- **Renamed**: "Motif" to "Center Elements" (`src/components/sample-editor/SampleCanvasEditor.tsx`, `src/components/Viewer.tsx`).
+  - Updated floating bottom toolbar button label from "Motifs" to "Center Elements".
+  - Updated inspector header from "Editing Center Decorative Motif" to "Editing Center Element".
+  - Updated on-canvas selection badge to "Center Element".
+- **Removed & Refined**: Landing Page Samples Description & Event Types (`src/components/SamplesShowcase.tsx`, `src/data/eventTypes.ts`).
+  - Removed "business cards, and celebration flyers" references from the interactive samples showcase subtitle in `SamplesShowcase.tsx` (`Explore live interactive sample invites crafted with genuine traditional frames, center elements, and delicate textures.`).
+  - Removed "Business Launch & Meetup" (`corporate`) and unused icon imports from `EVENT_TYPE_OPTIONS` in `src/data/eventTypes.ts` so the dropdown in creation Step 1 is strictly dedicated to celebration/traditional events.
+- **Upgraded Step 1 Template Cards to Live Interactive Visual Previews** (`src/components/creation/TemplateStep.tsx`, `src/lib/sampleAdapter.ts`, `src/App.tsx`):
+  - Replaced the dark static color header blocks with `TemplateCardThumbnail` in `TemplateStep.tsx`, rendering real edge-to-edge miniature invitation cards powered by `EventViewer` (`ResizeObserver`, proportional scale, real frames, center elements, typography, and textures).
+  - Added a **Full Preview** modal to Step 1 with a Mobile / Desktop device switcher, complete interactive canvas view, and direct "Use This Template" button.
+  - Added `masterTemplateToLovinglyEvent` in `src/lib/sampleAdapter.ts` to convert `MasterTemplate` presets into production `LovinglyEvent` models.
+  - Enhanced `onSelectTemplate` in `src/App.tsx` to automatically populate the draft event with the selected template's frames, center elements, colors, and layout presets.
+- **Removed Business Cards/Flyers FAQ & Residual Landing Mentions** (`src/components/Landing.tsx`):
+  - Removed the printing question ("Can I print my business cards, flyers, and pamphlets?") from the FAQ section.
+  - Cleaned up residual business cards/flyers references in the workflow steps and footer description, focusing strictly on celebratory digital invites.
+- **Enhanced Preview Top Panel & Name Display** (`src/components/SamplesShowcase.tsx`, `src/components/creation/TemplateStep.tsx`, `src/components/creation/PreviewStep.tsx`, `src/components/sample-editor/SampleCanvasEditor.tsx`):
+  - Removed event details badges/pills ("Royal Wedding", "Ring Ceremony") from the top left of the preview panels.
+  - Replaced it with a clean, prominent **Name section** giving full priority to the couple/event title.
+  - Redesigned the top panel to be more spacious (`px-4 sm:px-5 py-3 sm:py-3.5`), touch-friendly, and mobile-responsive with no cramped text or badge collisions.

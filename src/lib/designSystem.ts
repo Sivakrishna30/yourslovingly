@@ -65,6 +65,8 @@ export interface MasterTemplate {
   name: string;
   category: EventKind | 'all';
   categoryLabel: string;
+  compatibleEventTypes?: EventKind[];
+  tags?: string[];
   layoutCode: string;
   paletteId: string;
   fontPairingId: string;
@@ -514,6 +516,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Traditional Royal Marigold Mandap',
     category: 'wedding',
     categoryLabel: 'Wedding',
+    compatibleEventTypes: ['wedding', 'engagement', 'festival'],
+    tags: ['Wedding', 'Muhurtham', 'Traditional', 'Mandap'],
     layoutCode: 'L09',
     paletteId: 'pal-crimson-gold',
     fontPairingId: 'font-cinzel-outfit',
@@ -547,6 +551,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Sacred Banana Leaf & Jasmine Kalyanam',
     category: 'wedding',
     categoryLabel: 'Wedding',
+    compatibleEventTypes: ['wedding', 'anniversary'],
+    tags: ['Wedding', 'Kalyanam', 'Heritage', 'Banana Leaf'],
     layoutCode: 'L09',
     paletteId: 'pal-emerald-heritage',
     fontPairingId: 'font-cinzel-outfit',
@@ -580,6 +586,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Regal Twin Peacock Palace Sapphire',
     category: 'wedding',
     categoryLabel: 'Wedding',
+    compatibleEventTypes: ['wedding', 'reunion'],
+    tags: ['Wedding', 'Royal Palace', 'Peacock', 'Sapphire'],
     layoutCode: 'L05',
     paletteId: 'pal-royal-azure',
     fontPairingId: 'font-cinzel-outfit',
@@ -613,6 +621,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'South Indian Temple Kalyanam',
     category: 'wedding',
     categoryLabel: 'Wedding',
+    compatibleEventTypes: ['wedding', 'engagement'],
+    tags: ['Wedding', 'Temple', 'Kalyanam', 'Gopuram'],
     layoutCode: 'L09',
     paletteId: 'pal-marigold-saffron',
     fontPairingId: 'font-cinzel-outfit',
@@ -646,6 +656,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Royal Rajasthani Palace Jharokha',
     category: 'wedding',
     categoryLabel: 'Wedding',
+    compatibleEventTypes: ['wedding', 'anniversary'],
+    tags: ['Wedding', 'Royal Palace', 'Jharokha', 'Jaali'],
     layoutCode: 'L05',
     paletteId: 'pal-royal-azure',
     fontPairingId: 'font-cinzel-outfit',
@@ -678,6 +690,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Ivory Botanical Peony & Eucalyptus',
     category: 'wedding',
     categoryLabel: 'Wedding',
+    compatibleEventTypes: ['wedding', 'anniversary', 'party'],
+    tags: ['Wedding', 'Botanical', 'Floral', 'Elegance'],
     layoutCode: 'L04',
     paletteId: 'pal-ivory-sage-gold',
     fontPairingId: 'font-cormorant-montserrat',
@@ -711,6 +725,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Blush Watercolor Rose Garland',
     category: 'wedding',
     categoryLabel: 'Wedding',
+    compatibleEventTypes: ['wedding', 'engagement', 'anniversary'],
+    tags: ['Wedding', 'Blush', 'Rose Garland', 'Romantic'],
     layoutCode: 'L10',
     paletteId: 'pal-blush-champagne',
     fontPairingId: 'font-playfair-dancing',
@@ -743,6 +759,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Black & Gold Midnight Luxe',
     category: 'wedding',
     categoryLabel: 'Wedding',
+    compatibleEventTypes: ['wedding', 'party', 'anniversary', 'reunion'],
+    tags: ['Wedding', 'Midnight Luxe', 'Reception', 'Black Tie'],
     layoutCode: 'L15',
     paletteId: 'pal-black-gold-luxury',
     fontPairingId: 'font-cinzel-outfit',
@@ -777,6 +795,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Auspicious Ring Ceremony & Sangeet',
     category: 'engagement',
     categoryLabel: 'Engagement',
+    compatibleEventTypes: ['engagement', 'wedding'],
+    tags: ['Engagement', 'Ring Ceremony', 'Sangeet', 'Rings'],
     layoutCode: 'L01',
     paletteId: 'pal-crimson-gold',
     fontPairingId: 'font-cinzel-outfit',
@@ -809,6 +829,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Twin Doves of Love & Peace',
     category: 'engagement',
     categoryLabel: 'Engagement',
+    compatibleEventTypes: ['engagement', 'wedding'],
+    tags: ['Engagement', 'Doves', 'Sunset', 'Romance'],
     layoutCode: 'L04',
     paletteId: 'pal-blush-champagne',
     fontPairingId: 'font-playfair-dancing',
@@ -841,6 +863,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Champagne Sunset Romance',
     category: 'engagement',
     categoryLabel: 'Engagement',
+    compatibleEventTypes: ['engagement', 'anniversary', 'party'],
+    tags: ['Engagement', 'Champagne', 'Sunset Toast', 'Romance'],
     layoutCode: 'L06',
     paletteId: 'pal-cream-terracotta',
     fontPairingId: 'font-cormorant-montserrat',
@@ -869,17 +893,19 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     }
   },
 
-  // ---------------- HOUSEWARMING ----------------
+  // ---------------- HOUSEWARMING TEMPLATES ----------------
   {
     id: 'tmpl-housewarming-traditional-kolam',
-    name: 'Auspicious Housewarming Celebration',
+    name: 'Traditional Kolam Griha Pravesh',
     category: 'housewarming',
     categoryLabel: 'Housewarming',
+    compatibleEventTypes: ['housewarming', 'festival'],
+    tags: ['Housewarming', 'Griha Pravesh', 'Kolam', 'Traditional Pooja'],
     layoutCode: 'L11',
     paletteId: 'pal-marigold-saffron',
     fontPairingId: 'font-cinzel-outfit',
-    tagline: 'Traditional welcome lamp, floral decor, and auspicious entry',
-    badge: '🏡 Housewarming',
+    tagline: 'Traditional welcome lamp, floral decor, and auspicious entry blessings',
+    badge: '🏡 Griha Pravesh',
     defaultTitle: 'The Sharma Family Home',
     defaultRecipient: 'Warmly Invites You to Our Housewarming',
     defaultDate: '2026-09-08',
@@ -903,6 +929,145 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
       photos: 'zoom-in'
     }
   },
+  {
+    id: 'tmpl-housewarming-griha-pravesh-modern',
+    name: 'Modern Villa Housewarming Celebration',
+    category: 'housewarming',
+    categoryLabel: 'Housewarming',
+    compatibleEventTypes: ['housewarming', 'party'],
+    tags: ['Housewarming', 'Modern Villa', 'New Home', 'Family Feast'],
+    layoutCode: 'L04',
+    paletteId: 'pal-ivory-sage-gold',
+    fontPairingId: 'font-cormorant-montserrat',
+    tagline: 'Warm sage & golden botanical accents welcoming family to our new abode',
+    badge: '🌿 Modern Villa',
+    defaultTitle: 'Our New Abode - Housewarming',
+    defaultRecipient: 'The Kumar Family Invites You',
+    defaultDate: '2026-10-18',
+    defaultLocation: 'Villa 108, Palm Breeze Enclave, Bangalore',
+    defaultMessages: [
+      'A house is made of bricks and beams, but a home is made of love and dreams.',
+      'Please join us to celebrate our new beginning with house blessing & family dinner.',
+      'Pooja: 8:00 AM • House Tour & Feast: 12:30 PM onwards.'
+    ],
+    defaultElements: ['home', 'sparkles', 'flowers'],
+    primaryColor: '#0F766E',
+    secondaryColor: '#F0FDFA',
+    highlightColor: '#D97706',
+    frameType: 'botanical-peony-gold',
+    decorativeMotif: 'auspicious-kalash',
+    shlokaText: 'Home Sweet Home • New Beginnings',
+    textureType: 'parchment',
+    animations: {
+      title: 'fade-in',
+      details: 'slide-up',
+      photos: 'zoom-in'
+    }
+  },
+  {
+    id: 'tmpl-housewarming-vaastu-pooja',
+    name: 'Auspicious Vaastu & Milk Boiling (Pal Kaachudhal)',
+    category: 'housewarming',
+    categoryLabel: 'Housewarming',
+    compatibleEventTypes: ['housewarming', 'festival'],
+    tags: ['Housewarming', 'Vaastu Pooja', 'Milk Boiling', 'Griha Pravesam'],
+    layoutCode: 'L09',
+    paletteId: 'pal-marigold-saffron',
+    fontPairingId: 'font-cinzel-outfit',
+    tagline: 'Auspicious milk boiling ceremony with sacred gopuram arches and brass bells',
+    badge: '🛕 Milk Boiling & Vaastu',
+    defaultTitle: 'Pal Kaachudhal & Griha Pravesam',
+    defaultRecipient: 'Together with our Parents & Elders',
+    defaultDate: '2026-11-08',
+    defaultLocation: 'No. 24, Sai Brindavan Gardens, Coimbatore',
+    defaultMessages: [
+      'With divine blessings of Lord Vigneshwara, we cordially invite you to our traditional Pal Kaachudhal (Milk Boiling) and Griha Pravesam ceremony.',
+      'Muhurtham & Pooja: 5:30 AM to 6:30 AM. Traditional breakfast & Virundhu to follow.'
+    ],
+    defaultElements: ['home', 'flowers', 'sparkles', 'sun'],
+    primaryColor: '#9A3412',
+    secondaryColor: '#FFFDF5',
+    highlightColor: '#EAB308',
+    frameType: 'south-temple-arch',
+    decorativeMotif: 'temple-bells',
+    shlokaText: 'Om Namo Bhagavate Vaastupurushaya',
+    textureType: 'royal-kolam',
+    animations: {
+      title: 'slide-up',
+      details: 'fade-in',
+      photos: 'zoom-in'
+    }
+  },
+
+  // ---------------- ANNIVERSARY TEMPLATES ----------------
+  {
+    id: 'tmpl-anniversary-silver-jubilee',
+    name: 'Silver Jubilee 25 Years of Togetherness',
+    category: 'anniversary',
+    categoryLabel: 'Anniversary',
+    compatibleEventTypes: ['anniversary', 'wedding', 'party'],
+    tags: ['Anniversary', 'Silver Jubilee', '25 Years', 'Love Story'],
+    layoutCode: 'L04',
+    paletteId: 'pal-ivory-sage-gold',
+    fontPairingId: 'font-cormorant-montserrat',
+    tagline: 'Quarter of a century of shared dreams, laughter, and unbreakable partnership',
+    badge: '🥂 Silver Jubilee (25 Yrs)',
+    defaultTitle: 'Ramesh & Priya - 25th Anniversary',
+    defaultRecipient: 'Celebrating 25 Glorious Years of Love & Partnership',
+    defaultDate: '2026-12-05',
+    defaultLocation: 'Grand Ballroom, The Taj Gateway, Chennai',
+    defaultMessages: [
+      '25 years of shared dreams, laughter, and endless love. Join us as we raise a toast to quarter of a century together.',
+      'Dinner, acoustic music, and golden memories with family & friends.'
+    ],
+    defaultElements: ['rings', 'hearts', 'champagne', 'sparkles'],
+    primaryColor: '#0F766E',
+    secondaryColor: '#F0FDFA',
+    highlightColor: '#14B8A6',
+    frameType: 'botanical-peony-gold',
+    decorativeMotif: 'gilded-rings',
+    shlokaText: 'Celebrating 25 Years of Unconditional Love',
+    textureType: 'gold-dust',
+    animations: {
+      title: 'zoom-in',
+      details: 'slide-up',
+      photos: 'fade-in'
+    }
+  },
+  {
+    id: 'tmpl-anniversary-golden-50',
+    name: 'Golden Jubilee 50th Wedding Anniversary',
+    category: 'anniversary',
+    categoryLabel: 'Anniversary',
+    compatibleEventTypes: ['anniversary', 'wedding', 'party'],
+    tags: ['Anniversary', 'Golden Jubilee', '50 Years', 'Milestone'],
+    layoutCode: 'L15',
+    paletteId: 'pal-black-gold-luxury',
+    fontPairingId: 'font-cinzel-outfit',
+    tagline: 'Magnificent golden jubilee celebration commemorating five decades of blessed marriage',
+    badge: '👑 Golden 50th Jubilee',
+    defaultTitle: 'Celebrating 50 Years of Marriage',
+    defaultRecipient: 'In Honor of Sri. & Smt. Venkatraman',
+    defaultDate: '2026-11-25',
+    defaultLocation: 'Royal Palm Court, The Leela Palace, Chennai',
+    defaultMessages: [
+      'A true love story never ends. Please join our children and grandchildren to celebrate 50 golden years of marriage.',
+      'Blessing ceremony, family tributes, and celebratory gala dinner.'
+    ],
+    defaultElements: ['rings', 'champagne', 'sparkles', 'stars'],
+    primaryColor: '#FBBF24',
+    secondaryColor: '#111418',
+    highlightColor: '#FEF08A',
+    frameType: 'art-deco-geometric',
+    decorativeMotif: 'monogram-crest',
+    shlokaText: 'Five Decades of Blessed Harmony & Grace',
+    textureType: 'gold-dust',
+    animations: {
+      title: 'zoom-in',
+      details: 'fade-in',
+      photos: 'zoom-in'
+    }
+  },
 
   // ---------------- BABY & KIDS BIRTHDAYS ----------------
   {
@@ -910,6 +1075,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Dreamy Moon, Cradle & Pastels (Baby Shower)',
     category: 'baby-shower',
     categoryLabel: 'Baby Shower',
+    compatibleEventTypes: ['baby-shower', 'naming-ceremony'],
+    tags: ['Baby Shower', 'Pastels', 'Cradle', 'Moon & Stars'],
     layoutCode: 'L14',
     paletteId: 'pal-blush-champagne',
     fontPairingId: 'font-plus-caveat',
@@ -938,10 +1105,46 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     }
   },
   {
+    id: 'tmpl-baby-naming-cradle',
+    name: 'Traditional Naming & Cradle Ceremony (Thottil)',
+    category: 'baby-shower',
+    categoryLabel: 'Naming Ceremony',
+    compatibleEventTypes: ['baby-shower', 'naming-ceremony', 'festival'],
+    tags: ['Naming Ceremony', 'Thottil', 'Cradle', 'Auspicious Blessings'],
+    layoutCode: 'L09',
+    paletteId: 'pal-marigold-saffron',
+    fontPairingId: 'font-cinzel-outfit',
+    tagline: 'Traditional cradle ceremony with marigold flowers and elder blessings',
+    badge: '👶 Naming & Cradle',
+    defaultTitle: 'Auspicious Naming & Cradle Ceremony',
+    defaultRecipient: 'Welcoming our Sweet Baby Blessing',
+    defaultDate: '2026-10-05',
+    defaultLocation: 'Sri Krishna Kalyana Nilayam, Chennai',
+    defaultMessages: [
+      'A sweet new life has just begun! Join us as we place our precious baby in the traditional cradle and reveal the name.',
+      'Pooja: 9:30 AM to 10:30 AM. Followed by traditional lunch feast.'
+    ],
+    defaultElements: ['moon', 'stars', 'flowers', 'sparkles'],
+    primaryColor: '#B45309',
+    secondaryColor: '#FFFDF5',
+    highlightColor: '#F59E0B',
+    frameType: 'traditional-marigold-gold',
+    decorativeMotif: 'cradle-baby',
+    shlokaText: 'Ayushmathe Bhava • Divine Blessings',
+    textureType: 'royal-kolam',
+    animations: {
+      title: 'fade-in',
+      details: 'slide-up',
+      photos: 'zoom-in'
+    }
+  },
+  {
     id: 'tmpl-birthday-luxury-gold',
     name: 'Milestone Golden Jubilee Birthday',
     category: 'birthday',
     categoryLabel: 'Birthday',
+    compatibleEventTypes: ['birthday', 'party', 'anniversary'],
+    tags: ['Birthday', 'Milestone', 'Golden Jubilee', 'Party'],
     layoutCode: 'L01',
     paletteId: 'pal-black-gold-luxury',
     fontPairingId: 'font-cinzel-outfit',
@@ -974,6 +1177,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Pastel Floral Garden Tea Party',
     category: 'birthday',
     categoryLabel: 'Birthday',
+    compatibleEventTypes: ['birthday', 'party'],
+    tags: ['Birthday', 'Garden Party', 'Tea Party', 'Pastels'],
     layoutCode: 'L03',
     paletteId: 'pal-blush-champagne',
     fontPairingId: 'font-playfair-dancing',
@@ -1001,6 +1206,112 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
       photos: 'zoom-in'
     }
   },
+  {
+    id: 'tmpl-birthday-kids-carnival',
+    name: 'Kids Carnival & Magic Balloon Bash',
+    category: 'birthday',
+    categoryLabel: 'Kids Birthday',
+    compatibleEventTypes: ['birthday'],
+    tags: ['Kids Birthday', 'Carnival', 'Balloons', 'Games & Fun'],
+    layoutCode: 'L14',
+    paletteId: 'pal-vibrant-sunset',
+    fontPairingId: 'font-plus-caveat',
+    tagline: 'Colorful balloons, bouncy castles, magic tricks, and fun party hats',
+    badge: '🎈 Kids Carnival',
+    defaultTitle: 'Aarav is Turning 5!',
+    defaultRecipient: 'Come Ready for Magic, Cake & Games',
+    defaultDate: '2026-10-15',
+    defaultLocation: 'Fun World Play Lounge, Chennai',
+    defaultMessages: [
+      'Put on your party hats! Join us for an action-packed birthday party with bouncy castle, magic show, and delicious cupcakes.',
+      'Cake cutting at 5:30 PM sharp. Lots of fun prizes and surprises!'
+    ],
+    defaultElements: ['cake', 'balloons', 'gift', 'sparkles'],
+    primaryColor: '#2563EB',
+    secondaryColor: '#EFF6FF',
+    highlightColor: '#F59E0B',
+    frameType: 'baby-pastel-floral',
+    decorativeMotif: 'party-confetti',
+    shlokaText: 'Happy 5th Birthday Aarav! 🎂',
+    textureType: 'none',
+    animations: {
+      title: 'bounce-in',
+      details: 'slide-up',
+      photos: 'zoom-in'
+    }
+  },
+
+  // ---------------- FESTIVAL & POOJA ----------------
+  {
+    id: 'tmpl-festival-diwali-pooja',
+    name: 'Auspicious Deepavali & Festive Pooja',
+    category: 'festival',
+    categoryLabel: 'Festive & Pooja',
+    compatibleEventTypes: ['festival', 'custom'],
+    tags: ['Festival', 'Diwali', 'Pooja', 'Auspicious Gathering'],
+    layoutCode: 'L09',
+    paletteId: 'pal-marigold-saffron',
+    fontPairingId: 'font-cinzel-outfit',
+    tagline: 'Golden brass diyas, traditional marigold flowers, and divine Lakshmi blessings',
+    badge: '🪔 Festive & Deepavali',
+    defaultTitle: 'Auspicious Deepavali & Lakshmi Pooja',
+    defaultRecipient: 'Cordial Festive Invitation',
+    defaultDate: '2026-11-01',
+    defaultLocation: 'Anand Villa, T. Nagar, Chennai',
+    defaultMessages: [
+      'May the supreme light illuminate your life with health, fortune, and immense prosperity.',
+      'Please join our family for Maha Deepavali Pooja, sweet distribution, and festive dinner.'
+    ],
+    defaultElements: ['sparkles', 'flowers', 'sun'],
+    primaryColor: '#B45309',
+    secondaryColor: '#FFFBEB',
+    highlightColor: '#F59E0B',
+    frameType: 'festive-diwali-diya',
+    decorativeMotif: 'brass-diya',
+    shlokaText: 'Deepam Jyothi Parabrahma • Happy Diwali',
+    textureType: 'gold-dust',
+    animations: {
+      title: 'zoom-in',
+      details: 'slide-up',
+      photos: 'fade-in'
+    }
+  },
+
+  // ---------------- PARTY & REUNION ----------------
+  {
+    id: 'tmpl-party-rooftop-cocktail',
+    name: 'Midnight Rooftop Gala & Reunion',
+    category: 'party',
+    categoryLabel: 'Party & Reunion',
+    compatibleEventTypes: ['party', 'reunion', 'custom'],
+    tags: ['Party', 'Cocktails', 'Reunion', 'Gala Night'],
+    layoutCode: 'L15',
+    paletteId: 'pal-black-gold-luxury',
+    fontPairingId: 'font-cinzel-outfit',
+    tagline: 'Catch up with old friends, enjoy handcrafted cocktails, and dance under the stars',
+    badge: '🍸 Rooftop Cocktail',
+    defaultTitle: 'Sunset Cocktails & Reunion',
+    defaultRecipient: 'An Evening Under the Stars',
+    defaultDate: '2026-10-31',
+    defaultLocation: 'Skydeck Rooftop Lounge, Chennai',
+    defaultMessages: [
+      'Catch up with old friends, enjoy handcrafted cocktails, and dance to great tunes under the starry sky.',
+      'Dress code: Chic & Casual. RSVP below so we can reserve your table!'
+    ],
+    defaultElements: ['champagne', 'sparkles', 'stars'],
+    primaryColor: '#4338CA',
+    secondaryColor: '#EEF2FF',
+    highlightColor: '#EC4899',
+    frameType: 'art-deco-geometric',
+    decorativeMotif: 'champagne-toast',
+    shlokaText: 'Good Friends, Good Drinks & Great Memories',
+    textureType: 'gold-dust',
+    animations: {
+      title: 'zoom-in',
+      details: 'slide-up',
+      photos: 'zoom-in'
+    }
+  },
 
   // ---------------- BUSINESS CARD & FLYER ----------------
   {
@@ -1008,6 +1319,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Aura Wellness & Design Studio',
     category: 'business-card',
     categoryLabel: 'Business Card',
+    compatibleEventTypes: ['business-card', 'custom'],
+    tags: ['Visiting Card', 'Executive', 'Business'],
     layoutCode: 'L13',
     paletteId: 'pal-ivory-sage-gold',
     fontPairingId: 'font-bold-montserrat',
@@ -1040,6 +1353,8 @@ export const MASTER_TEMPLATES: MasterTemplate[] = [
     name: 'Festival Grand Launch Flyer',
     category: 'flyer',
     categoryLabel: 'Flyer & Pamphlet',
+    compatibleEventTypes: ['flyer', 'festival', 'custom'],
+    tags: ['Flyer', 'Pamphlet', 'Festival Offer', 'Grand Launch'],
     layoutCode: 'L13',
     paletteId: 'pal-crimson-gold',
     fontPairingId: 'font-bold-montserrat',
@@ -1082,9 +1397,48 @@ export function filterMasterTemplates(category?: string, searchTerm?: string): M
       tmpl.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tmpl.tagline.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tmpl.categoryLabel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tmpl.defaultTitle.toLowerCase().includes(searchTerm.toLowerCase());
+      tmpl.defaultTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (tmpl.tags && tmpl.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     return matchesCategory && matchesSearch;
   });
+}
+
+/**
+ * Dynamically sorts templates prioritizing the selected Event Type.
+ * Templates where category matches or compatibleEventTypes includes the eventType
+ * appear at the very top, followed by all other templates.
+ */
+export function getTemplatesSortedByEventType(
+  templates: MasterTemplate[], 
+  eventType: EventKind | string
+): { matching: MasterTemplate[]; others: MasterTemplate[]; allSorted: MasterTemplate[] } {
+  const targetType = eventType || 'wedding';
+  const matching: MasterTemplate[] = [];
+  const others: MasterTemplate[] = [];
+
+  for (const tmpl of templates) {
+    const isPrimaryMatch = tmpl.category === targetType;
+    const isCompatible = Boolean(tmpl.compatibleEventTypes && tmpl.compatibleEventTypes.includes(targetType as EventKind));
+    
+    if (isPrimaryMatch || isCompatible) {
+      matching.push(tmpl);
+    } else {
+      others.push(tmpl);
+    }
+  }
+
+  // Sort matching: primary category matches first, then compatible matches
+  matching.sort((a, b) => {
+    const aPrimary = a.category === targetType ? 1 : 0;
+    const bPrimary = b.category === targetType ? 1 : 0;
+    return bPrimary - aPrimary;
+  });
+
+  return {
+    matching,
+    others,
+    allSorted: [...matching, ...others]
+  };
 }
 
 // Aliases & Preset collections

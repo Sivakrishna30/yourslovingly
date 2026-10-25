@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { 
   Palette, 
@@ -7,15 +7,12 @@ import {
   Sparkles, 
   Layers, 
   Trash2, 
-  ArrowRight, 
-  ArrowLeft,
   Upload,
   Check,
   Sliders,
   Eye,
-  Calendar,
-  MapPin,
-  Save
+  Smartphone,
+  Monitor
 } from 'lucide-react';
 import type { 
   LovinglyEvent, 
@@ -23,6 +20,8 @@ import type {
   DecorativeMotif, 
   BackgroundTexture 
 } from '../../types';
+import { EventViewer } from '../Viewer';
+import { CreationBottomNav } from './CreationBottomNav';
 import { 
   COLOR_PALETTES, 
   FONT_PAIRINGS, 
@@ -50,7 +49,32 @@ const CATEGORIES: Array<'palette' | 'fonts' | 'frames' | 'motifs' | 'textures' |
 
 export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: ElementsStepProps) {
   const [activeCategory, setActiveCategory] = useState<'palette' | 'fonts' | 'frames' | 'motifs' | 'textures' | 'photos'>('palette');
+  const [previewMode, setPreviewMode] = useState<'mobile' | 'desktop'>('mobile');
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const isBlankCanvas = !event.templateId;
+
+  const livePreviewEvent: LovinglyEvent = useMemo(() => {
+    return {
+      ...event,
+      // For blank canvas, ensure clean white background and dark text (avoiding default maroon fallback unless styled)
+      ...(isBlankCanvas ? {
+        primaryColor: (event.primaryColor && event.primaryColor !== '#881337') ? event.primaryColor : '#1c1917',
+        secondaryColor: (event.secondaryColor && event.secondaryColor !== '#fff1f2') ? event.secondaryColor : '#ffffff',
+        frameType: event.frameType || 'none',
+        decorativeMotif: event.decorativeMotif || 'none',
+        textureType: event.textureType || 'none',
+        elements: [],
+      } : {}),
+      title: event.title?.trim() || 'Event Title',
+      recipientName: event.recipientName?.trim() || (isBlankCanvas ? '' : 'Host / Subtitle'),
+      eventDate: event.eventDate?.trim() || 'Date & Time',
+      location: event.location?.trim() || 'Venue Location',
+      messages: (event.messages && event.messages.some(m => m && m.trim()))
+        ? event.messages.filter(m => m && m.trim())
+        : []
+    };
+  }, [event, isBlankCanvas]);
 
   const currentIndex = CATEGORIES.indexOf(activeCategory);
 
@@ -102,19 +126,20 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8 space-y-6 max-w-full overflow-x-hidden">
-      {/* Step Header */}
+    <div className="flex flex-col h-full min-h-0 overflow-hidden w-full max-w-full">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8 space-y-6 max-w-full">
+        {/* Step Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase tracking-wider">
           <span>Step 3 of 6</span>
           <span>•</span>
-          <span>Elements, Motifs & Styles</span>
+          <span>Elements & Styles</span>
         </div>
         <h2 className="text-2xl sm:text-4xl font-serif font-bold text-stone-900">
           Craft & Style Every Element
         </h2>
         <p className="text-stone-500 text-sm sm:text-base leading-relaxed">
-          Select auspicious Indian motifs, decorative frames, textured backgrounds, color palettes, and custom typography.
+          Select auspicious center elements, decorative frames, textured backgrounds, color palettes, and custom typography.
         </p>
       </div>
 
@@ -136,7 +161,7 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
               { id: 'palette', label: 'Colors', icon: Palette },
               { id: 'fonts', label: 'Fonts', icon: Type },
               { id: 'frames', label: 'Frames', icon: Layers },
-              { id: 'motifs', label: 'Motifs', icon: Sparkles },
+              { id: 'motifs', label: 'Center Elements', icon: Sparkles },
               { id: 'textures', label: 'Textures', icon: Sliders },
               { id: 'photos', label: 'Photos', icon: ImageIcon }
             ].map(tab => {
@@ -208,14 +233,17 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
                       key={font.id}
                       onClick={() => {
                         const cur = event.elementStyles || {};
-                        onUpdate({
-                          elementStyles: {
-                            ...cur,
-                            title: { ...(cur.title || {}), fontFamily: font.headingFont },
-                            recipient: { ...(cur.recipient || {}), fontFamily: font.accentFont },
-                            messages: { ...(cur.messages || {}), fontFamily: font.bodyFont }
-                          }
+                        const nextStyles = { ...cur };
+                        nextStyles.title = { ...(cur.title || {}), fontFamily: font.headingFont };
+                        nextStyles.recipient = { ...(cur.recipient || {}), fontFamily: font.accentFont };
+                        nextStyles.quote = { ...(cur.quote || {}), fontFamily: font.accentFont };
+                        nextStyles.details = { ...(cur.details || {}), fontFamily: font.bodyFont };
+                        nextStyles.date = { ...(cur.date || {}), fontFamily: font.headingFont };
+                        nextStyles.venue = { ...(cur.venue || {}), fontFamily: font.bodyFont };
+                        (event.messages || []).forEach((_, i) => {
+                          nextStyles[`message_${i}`] = { ...(cur[`message_${i}`] || {}), fontFamily: font.bodyFont };
                         });
+                        onUpdate({ elementStyles: nextStyles });
                       }}
                       className={`p-4 rounded-2xl border text-left space-y-2 transition-all cursor-pointer ${
                         isSelected ? 'border-rose-600 ring-2 ring-rose-600/20 bg-rose-50/40' : 'border-stone-200 hover:border-stone-400'
@@ -265,11 +293,11 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
             </motion.div>
           )}
 
-          {/* 4. Auspicious Motifs */}
+          {/* 4. Center Elements */}
           {activeCategory === 'motifs' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
               <h3 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
-                Auspicious Motifs & Symbols
+                Center Elements & Symbols
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {MOTIF_PRESETS.map(motif => {
@@ -357,85 +385,84 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
             </motion.div>
           )}
 
-          {/* Sticky Bottom Actions */}
-          <div className="sticky -bottom-4 sm:-bottom-6 lg:-bottom-8 -mx-4 sm:-mx-6 lg:-mx-8 -mb-4 sm:-mb-6 lg:-mb-8 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 sm:p-4 rounded-b-3xl z-20 shadow-lg flex items-center justify-between gap-2">
-            <button
-              onClick={handleBackClick}
-              className="px-3.5 sm:px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Previous Section</span>
-              <span className="sm:hidden">Back</span>
-            </button>
-
-            <button
-              onClick={handleSaveDraftClick}
-              className="px-3 sm:px-4 py-2.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50/60 hover:bg-rose-100 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-            >
-              <Save className="w-4 h-4 text-rose-600" />
-              <span>Save Draft</span>
-            </button>
-
-            <button
-              onClick={handleNextClick}
-              className="px-4 sm:px-6 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0"
-            >
-              <span>{currentIndex === CATEGORIES.length - 1 ? 'Continue to Guest Preview' : 'Move to Next Section'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
         </div>
 
-        {/* Right: Real-time Synchronized Preview Card (5 cols) */}
-        <div className="lg:col-span-5 sticky top-24">
-          <div className="bg-stone-100 rounded-3xl p-4 border border-stone-200 space-y-3">
-            <div className="flex items-center justify-between px-2">
-              <span className="text-[11px] font-bold text-stone-600 uppercase tracking-wider flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-stone-500" />
-                Live Canvas Sync
-              </span>
-              <span className="text-[10px] text-stone-400 font-medium">Updates as you type</span>
-            </div>
-
-            {/* Simulated Live Viewport Card */}
-            <div 
-              style={{ backgroundColor: event.primaryColor || '#881337' }}
-              className="rounded-2xl p-6 text-white text-center space-y-4 shadow-md overflow-hidden relative"
-            >
-              {event.shlokaText && (
-                <p className="text-[10px] text-amber-200/90 font-serif italic tracking-wide">
-                  {event.shlokaText}
-                </p>
-              )}
-
-              <div className="space-y-1">
-                <p className="text-[11px] uppercase tracking-widest text-amber-200 font-semibold">
-                  {event.recipientName || 'Together with their families'}
-                </p>
-                <h3 className="font-serif font-bold text-2xl text-white tracking-tight leading-tight">
-                  {event.title || 'Event Title'}
-                </h3>
+        {/* Right: Real-time Synchronized Production Live Canvas Sync (5 cols) */}
+        <div className="lg:col-span-5 sticky top-20 space-y-2">
+          <div className="bg-stone-100 rounded-3xl p-3 sm:p-4 border border-stone-200 space-y-3">
+            {/* Header: Title + Device Mode Switcher (hidden on mobile, visible on desktop) */}
+            <div className="flex items-center justify-between px-1">
+              <div>
+                <span className="text-[11px] font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5 text-stone-500" />
+                  Live Canvas Sync
+                </span>
+                <span className="text-[10px] text-stone-400 font-medium">Updates as you style</span>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-xs border border-white/20 rounded-xl p-3 text-left space-y-1.5 text-xs">
-                <div className="flex items-center gap-2 text-amber-100">
-                  <Calendar className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                  <span className="truncate">{event.eventDate || 'Date & Time'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-white/90">
-                  <MapPin className="w-3.5 h-3.5 text-rose-300 shrink-0" />
-                  <span className="truncate">{event.location || 'Venue Location'}</span>
-                </div>
-              </div>
-
-              <div className="space-y-1 text-xs text-white/80 italic font-serif leading-relaxed">
-                {event.messages && event.messages[0] && <p>"{event.messages[0]}"</p>}
-                {event.messages && event.messages[1] && <p className="text-[11px]">"{event.messages[1]}"</p>}
+              {/* Mobile / Desktop switcher toggle: hidden on mobile per requirement, matching SampleCanvasEditor */}
+              <div className="hidden md:flex items-center gap-1 bg-stone-200/70 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('mobile')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    previewMode === 'mobile' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-800'
+                  }`}
+                  title="Mobile View"
+                  aria-label="Switch to Mobile View"
+                >
+                  <Smartphone className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <span>Mobile</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('desktop')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    previewMode === 'desktop' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-800'
+                  }`}
+                  title="Desktop View"
+                  aria-label="Switch to Desktop View"
+                >
+                  <Monitor className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <span>Desktop</span>
+                </button>
               </div>
             </div>
+
+            {/* Live Full Production EventViewer Preview (Identical to Step 2 & SampleCanvasEditor model) */}
+            <div className="flex justify-center bg-stone-900/5 rounded-2xl p-2 sm:p-4 border border-stone-200/80 overflow-hidden min-h-[480px]">
+              <div className={`transition-all duration-300 w-full ${
+                previewMode === 'mobile' 
+                  ? 'max-w-[340px] sm:max-w-[380px] rounded-[36px] sm:rounded-[44px] border-4 sm:border-[8px] border-stone-900 shadow-2xl overflow-hidden bg-white max-h-[660px] overflow-y-auto mx-auto' 
+                  : 'w-full rounded-2xl border border-stone-300 shadow-xl overflow-hidden bg-white max-h-[660px] overflow-y-auto'
+              }`}>
+                <EventViewer 
+                  event={livePreviewEvent} 
+                  deviceMode={previewMode} 
+                  isBuilderMode={false} 
+                  disableAutoplay={true}
+                />
+              </div>
+            </div>
+
+            <p className="text-center text-[11px] text-stone-400">
+              Live interactive preview • Changes update as you style
+            </p>
           </div>
         </div>
       </div>
+      </div>
+
+      {/* Fixed Bottom Navigation Bar */}
+      <CreationBottomNav 
+        onBack={handleBackClick}
+        onNext={handleNextClick}
+        onSaveDraft={handleSaveDraftClick}
+        backLabel="Previous Section"
+        mobileBackLabel="Back"
+        nextLabel={currentIndex === CATEGORIES.length - 1 ? 'Move to Integrations' : 'Move to Next Section'}
+        mobileNextLabel={currentIndex === CATEGORIES.length - 1 ? 'Features' : 'Next'}
+      />
     </div>
   );
 }

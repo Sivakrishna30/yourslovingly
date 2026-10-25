@@ -31,7 +31,7 @@ The Landing Page must immediately and clearly answer 6 fundamental visitor quest
 * **Transparent Pricing**:
   - Highlights the ₹49 Basic and ₹99 Premium tiers with feature checklists.
 * **Comprehensive FAQ**:
-  - Addresses user expectations regarding hosting duration (15/30 days / lifetime), editing after publishing, mobile viewing, and guest limits.
+  - Addresses user expectations regarding hosting duration (15 days initial / +30 days extensions), editing after publishing, mobile viewing, and guest limits.
 
 ---
 
@@ -112,6 +112,6 @@ Depending on the Invite's exact lifecycle state, the UI exposes contextual actio
 * `Share / Copy Link`: Copies the canonical public URL with instant feedback toast.
 * `QR Generator`: Opens QR download and printable asset modal.
 * `Analytics`: Opens visitor view counts and RSVP submission tallies.
-* `Extend Validity`: Opens hosting renewal modal (₹49/30d Basic, ₹99/30d Premium, ₹999 Lifetime).
+* `Extend Validity`: Opens hosting renewal modal (₹49/30d Basic, ₹99/30d Premium extensions).
 * `Copy to New`: Clones all design elements and pages into an independent new Draft with a distinct ID.
 * `Delete`: Prompts for confirmation before moving to soft-deleted status.

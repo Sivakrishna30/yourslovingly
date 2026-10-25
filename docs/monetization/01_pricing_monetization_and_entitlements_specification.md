@@ -322,12 +322,10 @@ Validity extensions are purchased individually per-Invite:
 
 - **Basic Invite Extension**: **₹49** for **+30 days** of live hosting.
 - **Premium Invite Extension**: **₹99** for **+30 days** of live hosting.
-- **Lifetime Validity**: **₹999** per Invite for permanent hosting with no expiration date.
 
 ### Extension Stacking Rules:
 - **Active Invites**: Adding +30 days extends from the current expiration timestamp (stacking). Multiple 30-day extensions can be purchased consecutively.
 - **Expired Invites**: Adding +30 days reactivates the Invite for 30 days starting immediately from the extension purchase timestamp.
-- **Lifetime Validity**: Sets the expiration timestamp to infinite/permanent, removing all future expiration notices.
 - Extensions extend hosting validity only; they do not alter design layout or convert the Invite into a Draft.
 
 ### Copy to New
@@ -443,7 +441,6 @@ These are not intended to become creative restrictions in the product experience
 | **Post-Publication Text Corrections** | Free & Unlimited | Free & Unlimited |
 | **Post-Publication Design Alterations** | ❌ (Requires "Copy to New") | ❌ (Requires "Copy to New") |
 | **30-Day Hosting Extension** | **₹49** | **₹99** |
-| **Lifetime Hosting Validity** | **₹999** | **₹999** |
 | **Upgrade to Premium** | — | **₹49 additional** |
 | **Bundle / Creator Pack Pricing** | None (Atomic per-Invite) | None (Atomic per-Invite) |
 | **Monthly / Yearly Subscriptions** | None | None |
@@ -458,7 +455,7 @@ These are not intended to become creative restrictions in the product experience
 4. Initial hosting validity = 15 days from publication timestamp for all newly published Invites.
 5. Basic 30-day hosting extension = ₹49 (stacks onto active expiry or reactivates expired Invite for 30 days).
 6. Premium 30-day hosting extension = ₹99 (stacks onto active expiry or reactivates expired Invite for 30 days).
-7. Lifetime validity = ₹999 per Invite (permanent hosting, never expires).
+7. NO lifetime hosting option is offered (only predictable 30-day extensions are maintained).
 8. NO bundle pricing, NO Creator Packs, and NO multi-Invite packages (e.g. no ₹499/₹999 packs).
 9. NO user-facing "Page Slot" arithmetic or slot consumption models.
 10. Premium is an Invite-level entitlement, not a permanent user subscription.

@@ -9,18 +9,13 @@ import {
   Music,
   ArrowRight,
   Sparkles,
-  Layers,
   BarChart3,
-  Mail,
-  CreditCard,
-  FileText,
   Check,
   Clock,
   Eye
 } from 'lucide-react';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { useState } from 'react';
-import { creationCategories } from '../lib/constants';
 import type { CreationCategory, DesignStyle } from '../types';
 import koreanHeartLogo from '../assets/images/korean_heart_golden_logo_1786820911376.jpg';
 import { SamplesShowcase, type SampleInvite } from './SamplesShowcase';
@@ -135,28 +130,12 @@ export function Navbar({ user, onSignIn, onSignOut, onLogoClick }: NavbarProps) 
 }
 
 export function Hero({ 
-  onStart,
-  onStartWithCategory
+  onStart
  }: { 
   onStart: () => void;
   onStartWithCategory?: (cat: CreationCategory, style?: DesignStyle) => void;
   onNavigateToPricing?: () => void;
 }) {
-  const getCategoryIcon = (id: CreationCategory) => {
-    switch (id) {
-      case 'invite':
-        return <Mail className="w-5 h-5 text-primary" />;
-      case 'business-card':
-        return <CreditCard className="w-5 h-5 text-secondary" />;
-      case 'flyer':
-        return <FileText className="w-5 h-5 text-accent" />;
-      case 'portfolio':
-        return <Sparkles className="w-5 h-5 text-purple-600" />;
-      default:
-        return <Layers className="w-5 h-5 text-stone-700" />;
-    }
-  };
-
   return (
     <section className="relative pt-24 sm:pt-28 lg:pt-32 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-brand-orange/5 via-stone-50/60 to-white">
       {/* 30% Visible Background Logo Layer for Hero Panel */}
@@ -171,7 +150,7 @@ export function Hero({
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-brand-red/10 via-brand-teal/5 to-transparent -z-10 blur-3xl pointer-events-none" />
       
       <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <div className="max-w-3xl">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -209,55 +188,6 @@ export function Hero({
                 Pricing
                 <ArrowRight className="w-4 h-4 text-stone-500" />
               </a>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="relative w-full"
-          >
-            <div className="bg-stone-50/70 p-4 sm:p-6 rounded-3xl border border-stone-200/90 shadow-xl shadow-stone-200/50 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-stone-200/80">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-white shadow-xs">
-                    <Layers className="w-4 h-4 fill-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-stone-900 text-sm sm:text-base">Select Page Type</h3>
-                    <p className="text-[11px] text-stone-500">Pick a category to begin crafting your page</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Square Panels Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
-                {creationCategories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => onStartWithCategory ? onStartWithCategory(cat.id) : onStart()}
-                    className="p-3.5 sm:p-4 rounded-2xl bg-white border border-stone-200 hover:border-secondary hover:shadow-md transition-all text-left group flex flex-col justify-between min-h-[130px] sm:min-h-[148px]"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2.5 sm:mb-3">
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-stone-100/90 border border-stone-200/70 flex items-center justify-center group-hover:scale-105 group-hover:bg-brand-teal/5 transition-all">
-                          {getCategoryIcon(cat.id)}
-                        </div>
-                        <span className="text-[10px] font-bold text-secondary bg-brand-teal/5 border border-brand-teal/10 px-2 py-0.5 rounded-md group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all flex items-center gap-1">
-                          Create <ArrowRight className="w-2.5 h-2.5" />
-                        </span>
-                      </div>
-                      <h4 className="font-bold text-stone-900 text-xs sm:text-sm group-hover:text-secondary transition-colors leading-tight">
-                        {cat.title}
-                      </h4>
-                    </div>
-                    <p className="text-[11px] text-stone-500 line-clamp-2 mt-1.5 sm:mt-2 leading-relaxed">
-                      {cat.subtitle}
-                    </p>
-                  </button>
-                ))}
-              </div>
             </div>
           </motion.div>
         </div>
@@ -426,7 +356,7 @@ export function Landing({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 relative">
             <div className="absolute top-1/4 left-0 w-full h-px bg-stone-800 hidden md:block -z-10" />
             {[
-              { step: "01", title: "Select Category", desc: "Choose a Digital Invite, Business Card, Flyer, or Portfolio." },
+              { step: "01", title: "Select Category", desc: "Choose your invitation event type and starting template." },
               { step: "02", title: "Customize Details", desc: "Add your event title, date, venue location, music, and photos." },
               { step: "03", title: "Publish and Export", desc: "Share your live link, track page insights, or export as PDF to print physical copies." }
             ].map((s, i) => (
@@ -451,7 +381,7 @@ export function Landing({
               Pay-As-You-Need Transactional Pricing
             </div>
             <h2 className="text-2xl sm:text-4xl lg:text-5xl font-serif font-bold text-stone-900 leading-tight">
-              Start Free. Scale with Basic Pages, Premium Upgrades, or Lifetime Hosting.
+              Start Free. Scale with Basic Pages, Premium Upgrades, and 30-Day Extensions.
             </h2>
             <p className="text-sm sm:text-base lg:text-lg text-stone-600 leading-relaxed">
               Every published page begins with 15 days of live hosting. No monthly recurring fees. Upgrade to Premium for Google Maps, RSVP, UPI QR, and a 100% Watermark-Free experience.
@@ -601,12 +531,12 @@ export function Landing({
                 Extend Validity or Upgrade Any Page Anytime
               </h3>
               <p className="text-stone-300 text-xs sm:text-sm leading-relaxed">
-                If your initial 15-day hosting duration expires, extend validity for that specific page or unlock permanent lifetime hosting directly from your dashboard.
+                If your initial 15-day hosting duration expires, extend validity for that specific page with 30-day extensions directly from your dashboard.
               </p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-4 w-full">
-              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
@@ -621,7 +551,7 @@ export function Landing({
                 </div>
               </div>
 
-              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/30">
@@ -636,7 +566,7 @@ export function Landing({
                 </div>
               </div>
 
-              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
@@ -647,21 +577,6 @@ export function Landing({
                   <h4 className="text-xs font-bold text-white mt-1">Basic → Premium Upgrade</h4>
                   <p className="text-[11px] text-stone-300 leading-relaxed">
                     Upgrade an existing published Basic page to Premium with no watermark.
-                  </p>
-                </div>
-              </div>
-
-              <div className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] max-w-xs bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-500/30">
-                      Lifetime Single
-                    </span>
-                    <span className="text-lg font-bold text-teal-300">₹999</span>
-                  </div>
-                  <h4 className="text-xs font-bold text-white mt-1">Permanent Lifetime Hosting</h4>
-                  <p className="text-[11px] text-stone-300 leading-relaxed">
-                    Unlocks permanent lifetime hosting for this page alone. Never expires.
                   </p>
                 </div>
               </div>
@@ -684,8 +599,8 @@ export function Landing({
               answer="A Basic Page (₹49 for 15 days) includes essential features (Spotify, 10-image gallery, venue text, PDF export) with a platform watermark. A Premium Page (₹99 for 15 days) unlocks a completely Watermark-Free experience, Interactive Google Maps & Directions, auto-generated Location QR Code, Interactive RSVP & attendance tracking, UPI Gift Scanner / QR (direct to your UPI), and Page Insights & WhatsApp Reports."
             />
             <FAQItem 
-              question="How do hosting extensions and Lifetime Hosting work?"
-              answer="Every newly published page starts with 15 days of hosting. You can extend hosting anytime from your dashboard for ₹49 (+30 days for Basic) or ₹99 (+30 days for Premium). You can also unlock permanent Lifetime Hosting for ₹999 so your page never expires."
+              question="How do hosting extensions work?"
+              answer="Every newly published page starts with 15 days of hosting. You can extend hosting anytime from your dashboard for ₹49 (+30 days for Basic) or ₹99 (+30 days for Premium) for as many 30-day extension cycles as you need."
             />
             <FAQItem 
               question="Can I upgrade an existing Basic page to Premium?"
@@ -698,10 +613,6 @@ export function Landing({
             <FAQItem 
               question="What happens if a page expires or is deleted?"
               answer="When hosting expires, your original URL remains reserved and visitors see a clean 'Page Expired' screen. Extending hosting immediately restores public access. Deleted pages enter a 30-day recovery window before permanent removal."
-            />
-            <FAQItem 
-              question="Can I print my business cards, flyers, and pamphlets?"
-              answer="Yes. Eligible published pages can be downloaded as print-ready PDFs and high-resolution images for single-page designs or full-document PDFs for multi-page designs."
             />
           </div>
         </div>
@@ -745,7 +656,7 @@ export function Landing({
                 Yours Lovingly
               </div>
               <p className="text-stone-500 max-w-sm leading-relaxed text-xs sm:text-sm">
-                Design interactive digital invites, smart business cards, event flyers, and portfolios with Google Maps directions, real-time page insights, and print-ready PDF exports.
+                Design interactive digital invites with Google Maps directions, real-time page insights, and print-ready PDF exports.
               </p>
             </div>
             <div>

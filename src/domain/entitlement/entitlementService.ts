@@ -22,10 +22,9 @@ export class EntitlementService {
   }
 
   /**
-   * Determine the price of a validity extension.
+   * Determine the price of a 30-day validity extension.
    */
-  static getExtensionPrice(tier: EntitlementTier, isLifetime: boolean): number {
-    if (isLifetime) return PricingModel.PREMIUM_LIFETIME;
+  static getExtensionPrice(tier: EntitlementTier): number {
     if (tier === 'basic') return PricingModel.BASIC_EXTENSION_30_DAYS;
     if (tier === 'premium') return PricingModel.PREMIUM_EXTENSION_30_DAYS;
     return 0;

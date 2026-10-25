@@ -5,16 +5,15 @@ import {
   Users, 
   IndianRupee, 
   Lock, 
-  ArrowRight, 
-  ArrowLeft, 
   ShieldCheck,
-  Save,
   Check,
   Upload,
   Sparkles,
   X
 } from 'lucide-react';
 import type { LovinglyEvent, RsvpFormConfig } from '../../types';
+import { AudioUploader } from '../audio/AudioUploader';
+import { CreationBottomNav } from './CreationBottomNav';
 
 interface FeaturesStepProps {
   event: LovinglyEvent;
@@ -93,8 +92,9 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
   const hasUpiConfigured = !!(event.upiQrImageUrl || event.upiId);
 
   return (
-    <div className="max-w-5xl mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8 space-y-6 max-w-full overflow-x-hidden">
-      {/* Header */}
+    <div className="flex flex-col h-full min-h-0 overflow-hidden w-full max-w-full">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8 space-y-6 max-w-full">
+        {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase tracking-wider">
           <span>Step 4 of 6</span>
@@ -122,7 +122,7 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
         {/* Navigation Tabs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 bg-stone-100 rounded-2xl">
           {[
-            { id: 'spotify', label: 'Spotify Music', icon: Music, badge: 'Basic Included' },
+            { id: 'spotify', label: 'Music & Audio', icon: Music, badge: event.bgAudioUrl ? 'MP3 Active' : event.spotifyUrl ? 'Spotify Active' : 'Basic Included' },
             { id: 'rsvp', label: 'RSVP Form', icon: Users, badge: event.rsvpConfig?.enabled === true ? 'Active' : '⭐ Premium' },
             { id: 'upi', label: 'UPI Gifts & QR', icon: IndianRupee, badge: hasUpiConfigured ? 'Active' : '⭐ Premium' },
             { id: 'security', label: 'Password Lock', icon: Lock, badge: event.password ? 'Protected' : '⭐ Premium' }
@@ -152,37 +152,14 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
           })}
         </div>
 
-        {/* Tab 1: Spotify Music */}
+        {/* Tab 1: Music & Audio (MP3 Upload & Spotify) */}
         {activeTab === 'spotify' && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-            <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3">
-              <Music className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-xs font-bold text-emerald-900">Background Celebration Music</h4>
-                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-md">Basic Feature</span>
-                </div>
-                <p className="text-xs text-emerald-700 leading-relaxed mt-0.5">
-                  Embed any track or playlist from Spotify. Visitors will see a refined floating music player to enjoy your curated celebration vibe.
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
-                Spotify Track or Playlist URL
-              </label>
-              <input
-                type="url"
-                value={event.spotifyUrl || ''}
-                onChange={(e) => onUpdate({ spotifyUrl: e.target.value })}
-                placeholder="https://open.spotify.com/track/..."
-                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:bg-white focus:outline-none focus:border-rose-600 transition-all"
-              />
-              <p className="text-[11px] text-stone-400 mt-1.5">
-                Paste any Spotify track, album, or playlist link directly.
-              </p>
-            </div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            <AudioUploader
+              event={event}
+              onChange={onUpdate}
+              variant="card"
+            />
           </motion.div>
         )}
 
@@ -434,34 +411,19 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
           </motion.div>
         )}
 
-        {/* Sticky Bottom Actions */}
-        <div className="sticky -bottom-4 sm:-bottom-6 lg:-bottom-8 -mx-4 sm:-mx-6 lg:-mx-8 -mb-4 sm:-mb-6 lg:-mb-8 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 sm:p-4 rounded-b-3xl z-20 shadow-lg flex items-center justify-between gap-2">
-          <button
-            onClick={handleBackClick}
-            className="px-3.5 sm:px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back to Previous Section</span>
-            <span className="sm:hidden">Back</span>
-          </button>
-
-          <button
-            onClick={handleSaveDraftClick}
-            className="px-3 sm:px-4 py-2.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50/60 hover:bg-rose-100 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-          >
-            <Save className="w-4 h-4 text-rose-600" />
-            <span>Save Draft</span>
-          </button>
-
-          <button
-            onClick={handleNextClick}
-            className="px-4 sm:px-6 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0"
-          >
-            <span>{currentIndex === FEATURE_TABS.length - 1 ? 'Continue to Live Guest Preview' : 'Move to Next Section'}</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
         </div>
       </div>
+
+      {/* Fixed Bottom Navigation Bar */}
+      <CreationBottomNav 
+        onBack={handleBackClick}
+        onNext={handleNextClick}
+        onSaveDraft={handleSaveDraftClick}
+        backLabel="Previous Section"
+        mobileBackLabel="Back"
+        nextLabel={currentIndex === FEATURE_TABS.length - 1 ? 'Continue to Hosting & Plan' : 'Move to Next Section'}
+        mobileNextLabel={currentIndex === FEATURE_TABS.length - 1 ? 'Hosting' : 'Next'}
+      />
     </div>
   );
 }

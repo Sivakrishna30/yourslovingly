@@ -28,6 +28,14 @@ export interface SampleInvite {
   bgGradient: string;
   musicTrack?: string;
   spotifySong?: string;
+  musicType?: 'spotify' | 'mp3' | 'none';
+  bgAudioPresetId?: string;
+  bgAudioUrl?: string;
+  bgAudioTitle?: string;
+  bgAudioStart?: number;
+  bgAudioEnd?: number;
+  bgAudioAutoPlay?: boolean;
+  photos?: string[];
   hasRsvp: boolean;
   hasMap: boolean;
   hasQr: boolean;
@@ -64,7 +72,16 @@ export const SAMPLE_INVITES: SampleInvite[] = [
     highlightColor: '#D97706',
     bgGradient: 'from-rose-950 via-rose-900 to-amber-950',
     musicTrack: 'Mangalyam Tantunanena • Royal Shehnai',
-    spotifySong: 'https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT',
+    musicType: 'mp3',
+    bgAudioPresetId: 'preset-shehnai-mangalyam',
+    bgAudioTitle: 'Mangalyam Tantunanena • Royal Shehnai',
+    bgAudioStart: 0,
+    bgAudioEnd: 30,
+    bgAudioAutoPlay: true,
+    photos: [
+      'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80'
+    ],
     hasRsvp: true,
     hasMap: true,
     hasQr: true,
@@ -99,8 +116,13 @@ export const SAMPLE_INVITES: SampleInvite[] = [
     highlightColor: '#F59E0B',
     bgGradient: 'from-amber-900 via-amber-800 to-orange-950',
     musicTrack: 'Happy Birthday Celebration Beat',
+    musicType: 'spotify',
     spotifySong: 'https://open.spotify.com/track/7iN1Perform6052026',
-    hasRsvp: true,
+    photos: [
+      'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80'
+    ],
+    hasRsvp: false,
     hasMap: true,
     hasQr: true,
     templateId: 'tmpl-birthday-luxury-gold',
@@ -134,8 +156,16 @@ export const SAMPLE_INVITES: SampleInvite[] = [
     highlightColor: '#FBBF24',
     bgGradient: 'from-emerald-950 via-emerald-900 to-teal-950',
     musicTrack: 'Vedic Shanti Mantra & Classical Flute',
-    spotifySong: 'https://open.spotify.com/track/1PFluteTrack2026',
-    hasRsvp: true,
+    musicType: 'mp3',
+    bgAudioPresetId: 'preset-sacred-temple-flute',
+    bgAudioTitle: 'Vedic Shanti Mantra & Classical Flute',
+    bgAudioStart: 0,
+    bgAudioEnd: 28,
+    bgAudioAutoPlay: true,
+    photos: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80'
+    ],
+    hasRsvp: false,
     hasMap: true,
     hasQr: true,
     templateId: 'tmpl-housewarming-traditional-kolam',
@@ -168,7 +198,17 @@ export const SAMPLE_INVITES: SampleInvite[] = [
     secondaryColor: '#F0FDFA',
     highlightColor: '#F59E0B',
     bgGradient: 'from-teal-950 via-teal-900 to-cyan-950',
-    musicTrack: 'Romantic Violin & Piano Symphony',
+    musicTrack: 'Romantic Violin & Acoustic Symphony',
+    musicType: 'mp3',
+    bgAudioPresetId: 'preset-romantic-acoustic',
+    bgAudioTitle: 'Romantic Acoustic Celebration',
+    bgAudioStart: 0,
+    bgAudioEnd: 26,
+    bgAudioAutoPlay: true,
+    photos: [
+      'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=800&q=80'
+    ],
     hasRsvp: true,
     hasMap: true,
     hasQr: true,
@@ -203,7 +243,12 @@ export const SAMPLE_INVITES: SampleInvite[] = [
     highlightColor: '#F59E0B',
     bgGradient: 'from-purple-950 via-purple-900 to-pink-950',
     musicTrack: 'Retro Nostalgia Pop Playlist',
-    hasRsvp: true,
+    musicType: 'spotify',
+    spotifySong: 'https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT',
+    photos: [
+      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80'
+    ],
+    hasRsvp: false,
     hasMap: true,
     hasQr: true,
     templateId: 'tmpl-wedding-obsidian-gold',
@@ -237,6 +282,15 @@ export const SAMPLE_INVITES: SampleInvite[] = [
     highlightColor: '#38BDF8',
     bgGradient: 'from-slate-950 via-slate-900 to-zinc-950',
     musicTrack: 'Ambient Corporate Lounge Beats',
+    musicType: 'mp3',
+    bgAudioPresetId: 'preset-festive-sitar-chimes',
+    bgAudioTitle: 'Ambient Summit Melodic Lounge',
+    bgAudioStart: 0,
+    bgAudioEnd: 25,
+    bgAudioAutoPlay: true,
+    photos: [
+      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80'
+    ],
     hasRsvp: true,
     hasMap: true,
     hasQr: true,

@@ -358,7 +358,7 @@ export function Dashboard({
                           <div className="flex items-center gap-1.5 truncate">
                             <Clock className={`w-3.5 h-3.5 shrink-0 ${hostingInfo.isExpired ? 'text-primary' : 'text-stone-500'}`} />
                             <span className="text-stone-600 font-medium truncate">
-                              {hostingInfo.isLifetime ? 'Lifetime' : `${hostingInfo.daysRemaining}d left`}
+                              {`${hostingInfo.daysRemaining}d left`}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0">

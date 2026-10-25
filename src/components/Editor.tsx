@@ -13,7 +13,6 @@ import {
   Copy,
   MapPin,
   IndianRupee,
-  Music,
   LogIn,
   X,
   Plus,
@@ -35,6 +34,7 @@ import { EventViewer } from './Viewer';
 import { HostingRenewalModal } from './HostingRenewalModal';
 import { StudioInspector } from './StudioInspector';
 import { SmartMessageSuggestion } from './SmartMessageSuggestion';
+import { AudioUploader } from './audio/AudioUploader';
 import { 
   FONT_PAIRINGS, 
   filterMasterTemplates,
@@ -263,7 +263,7 @@ export function EventEditor({
               <Clock className={`w-3.5 h-3.5 ${hostingInfo.isExpired ? 'text-primary' : 'text-stone-600'}`} />
               <span className="hidden lg:inline text-stone-600">Hosting:</span>
               <span className={`px-1.5 py-0.5 rounded-md font-bold text-[9px] sm:text-[10px] uppercase tracking-wider ${hostingInfo.badgeBg} ${hostingInfo.badgeBorder}`}>
-                {hostingInfo.isLifetime ? 'Lifetime' : `${hostingInfo.daysRemaining}d`}
+                {`${hostingInfo.daysRemaining}d`}
               </span>
             </button>
 
@@ -820,22 +820,17 @@ export function EventEditor({
                     </div>
                   </div>
 
-                  {/* 2. Spotify Background Music Player */}
-                  <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200 space-y-2">
-                    <label className="block text-xs font-bold text-stone-800 flex items-center gap-1.5">
-                      <Music className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>Spotify Background Music (Song or Playlist)</span>
-                    </label>
-                    <input 
-                      type="url"
-                      value={event.spotifyUrl || ''}
-                      placeholder="https://open.spotify.com/track/..."
-                      onChange={(e) => updateField('spotifyUrl', e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs focus:ring-2 focus:ring-secondary transition-all outline-none"
+                  {/* 2. Celebration Music & MP3 Audio Autoplay */}
+                  <div className="space-y-2">
+                    <AudioUploader
+                      event={event}
+                      onChange={(updates) => {
+                        Object.entries(updates).forEach(([k, v]) => {
+                          updateField(k as keyof LovinglyEvent, v);
+                        });
+                      }}
+                      variant="card"
                     />
-                    <p className="text-[10px] text-stone-500 leading-tight">
-                      Embeds an interactive Spotify player so visitors can listen to your celebration melody.
-                    </p>
                   </div>
 
                   {/* 3. UPI Gift & QR Code Module */}
@@ -1175,8 +1170,9 @@ export function EventEditor({
             <EventViewer 
               event={event} 
               isBuilderMode={true}
+              disableAutoplay={true}
               activeElementKey={activeElementKey}
-              onSelectElementKey={(key) => setActiveElementKey(key)}
+              onSelectElementKey={(key) => setActiveElementKey(key || 'title')}
               onUpdateEvent={(updates) => onUpdate({ ...event, ...updates })}
             />
           </div>

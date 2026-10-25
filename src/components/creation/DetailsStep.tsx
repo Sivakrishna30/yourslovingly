@@ -1,21 +1,23 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { 
   Type, 
   Calendar, 
   MapPin, 
   FileText, 
-  ArrowRight, 
-  ArrowLeft,
   Eye,
-  Save,
   Check,
   Plus,
   Trash2,
-  Sparkles
+  Sparkles,
+  Smartphone,
+  Monitor
 } from 'lucide-react';
-import type { LovinglyEvent } from '../../types';
+import type { LovinglyEvent, StudioElementStyle } from '../../types';
+import { EventViewer } from '../Viewer';
 import { SmartMessageSuggestion } from '../SmartMessageSuggestion';
+import { CreationBottomNav } from './CreationBottomNav';
+import { FieldTypographyControl } from './FieldTypographyControl';
 
 interface DetailsStepProps {
   event: LovinglyEvent;
@@ -27,9 +29,54 @@ interface DetailsStepProps {
 
 export function DetailsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: DetailsStepProps) {
   const [activeTab, setActiveTab] = useState<'basics' | 'venue' | 'message'>('basics');
+  const [previewMode, setPreviewMode] = useState<'mobile' | 'desktop'>('mobile');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const handleUpdateElementStyle = (key: string, updates: Partial<StudioElementStyle>) => {
+    const currentStyles = event.elementStyles || {};
+    const existing = currentStyles[key] || {};
+    onUpdate({
+      elementStyles: {
+        ...currentStyles,
+        [key]: {
+          ...existing,
+          ...updates
+        }
+      }
+    });
+  };
+
+  const handleResetElementStyle = (key: string) => {
+    const currentStyles = { ...(event.elementStyles || {}) };
+    delete currentStyles[key];
+    onUpdate({ elementStyles: currentStyles });
+  };
+
   const messagesList = event.messages && event.messages.length > 0 ? event.messages : [''];
+
+  const isBlankCanvas = !event.templateId;
+
+  const livePreviewEvent: LovinglyEvent = useMemo(() => {
+    return {
+      ...event,
+      // For blank canvas, ensure clean white background and dark text (avoiding default maroon fallback)
+      ...(isBlankCanvas ? {
+        primaryColor: (event.primaryColor && event.primaryColor !== '#881337') ? event.primaryColor : '#1c1917',
+        secondaryColor: (event.secondaryColor && event.secondaryColor !== '#fff1f2') ? event.secondaryColor : '#ffffff',
+        frameType: event.frameType || 'none',
+        decorativeMotif: event.decorativeMotif || 'none',
+        textureType: event.textureType || 'none',
+        elements: [],
+      } : {}),
+      title: event.title?.trim() || 'Event Title',
+      recipientName: event.recipientName?.trim() || (isBlankCanvas ? '' : 'Host / Subtitle'),
+      eventDate: event.eventDate?.trim() || 'Date & Time',
+      location: event.location?.trim() || 'Venue Location',
+      messages: (event.messages && event.messages.some(m => m && m.trim()))
+        ? event.messages.filter(m => m && m.trim())
+        : []
+    };
+  }, [event, isBlankCanvas]);
 
   const handleUpdateMessage = (index: number, val: string) => {
     const updated = [...messagesList];
@@ -76,8 +123,9 @@ export function DetailsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: De
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8 space-y-6 max-w-full overflow-x-hidden">
-      {/* Step Header */}
+    <div className="flex flex-col h-full min-h-0 overflow-hidden w-full max-w-full">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8 space-y-6 max-w-full">
+        {/* Step Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold uppercase tracking-wider">
           <span>Step 2 of 6</span>
@@ -165,6 +213,14 @@ export function DetailsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: De
                   className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:bg-white focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-600 transition-all"
                 />
                 <span className="text-[11px] text-stone-400 mt-1 block">Displayed prominently as the main headline</span>
+                <FieldTypographyControl
+                  elementKey="title"
+                  fieldLabel="Event Title"
+                  isHeadline={true}
+                  currentStyle={event.elementStyles?.title}
+                  onUpdateStyle={handleUpdateElementStyle}
+                  onResetStyle={handleResetElementStyle}
+                />
               </div>
 
               <div>
@@ -178,6 +234,14 @@ export function DetailsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: De
                   placeholder="e.g. Together with their families, Our beloved family & friends"
                   className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:bg-white focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-600 transition-all"
                 />
+                <FieldTypographyControl
+                  elementKey="recipient"
+                  fieldLabel="Host Header / Subtitle"
+                  isHeadline={false}
+                  currentStyle={event.elementStyles?.recipient}
+                  onUpdateStyle={handleUpdateElementStyle}
+                  onResetStyle={handleResetElementStyle}
+                />
               </div>
 
               <div>
@@ -190,6 +254,14 @@ export function DetailsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: De
                   onChange={(e) => onUpdate({ shlokaText: e.target.value })}
                   placeholder="e.g. Celebrating Our Holy Matrimony, Two Souls One Love"
                   className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:bg-white focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-600 transition-all"
+                />
+                <FieldTypographyControl
+                  elementKey="quote"
+                  fieldLabel="Tagline / Quote"
+                  isHeadline={false}
+                  currentStyle={event.elementStyles?.quote}
+                  onUpdateStyle={handleUpdateElementStyle}
+                  onResetStyle={handleResetElementStyle}
                 />
               </div>
             </motion.div>
@@ -213,6 +285,14 @@ export function DetailsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: De
                   placeholder="e.g. Sunday, December 24, 2026 • 6:30 PM Onwards"
                   className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:bg-white focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-600 transition-all"
                 />
+                <FieldTypographyControl
+                  elementKey="date"
+                  fieldLabel="Date & Time"
+                  isHeadline={false}
+                  currentStyle={event.elementStyles?.date || event.elementStyles?.details}
+                  onUpdateStyle={handleUpdateElementStyle}
+                  onResetStyle={handleResetElementStyle}
+                />
               </div>
 
               <div>
@@ -225,6 +305,14 @@ export function DetailsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: De
                   rows={3}
                   placeholder="e.g. The Grand Ballroom, The Leela Palace, Old Airport Road, Bengaluru"
                   className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:bg-white focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-600 transition-all"
+                />
+                <FieldTypographyControl
+                  elementKey="venue"
+                  fieldLabel="Venue Location"
+                  isHeadline={false}
+                  currentStyle={event.elementStyles?.venue || event.elementStyles?.details}
+                  onUpdateStyle={handleUpdateElementStyle}
+                  onResetStyle={handleResetElementStyle}
                 />
               </div>
 
@@ -313,11 +401,25 @@ export function DetailsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: De
                     onChange={(e) => handleUpdateMessage(idx, e.target.value)}
                     rows={3}
                     placeholder={
-                      idx === 0 
-                        ? "With joyful hearts, we lovingly invite you to celebrate..." 
-                        : "Dinner and celebration to follow. Your presence is our most cherished gift."
+                      isBlankCanvas
+                        ? (idx === 0 
+                            ? "Write your personal invitation message here..." 
+                            : "Add another message paragraph...")
+                        : (idx === 0 
+                            ? "Write your personal invitation message..." 
+                            : "Dinner and celebration to follow. Your presence is our most cherished gift.")
                     }
                     className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-600 transition-all"
+                  />
+
+                  {/* Per-message typography controls */}
+                  <FieldTypographyControl
+                    elementKey={`message_${idx}`}
+                    fieldLabel={`Message Paragraph ${idx + 1}`}
+                    isHeadline={false}
+                    currentStyle={event.elementStyles?.[`message_${idx}`]}
+                    onUpdateStyle={handleUpdateElementStyle}
+                    onResetStyle={handleResetElementStyle}
                   />
 
                   {/* AI Smart Message Suggester bound to this paragraph */}
@@ -341,86 +443,79 @@ export function DetailsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: De
             </motion.div>
           )}
 
-          {/* Sticky Bottom Navigation Actions */}
-          <div className="sticky -bottom-4 sm:-bottom-6 lg:-bottom-8 -mx-4 sm:-mx-6 lg:-mx-8 -mb-4 sm:-mb-6 lg:-mb-8 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 sm:p-4 rounded-b-3xl z-20 shadow-lg flex items-center justify-between gap-2">
-            <button
-              onClick={handleBackClick}
-              className="px-3.5 sm:px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Previous Section</span>
-              <span className="sm:hidden">Back</span>
-            </button>
-
-            <button
-              onClick={handleSaveDraftClick}
-              className="px-3 sm:px-4 py-2.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50/60 hover:bg-rose-100 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-            >
-              <Save className="w-4 h-4 text-rose-600" />
-              <span>Save Draft</span>
-            </button>
-
-            <button
-              onClick={handleNextClick}
-              className="px-4 sm:px-6 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0"
-            >
-              <span>{activeTab === 'message' ? 'Continue to Motifs & Styles' : 'Move to Next Section'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
         </div>
 
-        {/* Right: Real-time Synchronized Preview Card (5 cols) */}
-        <div className="lg:col-span-5 sticky top-24">
-          <div className="bg-stone-100 rounded-3xl p-4 border border-stone-200 space-y-3">
+        {/* Right: Real-time Synchronized Full Preview (5 cols) */}
+        <div className="lg:col-span-5 sticky top-4">
+          <div className="bg-stone-100 rounded-3xl p-3 sm:p-4 border border-stone-200 space-y-3">
             <div className="flex items-center justify-between px-2">
-              <span className="text-[11px] font-bold text-stone-600 uppercase tracking-wider flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-stone-500" />
+              <span className="text-[11px] font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-rose-600" />
                 Live Canvas Sync
               </span>
-              <span className="text-[10px] text-stone-400 font-medium">Updates as you type</span>
-            </div>
-
-            {/* Simulated Live Viewport Card */}
-            <div 
-              style={{ backgroundColor: event.primaryColor || '#881337' }}
-              className="rounded-2xl p-6 text-white text-center space-y-4 shadow-md overflow-hidden relative"
-            >
-              {event.shlokaText && (
-                <p className="text-[10px] text-amber-200/90 font-serif italic tracking-wide">
-                  {event.shlokaText}
-                </p>
-              )}
-
-              <div className="space-y-1">
-                <p className="text-[11px] uppercase tracking-widest text-amber-200 font-semibold">
-                  {event.recipientName || 'Together with their families'}
-                </p>
-                <h3 className="font-serif font-bold text-2xl text-white tracking-tight leading-tight">
-                  {event.title || 'Event Title'}
-                </h3>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-xs border border-white/20 rounded-xl p-3 text-left space-y-1.5 text-xs">
-                <div className="flex items-center gap-2 text-amber-100">
-                  <Calendar className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                  <span className="truncate">{event.eventDate || 'Date & Time'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-white/90">
-                  <MapPin className="w-3.5 h-3.5 text-rose-300 shrink-0" />
-                  <span className="truncate">{event.location || 'Venue Location'}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2 text-xs text-white/80 italic font-serif leading-relaxed text-left">
-                {messagesList.filter(m => m.trim()).map((mText, i) => (
-                  <p key={i}>"{mText}"</p>
-                ))}
+              {/* Device Mode Switcher (Hidden on mobile screens, matches sample customize page model) */}
+              <div className="hidden md:flex items-center p-0.5 bg-stone-100 rounded-xl border border-stone-200 text-xs font-bold shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('mobile')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    previewMode === 'mobile' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-800'
+                  }`}
+                  title="Mobile View"
+                  aria-label="Switch to Mobile View"
+                >
+                  <Smartphone className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <span>Mobile</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('desktop')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    previewMode === 'desktop' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-800'
+                  }`}
+                  title="Desktop View"
+                  aria-label="Switch to Desktop View"
+                >
+                  <Monitor className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <span>Desktop</span>
+                </button>
               </div>
             </div>
+
+            {/* Live Full Production EventViewer Preview (Aligned with SampleCanvasEditor model) */}
+            <div className="flex justify-center bg-stone-900/5 rounded-2xl p-2 sm:p-4 border border-stone-200/80 overflow-hidden min-h-[480px]">
+              <div className={`transition-all duration-300 w-full ${
+                previewMode === 'mobile' 
+                  ? 'max-w-[340px] sm:max-w-[380px] rounded-[36px] sm:rounded-[44px] border-4 sm:border-[8px] border-stone-900 shadow-2xl overflow-hidden bg-white max-h-[660px] overflow-y-auto mx-auto' 
+                  : 'w-full rounded-2xl border border-stone-300 shadow-xl overflow-hidden bg-white max-h-[660px] overflow-y-auto'
+              }`}>
+                <EventViewer 
+                  event={livePreviewEvent} 
+                  deviceMode={previewMode} 
+                  isBuilderMode={false} 
+                  disableAutoplay={true}
+                />
+              </div>
+            </div>
+
+            <p className="text-center text-[11px] text-stone-400">
+              Live interactive preview • Changes update as you type
+            </p>
           </div>
         </div>
       </div>
+      </div>
+
+      {/* Fixed Bottom Navigation Bar */}
+      <CreationBottomNav 
+        onBack={handleBackClick}
+        onNext={handleNextClick}
+        onSaveDraft={handleSaveDraftClick}
+        backLabel="Previous Section"
+        mobileBackLabel="Back"
+        nextLabel="Move to Next Section"
+        mobileNextLabel="Next"
+      />
     </div>
   );
 }

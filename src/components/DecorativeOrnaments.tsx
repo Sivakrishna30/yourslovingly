@@ -7,6 +7,7 @@ interface DecorativeFrameProps {
   accentColor?: string;
   secondaryColor?: string;
   className?: string;
+  isCompact?: boolean;
   children: React.ReactNode;
 }
 
@@ -16,10 +17,12 @@ export function DecorativeFrame({
   accentColor = '#FFD100',
   secondaryColor = '#FFFDF9',
   className = '',
+  isCompact = false,
   children
 }: DecorativeFrameProps) {
   const pColor = primaryColor || '#E52324';
   const aColor = accentColor || '#D4AF37';
+  const padClass = isCompact ? 'p-3 sm:p-4 rounded-2xl' : 'p-6 sm:p-12 md:p-16 rounded-3xl';
 
   if (frameType === 'none') {
     return <div className={`relative ${className}`}>{children}</div>;
@@ -29,7 +32,7 @@ export function DecorativeFrame({
   if (frameType === 'grand-rangoli-mandala') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: `${aColor}`, 
           backgroundColor: secondaryColor || '#FFFDF9',
@@ -163,7 +166,7 @@ export function DecorativeFrame({
   if (frameType === 'royal-rose-garden') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: `${aColor}80`, 
           backgroundColor: secondaryColor || '#FFFDF9',
@@ -252,7 +255,7 @@ export function DecorativeFrame({
   if (frameType === 'grand-kolam-heritage') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: '#991B1B', 
           backgroundColor: secondaryColor || '#FFFBEB',
@@ -303,7 +306,7 @@ export function DecorativeFrame({
   if (frameType === 'traditional-marigold-gold') {
     return (
       <div 
-        className={`relative rounded-3xl p-5 sm:p-10 md:p-14 border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: `${aColor}60`, 
           backgroundColor: secondaryColor || '#FFFFFF',
@@ -390,7 +393,7 @@ export function DecorativeFrame({
   if (frameType === 'royal-rajasthani-mandap' || frameType === 'mughal-jharokha') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: `${aColor}80`, 
           backgroundColor: secondaryColor || '#FFFFFF',
@@ -457,7 +460,7 @@ export function DecorativeFrame({
   if (frameType === 'south-temple-arch') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-4 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-4 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: pColor, 
           backgroundColor: secondaryColor || '#FFFDF5',
@@ -501,7 +504,7 @@ export function DecorativeFrame({
   if (frameType === 'botanical-peony-gold' || frameType === 'vintage-eucalyptus-wreath') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: `${aColor}50`, 
           backgroundColor: secondaryColor || '#FCFBF9',
@@ -587,7 +590,7 @@ export function DecorativeFrame({
   if (frameType === 'art-deco-geometric') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: aColor, 
           backgroundColor: secondaryColor || '#111418',
@@ -634,7 +637,7 @@ export function DecorativeFrame({
   if (frameType === 'banana-leaf-traditional') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: '#15803D', 
           backgroundColor: secondaryColor || '#F0FDF4',
@@ -686,7 +689,7 @@ export function DecorativeFrame({
   if (frameType === 'royal-peacock-crest-frame') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           borderColor: '#0284C7', 
           backgroundColor: secondaryColor || '#F0F9FF',
@@ -726,7 +729,7 @@ export function DecorativeFrame({
   if (frameType === 'baby-pastel-floral') {
     return (
       <div 
-        className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-2 border-pink-200 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        className={`relative ${padClass} border-2 border-pink-200 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
         style={{ 
           backgroundColor: secondaryColor || '#FFF9FA',
           boxShadow: '0 20px 40px -10px rgba(244, 114, 182, 0.15)'
@@ -746,10 +749,288 @@ export function DecorativeFrame({
     );
   }
 
-  // 9. DEFAULT MODERN LUXURY DAMASK / FILIGREE FRAME
+  // 9. FESTIVE DIWALI DIYA GOLDEN BORDER FRAME
+  if (frameType === 'festive-diwali-diya') {
+    return (
+      <div 
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        style={{ 
+          borderColor: aColor, 
+          backgroundColor: secondaryColor || '#FFFDF5',
+          boxShadow: `0 25px 60px -15px ${aColor}40, 0 0 0 1px ${pColor}40, inset 0 0 35px ${aColor}15`
+        }}
+      >
+        {/* Top Ornate Diwali Diya Toran Arch */}
+        <div className="absolute top-0 left-0 right-0 h-16 sm:h-24 overflow-hidden pointer-events-none z-10">
+          <svg viewBox="0 0 800 90" preserveAspectRatio="none" className="w-full h-full">
+            {/* Scalloped Gold & Crimson Header Band */}
+            <path d="M0,0 L800,0 L800,16 Q400,50 0,16 Z" fill={`${pColor}20`} stroke={aColor} strokeWidth="1.5" />
+            <path d="M50,8 Q200,38 400,38 Q600,38 750,8" fill="none" stroke={aColor} strokeWidth="2" strokeDasharray="5 4" />
+            
+            {/* Center Radiant Grand Diya Crest */}
+            <g transform="translate(400, 36)">
+              {/* Outer Golden Aura */}
+              <circle cx="0" cy="0" r="16" fill={aColor} opacity="0.25" />
+              {/* Sacred Flame */}
+              <path d="M0,-24 C5,-16 7,-10 0,0 C-7,-10 -5,-16 0,-24 Z" fill="#FF4500" />
+              <path d="M0,-18 C3,-12 4,-8 0,0 C-4,-8 -3,-12 0,-18 Z" fill="#FFD700" />
+              {/* Brass Diya Base */}
+              <path d="M-14,0 C-14,10 14,10 14,0 L10,0 C7,5 -7,5 -10,0 Z" fill={aColor} stroke="#B8860B" strokeWidth="1" />
+              <line x1="-8" y1="9" x2="8" y2="9" stroke={aColor} strokeWidth="2" strokeLinecap="round" />
+            </g>
+
+            {/* Hanging Golden Diya Lanterns across the arch */}
+            {[120, 240, 560, 680].map((dx, idx) => (
+              <g key={idx} transform={`translate(${dx}, 18)`}>
+                <line x1="0" y1="0" x2="0" y2="16" stroke={aColor} strokeWidth="1.5" />
+                {/* Miniature Flame */}
+                <path d="M0,10 C2.5,13 3,15 0,20 C-3,15 -2.5,13 0,10 Z" fill="#FF5500" />
+                <path d="M0,12 C1.5,14 2,16 0,19 C-2,16 -1.5,14 0,12 Z" fill="#FFD700" />
+                {/* Diya Cup */}
+                <path d="M-7,20 C-7,26 7,26 7,20 Z" fill={aColor} />
+                <circle cx="0" cy="27" r="1.5" fill={pColor} />
+              </g>
+            ))}
+          </svg>
+        </div>
+
+        {/* 4 Auspicious Diya Corner Ornaments */}
+        {/* Top Left */}
+        <div className="absolute top-2 left-2 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none z-10">
+          <svg viewBox="0 0 100 100" fill="none" className="w-full h-full">
+            <path d="M8,70 L8,8 L70,8" stroke={aColor} strokeWidth="2" />
+            <path d="M16,55 L16,16 L55,16" stroke={aColor} strokeWidth="1" strokeDasharray="3 2" />
+            {/* Corner Diya */}
+            <g transform="translate(28, 28) scale(0.75)">
+              <circle cx="0" cy="0" r="14" fill={`${aColor}20`} />
+              <path d="M0,-16 C4,-10 5,-6 0,0 C-5,-6 -4,-10 0,-16 Z" fill="#FF4500" />
+              <path d="M0,-12 C2.5,-8 3,-5 0,0 C-3,-5 -2.5,-8 0,-12 Z" fill="#FFD700" />
+              <path d="M-10,0 C-10,8 10,8 10,0 Z" fill={aColor} />
+            </g>
+          </svg>
+        </div>
+        {/* Top Right */}
+        <div className="absolute top-2 right-2 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none z-10 transform scale-x-[-1]">
+          <svg viewBox="0 0 100 100" fill="none" className="w-full h-full">
+            <path d="M8,70 L8,8 L70,8" stroke={aColor} strokeWidth="2" />
+            <path d="M16,55 L16,16 L55,16" stroke={aColor} strokeWidth="1" strokeDasharray="3 2" />
+            <g transform="translate(28, 28) scale(0.75)">
+              <circle cx="0" cy="0" r="14" fill={`${aColor}20`} />
+              <path d="M0,-16 C4,-10 5,-6 0,0 C-5,-6 -4,-10 0,-16 Z" fill="#FF4500" />
+              <path d="M0,-12 C2.5,-8 3,-5 0,0 C-3,-5 -2.5,-8 0,-12 Z" fill="#FFD700" />
+              <path d="M-10,0 C-10,8 10,8 10,0 Z" fill={aColor} />
+            </g>
+          </svg>
+        </div>
+        {/* Bottom Left */}
+        <div className="absolute bottom-2 left-2 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none z-10 transform scale-y-[-1]">
+          <svg viewBox="0 0 100 100" fill="none" className="w-full h-full">
+            <path d="M8,70 L8,8 L70,8" stroke={aColor} strokeWidth="2" />
+            <path d="M16,55 L16,16 L55,16" stroke={aColor} strokeWidth="1" strokeDasharray="3 2" />
+            <g transform="translate(28, 28) scale(0.75)">
+              <circle cx="0" cy="0" r="14" fill={`${aColor}20`} />
+              <path d="M0,-16 C4,-10 5,-6 0,0 C-5,-6 -4,-10 0,-16 Z" fill="#FF4500" />
+              <path d="M-10,0 C-10,8 10,8 10,0 Z" fill={aColor} />
+            </g>
+          </svg>
+        </div>
+        {/* Bottom Right */}
+        <div className="absolute bottom-2 right-2 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none z-10 transform scale-[-1]">
+          <svg viewBox="0 0 100 100" fill="none" className="w-full h-full">
+            <path d="M8,70 L8,8 L70,8" stroke={aColor} strokeWidth="2" />
+            <path d="M16,55 L16,16 L55,16" stroke={aColor} strokeWidth="1" strokeDasharray="3 2" />
+            <g transform="translate(28, 28) scale(0.75)">
+              <circle cx="0" cy="0" r="14" fill={`${aColor}20`} />
+              <path d="M0,-16 C4,-10 5,-6 0,0 C-5,-6 -4,-10 0,-16 Z" fill="#FF4500" />
+              <path d="M-10,0 C-10,8 10,8 10,0 Z" fill={aColor} />
+            </g>
+          </svg>
+        </div>
+
+        {/* Inner Gold Beaded Inset Border */}
+        <div 
+          className="absolute inset-3 sm:inset-5 rounded-2xl border-2 pointer-events-none" 
+          style={{ borderColor: `${aColor}60` }}
+        />
+        <div 
+          className="absolute inset-4 sm:inset-7 rounded-xl border pointer-events-none opacity-40" 
+          style={{ borderColor: `${pColor}40`, borderStyle: 'dashed' }}
+        />
+
+        <div className="relative z-10 pt-10 sm:pt-14 pb-4">{children}</div>
+      </div>
+    );
+  }
+
+  // 10. LUXURY DAMASK SILK FRAME
+  if (frameType === 'luxury-damask') {
+    return (
+      <div 
+        className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        style={{ 
+          borderColor: `${aColor}90`, 
+          backgroundColor: secondaryColor || '#FAF7F2',
+          boxShadow: `0 25px 60px -15px rgba(0,0,0,0.12), inset 0 0 45px ${aColor}15`
+        }}
+      >
+        {/* Top Damask Acanthus Scroll Crest Header */}
+        <div className="absolute top-0 left-0 right-0 h-16 sm:h-20 overflow-hidden pointer-events-none z-10">
+          <svg viewBox="0 0 800 80" preserveAspectRatio="none" className="w-full h-full">
+            <path d="M0,0 L800,0 L800,12 C600,28 520,38 400,38 C280,38 200,28 0,12 Z" fill={`${aColor}15`} stroke={aColor} strokeWidth="1.5" />
+            {/* Center Baroque Damask Medallion */}
+            <g transform="translate(400, 32)">
+              <path d="M0,-18 C12,-10 18,-2 18,10 C10,12 4,6 0,0 C-4,6 -10,12 -18,10 C-18,-2 -12,-10 0,-18 Z" fill={aColor} opacity="0.85" />
+              <circle cx="0" cy="0" r="5" fill="#FFFFFF" />
+              <circle cx="0" cy="0" r="2.5" fill={pColor} />
+            </g>
+          </svg>
+        </div>
+
+        {/* 4 Baroque Acanthus Leaf Damask Corner Scrolls */}
+        {/* Top Left */}
+        <div className="absolute top-2 left-2 w-24 sm:w-36 h-24 sm:h-36 pointer-events-none z-10">
+          <svg viewBox="0 0 120 120" fill="none" className="w-full h-full">
+            {/* Corner Bracket */}
+            <path d="M6,80 L6,6 L80,6" stroke={aColor} strokeWidth="2" />
+            <path d="M14,65 L14,14 L65,14" stroke={aColor} strokeWidth="1" strokeDasharray="4 2" />
+            {/* Damask Acanthus Foliage */}
+            <path d="M6,6 Q35,15 45,45 Q15,35 6,6 Z" fill={aColor} opacity="0.7" />
+            <path d="M18,18 Q45,28 55,55 Q28,45 18,18 Z" fill={aColor} opacity="0.4" />
+            <circle cx="45" cy="45" r="4" fill={aColor} />
+            <circle cx="28" cy="28" r="3" fill="#FFFFFF" />
+          </svg>
+        </div>
+        {/* Top Right */}
+        <div className="absolute top-2 right-2 w-24 sm:w-36 h-24 sm:h-36 pointer-events-none z-10 transform scale-x-[-1]">
+          <svg viewBox="0 0 120 120" fill="none" className="w-full h-full">
+            <path d="M6,80 L6,6 L80,6" stroke={aColor} strokeWidth="2" />
+            <path d="M14,65 L14,14 L65,14" stroke={aColor} strokeWidth="1" strokeDasharray="4 2" />
+            <path d="M6,6 Q35,15 45,45 Q15,35 6,6 Z" fill={aColor} opacity="0.7" />
+            <path d="M18,18 Q45,28 55,55 Q28,45 18,18 Z" fill={aColor} opacity="0.4" />
+            <circle cx="45" cy="45" r="4" fill={aColor} />
+          </svg>
+        </div>
+        {/* Bottom Left */}
+        <div className="absolute bottom-2 left-2 w-24 sm:w-36 h-24 sm:h-36 pointer-events-none z-10 transform scale-y-[-1]">
+          <svg viewBox="0 0 120 120" fill="none" className="w-full h-full">
+            <path d="M6,80 L6,6 L80,6" stroke={aColor} strokeWidth="2" />
+            <path d="M14,65 L14,14 L65,14" stroke={aColor} strokeWidth="1" strokeDasharray="4 2" />
+            <path d="M6,6 Q35,15 45,45 Q15,35 6,6 Z" fill={aColor} opacity="0.7" />
+            <circle cx="45" cy="45" r="4" fill={aColor} />
+          </svg>
+        </div>
+        {/* Bottom Right */}
+        <div className="absolute bottom-2 right-2 w-24 sm:w-36 h-24 sm:h-36 pointer-events-none z-10 transform scale-[-1]">
+          <svg viewBox="0 0 120 120" fill="none" className="w-full h-full">
+            <path d="M6,80 L6,6 L80,6" stroke={aColor} strokeWidth="2" />
+            <path d="M14,65 L14,14 L65,14" stroke={aColor} strokeWidth="1" strokeDasharray="4 2" />
+            <path d="M6,6 Q35,15 45,45 Q15,35 6,6 Z" fill={aColor} opacity="0.7" />
+            <circle cx="45" cy="45" r="4" fill={aColor} />
+          </svg>
+        </div>
+
+        {/* Double Inner Scalloped Gold Borders */}
+        <div 
+          className="absolute inset-3 sm:inset-5 rounded-2xl border pointer-events-none" 
+          style={{ borderColor: `${aColor}60` }}
+        />
+        <div 
+          className="absolute inset-4 sm:inset-7 rounded-xl border pointer-events-none opacity-50" 
+          style={{ borderColor: `${aColor}40`, borderStyle: 'solid' }}
+        />
+
+        <div className="relative z-10 pt-8 sm:pt-10">{children}</div>
+      </div>
+    );
+  }
+
+  // 11. MODERN MINIMAL FILIGREE BORDER FRAME
+  if (frameType === 'modern-minimal-filigree') {
+    return (
+      <div 
+        className={`relative ${padClass} border shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+        style={{ 
+          borderColor: `${aColor}80`, 
+          backgroundColor: secondaryColor || '#FFFFFF',
+          boxShadow: `0 20px 45px -10px rgba(0,0,0,0.08), 0 0 0 1px ${aColor}30`
+        }}
+      >
+        {/* Minimalist Geometric Filigree Corners */}
+        {/* Top Left */}
+        <div className="absolute top-2 left-2 w-16 sm:w-24 h-16 sm:h-24 pointer-events-none z-10">
+          <svg viewBox="0 0 80 80" fill="none" className="w-full h-full">
+            <path d="M4,76 L4,4 L76,4" stroke={aColor} strokeWidth="1.5" />
+            <path d="M12,64 L12,12 L64,12" stroke={aColor} strokeWidth="0.8" strokeDasharray="3 3" />
+            {/* Geometric Diamond Corner Accent */}
+            <polygon points="4,4 16,4 4,16" fill={aColor} opacity="0.75" />
+            <polygon points="12,12 22,12 12,22" fill={aColor} opacity="0.35" />
+            <circle cx="30" cy="30" r="2.5" fill={aColor} />
+            <circle cx="50" cy="12" r="1.5" fill={aColor} />
+            <circle cx="12" cy="50" r="1.5" fill={aColor} />
+          </svg>
+        </div>
+        {/* Top Right */}
+        <div className="absolute top-2 right-2 w-16 sm:w-24 h-16 sm:h-24 pointer-events-none z-10 transform scale-x-[-1]">
+          <svg viewBox="0 0 80 80" fill="none" className="w-full h-full">
+            <path d="M4,76 L4,4 L76,4" stroke={aColor} strokeWidth="1.5" />
+            <path d="M12,64 L12,12 L64,12" stroke={aColor} strokeWidth="0.8" strokeDasharray="3 3" />
+            <polygon points="4,4 16,4 4,16" fill={aColor} opacity="0.75" />
+            <polygon points="12,12 22,12 12,22" fill={aColor} opacity="0.35" />
+            <circle cx="30" cy="30" r="2.5" fill={aColor} />
+          </svg>
+        </div>
+        {/* Bottom Left */}
+        <div className="absolute bottom-2 left-2 w-16 sm:w-24 h-16 sm:h-24 pointer-events-none z-10 transform scale-y-[-1]">
+          <svg viewBox="0 0 80 80" fill="none" className="w-full h-full">
+            <path d="M4,76 L4,4 L76,4" stroke={aColor} strokeWidth="1.5" />
+            <path d="M12,64 L12,12 L64,12" stroke={aColor} strokeWidth="0.8" strokeDasharray="3 3" />
+            <polygon points="4,4 16,4 4,16" fill={aColor} opacity="0.75" />
+            <polygon points="12,12 22,12 12,22" fill={aColor} opacity="0.35" />
+            <circle cx="30" cy="30" r="2.5" fill={aColor} />
+          </svg>
+        </div>
+        {/* Bottom Right */}
+        <div className="absolute bottom-2 right-2 w-16 sm:w-24 h-16 sm:h-24 pointer-events-none z-10 transform scale-[-1]">
+          <svg viewBox="0 0 80 80" fill="none" className="w-full h-full">
+            <path d="M4,76 L4,4 L76,4" stroke={aColor} strokeWidth="1.5" />
+            <path d="M12,64 L12,12 L64,12" stroke={aColor} strokeWidth="0.8" strokeDasharray="3 3" />
+            <polygon points="4,4 16,4 4,16" fill={aColor} opacity="0.75" />
+            <polygon points="12,12 22,12 12,22" fill={aColor} opacity="0.35" />
+            <circle cx="30" cy="30" r="2.5" fill={aColor} />
+          </svg>
+        </div>
+
+        {/* Minimal Center Diamond Badges */}
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none">
+          <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
+            <polygon points="12,1 18,6 12,11 6,6" fill={aColor} opacity="0.8" />
+            <line x1="0" y1="6" x2="6" y2="6" stroke={aColor} strokeWidth="1" />
+            <line x1="18" y1="6" x2="24" y2="6" stroke={aColor} strokeWidth="1" />
+          </svg>
+        </div>
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none">
+          <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
+            <polygon points="12,1 18,6 12,11 6,6" fill={aColor} opacity="0.8" />
+            <line x1="0" y1="6" x2="6" y2="6" stroke={aColor} strokeWidth="1" />
+            <line x1="18" y1="6" x2="24" y2="6" stroke={aColor} strokeWidth="1" />
+          </svg>
+        </div>
+
+        {/* Inner Delicate Inset Frame */}
+        <div 
+          className="absolute inset-3 sm:inset-5 rounded-2xl border pointer-events-none" 
+          style={{ borderColor: `${aColor}45` }}
+        />
+
+        <div className="relative z-10">{children}</div>
+      </div>
+    );
+  }
+
+  // 12. DEFAULT FALLBACK FRAME
   return (
     <div 
-      className={`relative rounded-3xl p-6 sm:p-12 md:p-16 border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
+      className={`relative ${padClass} border-2 shadow-2xl overflow-hidden transition-all duration-300 ${className}`}
       style={{ 
         borderColor: `${pColor}30`, 
         backgroundColor: secondaryColor || '#FFFFFF',
@@ -1257,6 +1538,60 @@ export function BackgroundTextureOverlay({ texture = 'none' }: BackgroundTexture
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#palm-pat)" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (texture === 'parchment') {
+    return (
+      <div className="absolute inset-0 pointer-events-none opacity-25 z-0">
+        <svg width="100%" height="100%">
+          <defs>
+            <pattern id="parchment-pat" width="120" height="120" patternUnits="userSpaceOnUse">
+              {/* Organic antique fibrous parchment paper lines */}
+              <path d="M0,20 Q30,15 60,25 T120,20" stroke="#B45309" strokeWidth="0.8" opacity="0.4" fill="none" />
+              <path d="M0,60 Q40,65 80,55 T120,62" stroke="#92400E" strokeWidth="0.6" opacity="0.3" fill="none" strokeDasharray="6 8" />
+              <path d="M0,95 Q25,100 55,90 T120,98" stroke="#B45309" strokeWidth="0.7" opacity="0.35" fill="none" />
+              <path d="M20,0 Q15,40 25,80 T18,120" stroke="#92400E" strokeWidth="0.5" opacity="0.25" fill="none" strokeDasharray="4 6" />
+              <path d="M85,0 Q90,35 80,75 T88,120" stroke="#B45309" strokeWidth="0.6" opacity="0.3" fill="none" />
+              {/* Subtle vintage parchment stipples */}
+              <circle cx="15" cy="35" r="1.2" fill="#78350F" opacity="0.35" />
+              <circle cx="45" cy="12" r="0.8" fill="#92400E" opacity="0.3" />
+              <circle cx="75" cy="40" r="1" fill="#78350F" opacity="0.3" />
+              <circle cx="105" cy="85" r="1.5" fill="#B45309" opacity="0.25" />
+              <circle cx="35" cy="75" r="0.9" fill="#92400E" opacity="0.35" />
+              <circle cx="65" cy="110" r="1.1" fill="#78350F" opacity="0.3" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#parchment-pat)" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (texture === 'silk-linen') {
+    return (
+      <div className="absolute inset-0 pointer-events-none opacity-20 z-0">
+        <svg width="100%" height="100%">
+          <defs>
+            <pattern id="linen-pat" width="24" height="24" patternUnits="userSpaceOnUse">
+              {/* Warp fine vertical textile threads */}
+              <line x1="0" y1="0" x2="0" y2="24" stroke="#78716C" strokeWidth="0.75" opacity="0.4" />
+              <line x1="6" y1="0" x2="6" y2="24" stroke="#D4AF37" strokeWidth="0.5" opacity="0.35" strokeDasharray="3 2" />
+              <line x1="12" y1="0" x2="12" y2="24" stroke="#78716C" strokeWidth="0.75" opacity="0.4" />
+              <line x1="18" y1="0" x2="18" y2="24" stroke="#D4AF37" strokeWidth="0.5" opacity="0.35" strokeDasharray="3 2" />
+              {/* Weft fine horizontal textile threads */}
+              <line x1="0" y1="0" x2="24" y2="0" stroke="#78716C" strokeWidth="0.75" opacity="0.4" />
+              <line x1="0" y1="6" x2="24" y2="6" stroke="#D4AF37" strokeWidth="0.5" opacity="0.35" strokeDasharray="3 2" />
+              <line x1="0" y1="12" x2="24" y2="12" stroke="#78716C" strokeWidth="0.75" opacity="0.4" />
+              <line x1="0" y1="18" x2="24" y2="18" stroke="#D4AF37" strokeWidth="0.5" opacity="0.35" strokeDasharray="3 2" />
+              {/* Intersection silk sheen dots */}
+              <rect x="5.5" y="5.5" width="1" height="1" fill="#FFFFFF" opacity="0.6" />
+              <rect x="17.5" y="17.5" width="1" height="1" fill="#FFFFFF" opacity="0.6" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#linen-pat)" />
         </svg>
       </div>
     );

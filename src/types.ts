@@ -44,10 +44,10 @@ export type PageVisibility = 'anyone' | 'restricted';
 export type PlanTier = 'free' | 'basic_49' | 'premium_99' | 'single_49';
 
 /** @deprecated Replaced by expiresAt logic on Invite model */
-export type HostingStatus = 'active' | 'expiring_soon' | 'expired' | 'lifetime';
+export type HostingStatus = 'active' | 'expiring_soon' | 'expired';
 
 /** @deprecated Obsolete pricing tiers. Use PricingModel static properties instead. */
-export type HostingExtensionType = 'extension_30_days' | 'extension_basic_30' | 'extension_premium_30' | 'upgrade_premium_49' | 'lifetime_single';
+export type HostingExtensionType = 'extension_30_days' | 'extension_basic_30' | 'extension_premium_30' | 'upgrade_premium_49';
 
 export interface HostingExtensionRecord {
   id: string;
@@ -178,7 +178,7 @@ export interface RsvpFormConfig {
 }
 
 /** @deprecated Use EntitlementTier from domain/entitlement/types instead */
-export type TierType = 'basic' | 'extended' | 'lifetime' | 'free' | 'standard' | 'premium';
+export type TierType = 'basic' | 'extended' | 'free' | 'standard' | 'premium';
 
 export interface MasterTemplatePreset {
   id: string;
@@ -227,6 +227,14 @@ export interface LovinglyEvent {
   deletedAt?: string;
   createdAt: string;
   spotifyUrl?: string;
+  musicType?: 'spotify' | 'mp3' | 'none';
+  bgAudioUrl?: string;
+  bgAudioPresetId?: string;
+  bgAudioTitle?: string;
+  bgAudioStart?: number;
+  bgAudioEnd?: number;
+  bgAudioDuration?: number;
+  bgAudioAutoPlay?: boolean;
   showAds?: boolean;
   driveFolderId?: string;
   driveFileId?: string;

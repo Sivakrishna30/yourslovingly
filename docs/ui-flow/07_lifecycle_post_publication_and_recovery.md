@@ -35,7 +35,7 @@ To protect the integrity of links that have already been distributed to hundreds
 **Expiry is NOT deletion.** They represent completely different states:
 
 ```text
-Active Published State (Valid for 15 / 30 / Lifetime Days)
+Active Published State (Valid for 15 Days + Purchased 30-Day Extensions)
                         │
                         ▼ (Validity elapsed)
                   Expired State
@@ -53,7 +53,6 @@ Creators can extend the live hosting period of any published or expired invite d
 
 * **Basic Extension**: **₹49 / 30 Days**
 * **Premium Extension**: **₹99 / 30 Days**
-* **Lifetime Validity**: **₹999 (Permanent Hosting)**
 
 ### Key Extension Rule:
 * Extending validity reactivates or extends the public URL availability.

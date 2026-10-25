@@ -1,5 +1,6 @@
-import type { LovinglyEvent, DesignStyle } from '../types';
+import type { LovinglyEvent, DesignStyle, EventKind } from '../types';
 import type { SampleInvite } from '../data/samples';
+import type { MasterTemplate } from './designSystem';
 import { createSlug } from './utils';
 
 /**
@@ -43,7 +44,7 @@ export function sampleToLovinglyEvent(sample: SampleInvite, overrideOwnerId = 's
     shlokaText: sample.shlokaText || sample.subtitle,
     elements: sample.elements && sample.elements.length > 0 ? [...sample.elements] : ['sparkles', 'flowers'],
     backgroundText: '',
-    photos: [],
+    photos: sample.photos && sample.photos.length > 0 ? [...sample.photos] : [],
     contentBlocks: [],
     messageAlignment: 'center',
     photoAlignment: 'center',
@@ -51,7 +52,14 @@ export function sampleToLovinglyEvent(sample: SampleInvite, overrideOwnerId = 's
     backgroundPattern: 'none',
     isPublished: true,
     createdAt: new Date().toISOString(),
+    musicType: sample.musicType || (sample.bgAudioUrl || sample.bgAudioPresetId ? 'mp3' : sample.spotifySong ? 'spotify' : 'none'),
     spotifyUrl: sample.spotifySong || '',
+    bgAudioUrl: sample.bgAudioUrl || '',
+    bgAudioPresetId: sample.bgAudioPresetId,
+    bgAudioTitle: sample.bgAudioTitle || sample.musicTrack || '',
+    bgAudioStart: sample.bgAudioStart ?? 0,
+    bgAudioEnd: sample.bgAudioEnd ?? 30,
+    bgAudioAutoPlay: sample.bgAudioAutoPlay ?? true,
     showAds: false,
     visibility: 'anyone',
     ownerId: overrideOwnerId,
@@ -99,3 +107,66 @@ export function createDraftFromSample(sample: SampleInvite, ownerId = 'guest', c
     expiresAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
   };
 }
+
+/**
+ * Converts a MasterTemplate into a live LovinglyEvent model for real visual previews.
+ */
+export function masterTemplateToLovinglyEvent(tmpl: MasterTemplate, overrideOwnerId = 'template-preview'): LovinglyEvent {
+  return {
+    id: tmpl.id,
+    slug: tmpl.id,
+    creatorPath: 'yours-lovingly',
+    title: tmpl.defaultTitle,
+    eventType: (tmpl.category === 'all' ? 'wedding' : tmpl.category) as EventKind,
+    customType: '',
+    creationCategory: 'invite',
+    designStyle: tmpl.id as DesignStyle,
+    templateId: tmpl.id,
+    recipientName: tmpl.defaultRecipient,
+    messages: tmpl.defaultMessages && tmpl.defaultMessages.length > 0 ? [...tmpl.defaultMessages] : [tmpl.tagline],
+    eventDate: tmpl.defaultDate || '2026-11-28',
+    location: tmpl.defaultLocation || 'Grand Celebration Palace, Chennai',
+    primaryColor: tmpl.primaryColor,
+    secondaryColor: tmpl.secondaryColor,
+    highlightColor: tmpl.highlightColor || '#D4AF37',
+    frameType: tmpl.frameType || 'traditional-marigold-gold',
+    decorativeMotif: tmpl.decorativeMotif || 'auspicious-kalash',
+    textureType: tmpl.textureType || 'gold-dust',
+    shlokaText: tmpl.shlokaText || tmpl.tagline,
+    elements: tmpl.defaultElements && tmpl.defaultElements.length > 0 ? [...tmpl.defaultElements] : ['sparkles', 'flowers'],
+    backgroundText: '',
+    photos: [],
+    contentBlocks: [],
+    messageAlignment: 'center',
+    photoAlignment: 'center',
+    photoSize: 'medium',
+    backgroundPattern: 'none',
+    isPublished: true,
+    createdAt: new Date().toISOString(),
+    musicType: tmpl.spotifySuggestion ? 'spotify' : 'none',
+    spotifyUrl: tmpl.spotifySuggestion || '',
+    bgAudioUrl: '',
+    showAds: false,
+    visibility: 'anyone',
+    ownerId: overrideOwnerId,
+    tier: 'premium',
+    planTier: 'premium_99',
+    hostingDurationDays: 15,
+    isLifetime: false,
+    publishedAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+    hostingExtensions: [],
+    showLocationQrCode: true,
+    googleMapsUrl: `https://maps.google.com/?q=${encodeURIComponent(tmpl.defaultLocation || 'Grand Celebration Palace, Chennai')}`,
+    rsvpConfig: {
+      enabled: false,
+      collectPhone: true,
+      collectGuestCount: true,
+      collectDietary: false,
+      collectAccommodation: false,
+    },
+    upiId: undefined,
+    showUpiQrCode: false,
+  };
+}
+

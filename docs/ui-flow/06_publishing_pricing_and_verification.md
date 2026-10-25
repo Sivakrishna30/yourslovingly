@@ -38,7 +38,6 @@ The pricing model is intentionally straightforward, transparent, and fair:
 | **Premium Invite** | **₹99** | 15 Days | Everything in Basic + Premium templates, Spotify music player, Google Maps integration, Custom RSVP forms, Analytics & high-res image download. |
 | **Basic Extension** | **₹49** | +30 Days | Extends live hosting for 30 additional days on a Basic Invite. |
 | **Premium Extension** | **₹99** | +30 Days | Extends live hosting for 30 additional days on a Premium Invite. |
-| **Lifetime Premium** | **₹999** | Permanent | Indefinite lifetime hosting validity; no recurring renewals ever needed. |
 
 > **Value Principle**: Users pay for the capability and hosting value of the Invite, never for creative freedom or tool features during design.
 

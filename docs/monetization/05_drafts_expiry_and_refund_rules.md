@@ -17,11 +17,9 @@
 - **Hosting Extensions**:
   - *Basic 30-Day Extension*: **₹49**
   - *Premium 30-Day Extension*: **₹99**
-  - *Lifetime Validity*: **₹999** per Invite (permanent hosting, never expires)
 - **Extension Stacking & Reactivation**:
   - *Active Invites*: +30 days extends from the current expiration timestamp.
   - *Expired Invites*: +30 days reactivates the Invite for 30 days starting immediately from purchase time.
-  - *Lifetime*: Sets expiration to permanent/infinite.
   - Purchasing an extension extends the live hosting period only and does not grant post-publication layout redesign capabilities.
 - **Redesigning an Expired Invite**:
   - Use **"Copy to New"** $\rightarrow$ Creates a fresh Draft Invite with a new Invite ID.
@@ -64,7 +62,6 @@ Yours Lovingly explicitly prohibits micro-monetization friction:
 | **Post-Publish Design Edits** | ❌ Prohibited | ❌ Prohibited |
 | **Image / PDF Download** | ❌ Excluded | ✅ Included (PNG / PDF) |
 | **30-Day Hosting Extension** | **₹49** (+30 days) | **₹99** (+30 days) |
-| **Lifetime Validity** | **₹999** (Permanent) | **₹999** (Permanent) |
 | **Bundle / Pack Pricing** | None | None |
 | **Subscription Requirement** | None | None |
 

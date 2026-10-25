@@ -46,8 +46,7 @@
 - **Initial Validity**: 15 days from publication timestamp.
 - **Basic 30-Day Extension**: **₹49** (+30 days added to active expiry, or reactivates expired Invite for 30 days).
 - **Premium 30-Day Extension**: **₹99** (+30 days added to active expiry, or reactivates expired Invite for 30 days).
-- **Lifetime Validity**: **₹999** per Invite (permanent hosting, never expires).
-- **No Bundles**: Extensions and lifetime validity apply to each specific Invite individually.
+- **No Bundles**: Extensions apply to each specific Invite individually.
 
 ---
 

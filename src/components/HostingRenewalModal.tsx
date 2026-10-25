@@ -6,11 +6,10 @@ import {
   X, 
   ArrowRight,
   ShieldCheck,
-  Zap,
-  Infinity as InfinityIcon
+  Zap
 } from 'lucide-react';
 import type { LovinglyEvent, HostingExtensionType } from '../types';
-import { getHostingStatus, applyHostingExtension, EXTENSION_PRICING } from '../lib/hosting';
+import { getHostingStatus, applyHostingExtension } from '../lib/hosting';
 import { EntitlementService } from '../domain/entitlement/entitlementService';
 
 interface HostingRenewalModalProps {
@@ -45,8 +44,8 @@ export function HostingRenewalModal({
       );
       await onConfirmExtension(updated);
       setSuccessMessage(
-        selectedOption === 'lifetime_single'
-          ? 'Lifelong permanent hosting activated successfully!'
+        selectedOption === 'upgrade_premium_49'
+          ? 'Upgraded to Premium Page successfully!'
           : '30 days live hosting extension added successfully!'
       );
       setTimeout(() => {
@@ -154,7 +153,7 @@ export function HostingRenewalModal({
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-stone-900">
-                      ₹{event.planTier === 'premium_99' || event.tier === 'premium' ? EntitlementService.getExtensionPrice('premium', false) : EntitlementService.getExtensionPrice('basic', false)}
+                      ₹{event.planTier === 'premium_99' || event.tier === 'premium' ? EntitlementService.getExtensionPrice('premium') : EntitlementService.getExtensionPrice('basic')}
                     </div>
                     <div className="text-[10px] text-stone-400">One-time</div>
                   </div>
@@ -199,44 +198,6 @@ export function HostingRenewalModal({
                   </div>
                 </div>
               )}
-
-              {/* Option 3: Lifetime Permanent Hosting (₹999) */}
-              <div
-                onClick={() => setSelectedOption('lifetime_single')}
-                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                  selectedOption === 'lifetime_single'
-                    ? 'border-secondary bg-brand-teal/5 shadow-sm ring-2 ring-brand-teal/10'
-                    : 'border-stone-200 bg-white hover:border-stone-300'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedOption === 'lifetime_single' ? 'border-secondary bg-secondary' : 'border-stone-300'
-                    }`}>
-                      {selectedOption === 'lifetime_single' && <Check className="w-3 h-3 text-white" />}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-stone-900 text-sm">
-                          {EXTENSION_PRICING.lifetime_single.label}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-teal/10 text-secondary flex items-center gap-1">
-                          <InfinityIcon className="w-3 h-3" />
-                          Forever
-                        </span>
-                      </div>
-                      <p className="text-xs text-stone-500 mt-0.5">
-                        Permanent lifetime hosting for this page alone, never expires
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-secondary">₹{EntitlementService.getExtensionPrice('premium', true)}</div>
-                    <div className="text-[10px] text-stone-400">Lifetime</div>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Preview Box */}
@@ -246,7 +207,7 @@ export function HostingRenewalModal({
                 New Expiry After Renewal:
               </span>
               <strong className="text-stone-900 font-bold">
-                {previewHostingInfo.isLifetime ? 'Permanent (Never Expires)' : previewHostingInfo.formattedExpiry}
+                {previewHostingInfo.formattedExpiry}
               </strong>
             </div>
 
@@ -262,7 +223,7 @@ export function HostingRenewalModal({
                 ) : (
                   <>
                     <span>
-                      Pay ₹{selectedOption === 'lifetime_single' ? EntitlementService.getExtensionPrice('premium', true) : selectedOption === 'extension_premium_30' ? EntitlementService.getExtensionPrice('premium', false) : selectedOption === 'upgrade_premium_49' ? EntitlementService.getUpgradePrice('basic', 'premium') : EntitlementService.getExtensionPrice('basic', false)} & Confirm
+                      Pay ₹{selectedOption === 'extension_premium_30' ? EntitlementService.getExtensionPrice('premium') : selectedOption === 'upgrade_premium_49' ? EntitlementService.getUpgradePrice('basic', 'premium') : EntitlementService.getExtensionPrice('basic')} & Confirm
                     </span>
                     <ArrowRight className="w-4 h-4" />
                   </>

@@ -75,7 +75,6 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
 
   const handlePublish = async (selectedTier: TierType = 'basic') => {
     if (!event) return;
-    const isLifetime = selectedTier === 'lifetime';
     const planTier: PlanTier = (selectedTier === 'premium' || selectedTier === 'extended') ? 'premium_99' : 'basic_49';
     const tier = (selectedTier === 'premium' || selectedTier === 'extended') ? 'premium' : 'standard';
     const updated = { 
@@ -83,7 +82,7 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
       isPublished: true,
       tier,
       planTier,
-      isLifetime,
+      isLifetime: false,
       publishedAt: new Date().toISOString(),
     } as LovinglyEvent;
     setEvent(updated);
@@ -102,10 +101,10 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
   const stepNames: Record<string, string> = {
     'template': '1. Event & Template',
     'details': '2. Invite Details',
-    'elements': '3. Motifs & Styles',
-    'preview': '4. Guest Preview',
-    'features': '5. Integrations',
-    'publish': '6. Publish & Share'
+    'elements': '3. Center Elements & Styles',
+    'features': '4. Features & Integrations',
+    'publish': '5. Hosting & Plan',
+    'preview': '6. Final Guest Preview'
   };
 
   const currentStepKey = (step === 'event-type' || !step) ? 'template' : step;
@@ -123,20 +122,20 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
   };
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-stone-100 flex items-center justify-center p-0 sm:p-4">
-      <div className="w-full max-w-6xl bg-white sm:rounded-3xl shadow-md border-0 sm:border border-stone-200 overflow-hidden min-h-[100dvh] flex flex-col relative max-w-full">
-         {/* Creation Header */}
-         <div className="p-3.5 sm:p-4 border-b border-stone-200 bg-white flex items-center justify-between shrink-0 sticky top-0 z-30 shadow-2xs">
+    <div className="fixed inset-0 w-full h-[100dvh] bg-stone-100 flex items-center justify-center p-0 sm:p-3 md:p-4 overflow-hidden z-20">
+      <div className="w-full max-w-6xl bg-white sm:rounded-3xl shadow-xl border-0 sm:border border-stone-200 overflow-hidden h-full flex flex-col relative max-w-full">
+         {/* Fixed Creation Header */}
+         <div className="p-3 sm:p-4 border-b border-stone-200 bg-white flex items-center justify-between shrink-0 z-30 shadow-2xs">
            <div className="flex items-center gap-2 min-w-0">
              <button 
                onClick={() => navigate(user ? '/dashboard' : '/')} 
-               className="text-xs font-bold text-stone-500 hover:text-stone-800 transition-colors shrink-0 flex items-center gap-1"
+               className="text-xs font-bold text-stone-500 hover:text-stone-800 transition-colors shrink-0 flex items-center gap-1 cursor-pointer py-1 px-1.5 rounded-lg hover:bg-stone-50"
              >
                &larr; Exit
              </button>
              <span className="text-stone-300 font-light">•</span>
              <h2 className="font-serif font-bold text-stone-900 text-xs sm:text-base truncate">
-               Yours Lovingly Creator
+               Create Page
              </h2>
            </div>
 
@@ -156,25 +155,62 @@ function CreationFlowWrapper({ user, handleSignIn }: { user: User | null, handle
            </div>
          </div>
 
-         {/* Step Content */}
-         <div className="flex-1 p-2 sm:p-6 overflow-y-auto overflow-x-hidden max-w-full">
+         {/* Step Content Container: Fills vertical space, hosts scrollable step content and fixed step footer */}
+         <div className="flex-1 overflow-hidden min-h-0 flex flex-col max-w-full">
             {(step === 'event-type' || step === 'template' || !step) && (
               <TemplateStep 
                 event={event} 
                 onUpdateEvent={handleUpdate}
-                onSelectTemplate={(t) => { handleUpdate({ templateId: t.id, designStyle: t.id as DesignStyle }); handleNext('details'); }} 
-                onSelectBlank={() => { handleUpdate({ templateId: undefined }); handleNext('details'); }} 
+                onSelectTemplate={(t) => { 
+                  handleUpdate({ 
+                    templateId: t.id, 
+                    designStyle: t.id as DesignStyle,
+                    primaryColor: t.primaryColor,
+                    secondaryColor: t.secondaryColor,
+                    highlightColor: t.highlightColor,
+                    frameType: t.frameType,
+                    decorativeMotif: t.decorativeMotif,
+                    textureType: t.textureType,
+                    shlokaText: t.shlokaText,
+                    title: event.title || t.defaultTitle,
+                    recipientName: event.recipientName || t.defaultRecipient,
+                    location: event.location || t.defaultLocation,
+                    eventDate: event.eventDate || t.defaultDate,
+                    messages: (event.messages && event.messages.length > 0 && event.messages[0] !== '') ? event.messages : t.defaultMessages,
+                    elements: t.defaultElements
+                  }); 
+                  handleNext('details'); 
+                }} 
+                onSelectBlank={() => { 
+                  handleUpdate({ 
+                    templateId: undefined,
+                    primaryColor: '#1c1917',
+                    secondaryColor: '#ffffff',
+                    highlightColor: '#d97706',
+                    frameType: 'none',
+                    decorativeMotif: 'none',
+                    textureType: 'none',
+                    shlokaText: '',
+                    title: '',
+                    recipientName: '',
+                    location: '',
+                    eventDate: '',
+                    messages: [''],
+                    elements: []
+                  }); 
+                  handleNext('details'); 
+                }} 
                 onBack={() => navigate(user ? '/dashboard' : '/')} 
                 onNext={() => handleNext('details')} 
                 onSaveDraft={handleSaveDraft}
               />
             )}
             {step === 'details' && <DetailsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('elements')} onBack={() => handleBack('template')} onSaveDraft={handleSaveDraft} />}
-            {step === 'elements' && <ElementsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('preview')} onBack={() => handleBack('details')} onSaveDraft={handleSaveDraft} />}
-            {step === 'preview' && <PreviewStep event={event} onNext={() => handleNext('features')} onBack={() => handleBack('elements')} onSaveDraft={handleSaveDraft} />}
-            {step === 'features' && <FeaturesStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('publish')} onBack={() => handleBack('preview')} onSaveDraft={handleSaveDraft} />}
-            {step === 'publish' && <PublishStep event={event} user={user} onSignIn={handleSignIn} onPublish={handlePublish} onBack={() => handleBack('features')} />}
-            {step === 'payment' && <div className="text-center p-12">Payment Boundary (T12 Skipped) <br/><button onClick={() => navigate('/dashboard')} className="mt-4 px-4 py-2 bg-slate-900 text-white rounded">Go to Dashboard</button></div>}
+            {step === 'elements' && <ElementsStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('features')} onBack={() => handleBack('details')} onSaveDraft={handleSaveDraft} />}
+            {step === 'features' && <FeaturesStep event={event} onUpdate={handleUpdate} onNext={() => handleNext('publish')} onBack={() => handleBack('elements')} onSaveDraft={handleSaveDraft} />}
+            {step === 'publish' && <PublishStep event={event} user={user} onSignIn={handleSignIn} onPublish={handlePublish} onNext={() => handleNext('preview')} onBack={() => handleBack('features')} />}
+            {step === 'preview' && <PreviewStep event={event} onNext={() => navigate(user ? '/dashboard' : '/')} onBack={() => handleBack('publish')} onSaveDraft={handleSaveDraft} />}
+            {step === 'payment' && <div className="text-center p-12 overflow-y-auto">Payment Boundary (T12 Skipped) <br/><button onClick={() => navigate('/dashboard')} className="mt-4 px-4 py-2 bg-slate-900 text-white rounded">Go to Dashboard</button></div>}
          </div>
       </div>
     </div>

@@ -78,14 +78,6 @@ export const EXTENSION_PRICING = {
     price: 49,
     description: 'Upgrade an existing published Basic page to Premium with Watermark-Free & Pro features',
   },
-  lifetime_single: {
-    type: 'lifetime_single' as const,
-    label: 'Lifetime Hosting (Single Page)',
-    days: Infinity,
-    isLifetime: true,
-    price: 999,
-    description: 'Permanent lifetime hosting for this page alone, never expires',
-  },
 };
 
 /**
@@ -133,20 +125,20 @@ export interface HostingStatusResult {
  * Computes live hosting status, days remaining, expiration check, and formatting
  */
 export function getHostingStatus(event: LovinglyEvent, referenceDate: Date = new Date()): HostingStatusResult {
-  // Lifetime check
+  // Legacy check if an old event had isLifetime
   if (event.isLifetime) {
     return {
-      status: 'lifetime',
-      daysRemaining: Infinity,
-      hoursRemaining: Infinity,
+      status: 'active',
+      daysRemaining: 9999,
+      hoursRemaining: 99999,
       isExpired: false,
       isLifetime: true,
       expiresAtDate: null,
-      formattedExpiry: 'Permanent (Never Expires)',
-      planLabel: 'Life Long Hosting',
-      badgeBg: 'bg-teal-50 text-teal-800',
-      badgeText: 'Lifetime Active',
-      badgeBorder: 'border-teal-200',
+      formattedExpiry: 'Active (Extended)',
+      planLabel: 'Active Hosting',
+      badgeBg: 'bg-emerald-50 text-emerald-800',
+      badgeText: 'Active',
+      badgeBorder: 'border-emerald-200',
     };
   }
 
@@ -233,7 +225,6 @@ export function applyHostingExtension(
 ): LovinglyEvent {
   const currentStatus = getHostingStatus(event, now);
   const amount = 
-    extensionType === 'lifetime_single' ? 999 :
     extensionType === 'extension_premium_30' ? 99 :
     extensionType === 'upgrade_premium_49' ? 49 : 49;
 
@@ -245,16 +236,6 @@ export function applyHostingExtension(
     previousExpiresAt: event.expiresAt || null,
     paymentReference: paymentReference || 'PAY_' + Date.now(),
   };
-
-  if (extensionType === 'lifetime_single') {
-    extensionRecord.newExpiresAt = null;
-    return {
-      ...event,
-      isLifetime: true,
-      expiresAt: null,
-      hostingExtensions: [...(event.hostingExtensions || []), extensionRecord],
-    };
-  }
 
   if (extensionType === 'upgrade_premium_49') {
     return {

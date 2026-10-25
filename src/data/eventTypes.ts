@@ -5,7 +5,6 @@ import {
   Sparkles, 
   Baby, 
   Flame, 
-  Briefcase, 
   PartyPopper,
   Compass
 } from 'lucide-react';
@@ -114,18 +113,6 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
     defaultTitle: 'Auspicious Festive Gathering & Feast',
     defaultRecipient: 'Cordial Invitation',
     defaultMessage: 'May joy and light bring prosperity and health to all of us. Join us for celebrations and lunch.'
-  },
-  {
-    id: 'corporate',
-    title: 'Business Launch & Meetup',
-    subtitle: 'Store inaugurations, product launches, corporate galas',
-    icon: Briefcase,
-    category: 'professional',
-    color: 'text-blue-700',
-    bgLight: 'bg-blue-50 border-blue-200',
-    defaultTitle: 'Grand Launch & Inauguration',
-    defaultRecipient: 'Exclusive Preview Event',
-    defaultMessage: 'We cordially invite you to the grand opening and exclusive product showcase.'
   },
   {
     id: 'party',

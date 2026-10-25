@@ -22,7 +22,7 @@ export class PublishService {
 
     const publishedAt = new Date().toISOString();
     
-    // Calculate expiry if not lifetime (validityDays > 0)
+    // Calculate expiry from validityDays (validityDays > 0)
     const capabilities = EntitlementService.getCapabilities(invite.tier);
     let expiresAt = null;
     if (capabilities.validityDays > 0) {
