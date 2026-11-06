@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
+import { onAuthStateChanged, signInWithPopup, type User } from 'firebase/auth';
+import { auth, googleProvider } from '../firebase';
 import type { LovinglyEvent, StudioElementKey, StudioElementStyle } from '../types';
 import { elementGlyphs, designStyles } from '../lib/constants';
-import { MapPin, MessageSquare, IndianRupee, Music, Sparkles, Check, Heart, Printer, Lock, ShieldCheck, Unlock, ExternalLink, Gift, Copy, Volume2, VolumeX, Play, Pause, Disc, X } from 'lucide-react';
+import { MapPin, MessageSquare, IndianRupee, Music, Sparkles, Check, Heart, Printer, Lock, ShieldCheck, ExternalLink, Gift, Copy, Volume2, VolumeX, Play, Pause, Disc, X } from 'lucide-react';
 import { firebaseService } from '../lib/firebase-service';
-import { hasWatermark } from '../lib/hosting';
+import { hasWatermark, canExportPdf } from '../lib/hosting';
 import { DecorativeFrame, DecorativeMotifBadge, DecorativeDivider, BackgroundTextureOverlay } from './DecorativeOrnaments';
 import { getPresetAudioUrl } from '../lib/audioPresets';
 
@@ -47,6 +49,9 @@ export function EventViewer({
   const [attending, setAttending] = useState<boolean>(true);
   const [guestCount, setGuestCount] = useState<number>(1);
   const [phone, setPhone] = useState('');
+  const [dietary, setDietary] = useState<'Veg' | 'Non-Veg'>('Veg');
+  const [accommodation, setAccommodation] = useState<boolean>(false);
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
   const [note, setNote] = useState('');
   const [submittingRsvp, setSubmittingRsvp] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -305,22 +310,45 @@ export function EventViewer({
 
   // Check if watermark should be shown (Free Starter and ₹49 Extra Basic pages include watermarks)
   const pageHasWatermark = hasWatermark(event);
-  const passcodeStorageKey = `unlocked_${event.slug}`;
-  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
-    if (!event.isPasscodeProtected || !event.passcode) return true;
-    return localStorage.getItem(passcodeStorageKey) === event.passcode;
-  });
-  const [passcodeInput, setPasscodeInput] = useState('');
-  const [passcodeError, setPasscodeError] = useState(false);
 
-  const handleUnlock = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passcodeInput.trim() === event.passcode?.trim()) {
-      localStorage.setItem(passcodeStorageKey, event.passcode || '');
-      setIsUnlocked(true);
-      setPasscodeError(false);
-    } else {
-      setPasscodeError(true);
+  // Google Account Session Access Verification (Zero-Password Architecture)
+  const [viewerUser, setViewerUser] = useState<User | null>(() => auth.currentUser);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isSigningInGuest, setIsSigningInGuest] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setViewerUser(u);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const isAuthorizedByGoogleSession = useMemo(() => {
+    if (isBuilderMode || isCompact) return true;
+    if (event.visibility !== 'restricted') return true;
+    if (!viewerUser) return false;
+    if (viewerUser.uid === event.ownerId) return true;
+    const rawAllowed = (event.allowedEmails || '').trim();
+    if (!rawAllowed) return true; // Any signed-in Google account session allowed
+    const allowedList = rawAllowed
+      .split(/[,;\n]+/)
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    if (allowedList.length === 0) return true;
+    const guestEmail = (viewerUser.email || '').trim().toLowerCase();
+    return Boolean(guestEmail && allowedList.includes(guestEmail));
+  }, [isBuilderMode, isCompact, event.visibility, event.ownerId, event.allowedEmails, viewerUser]);
+
+  const handleGuestGoogleSignIn = async () => {
+    setIsSigningInGuest(true);
+    setAuthError(null);
+    try {
+      const res = await signInWithPopup(auth, googleProvider);
+      setViewerUser(res.user);
+    } catch {
+      setAuthError('Google sign-in could not be completed. Please select your Google account to continue.');
+    } finally {
+      setIsSigningInGuest(false);
     }
   };
 
@@ -384,8 +412,11 @@ export function EventViewer({
         ownerId: event.ownerId,
         guestName: guestName.trim(),
         attending,
-        guestCount: attending ? Number(guestCount) : 0,
-        phone: phone.trim() || undefined,
+        guestCount: attending ? (event.rsvpConfig?.collectGuestCount !== false ? Number(guestCount) : 1) : 0,
+        phone: event.rsvpConfig?.collectPhone !== false ? (phone.trim() || undefined) : undefined,
+        dietary: attending && event.rsvpConfig?.collectDietary ? dietary : undefined,
+        accommodation: attending && event.rsvpConfig?.collectAccommodation ? accommodation : undefined,
+        customAnswers: Object.keys(customAnswers).length > 0 ? customAnswers : undefined,
         note: note.trim() || undefined,
       });
 
@@ -460,62 +491,50 @@ export function EventViewer({
     return idx !== -1 ? idx : 99;
   };
 
-  if (!isUnlocked) {
+  if (!isAuthorizedByGoogleSession) {
     return (
       <div 
         className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6"
         style={{ backgroundColor: event.secondaryColor || styleInfo.secondary }}
       >
         <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-200 text-center space-y-6 relative overflow-hidden">
-          <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
-            <Lock className="w-8 h-8" />
+          <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center justify-center mx-auto shadow-sm">
+            <ShieldCheck className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <span className="px-3 py-1 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-full uppercase tracking-wider">
-              Private Event Lock
+            <span className="px-3 py-1 bg-rose-50 text-rose-800 text-[10px] font-bold rounded-full uppercase tracking-wider">
+              Google Account Session Access
             </span>
             <h2 className="text-2xl font-serif font-bold text-stone-900">
               {event.title || 'Private Celebration'}
             </h2>
             <p className="text-xs text-stone-600">
-              This invitation page is passcode protected by the host. Please enter the passcode to unlock and view event details, photos, & wishes.
+              {viewerUser
+                ? `Signed in as ${viewerUser.email}. This invitation is restricted to invited Google accounts.`
+                : 'Select your Google Account to view this invitation. No password entry required.'}
             </p>
           </div>
 
-          <form onSubmit={handleUnlock} className="space-y-4">
-            <div>
-              <input
-                type="password"
-                placeholder="Enter Passcode / PIN"
-                value={passcodeInput}
-                onChange={(e) => {
-                  setPasscodeInput(e.target.value);
-                  setPasscodeError(false);
-                }}
-                className={`w-full px-4 py-3 bg-stone-50 border rounded-xl text-center font-mono font-bold text-lg tracking-widest focus:ring-2 focus:ring-teal-500 transition-all outline-none ${
-                  passcodeError ? 'border-red-400 bg-red-50 text-red-900' : 'border-stone-200 text-stone-900'
-                }`}
-              />
-              {passcodeError && (
-                <p className="text-xs text-red-600 font-medium mt-1.5">
-                  Incorrect passcode. Please verify with the event host.
-                </p>
-              )}
-            </div>
+          {authError && (
+            <p className="text-xs text-red-600 font-medium bg-red-50 p-2.5 rounded-xl border border-red-200">
+              {authError}
+            </p>
+          )}
 
-            <button
-              type="submit"
-              className="w-full py-3 bg-teal-800 hover:bg-teal-900 text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2"
-            >
-              <Unlock className="w-4 h-4" />
-              Unlock Event Page
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={handleGuestGoogleSignIn}
+            disabled={isSigningInGuest}
+            className="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <ShieldCheck className="w-4 h-4 text-rose-400" />
+            <span>{isSigningInGuest ? 'Connecting Google Session...' : viewerUser ? 'Switch Google Account' : 'Continue with Google Account'}</span>
+          </button>
 
           <div className="pt-4 border-t border-stone-100 flex items-center justify-center gap-1.5 text-[11px] text-stone-400">
-            <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-            <span>Passcode Access Control by Yours Lovingly</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-rose-600" />
+            <span>Zero-Password Google Session Security by Yours Lovingly</span>
           </div>
         </div>
       </div>
@@ -540,13 +559,13 @@ export function EventViewer({
         printColorAdjust: 'exact'
       }}
     >
-      {/* Export as PDF / Print Action for Visitors */}
-      {!isCompact && !isBuilderMode && event.isPublished && (
+      {/* Export as PDF / Print Action for Visitors - strictly published & within active hosting period */}
+      {!isCompact && !isBuilderMode && canExportPdf(event) && (
         <div className="absolute top-4 right-4 z-30 print:hidden">
           <button
             onClick={handlePrint}
             className="px-3 py-1.5 bg-white/90 backdrop-blur-md hover:bg-white text-stone-700 hover:text-secondary rounded-full border border-stone-200 shadow-xs text-xs font-bold transition-all flex items-center gap-1.5 hover:scale-105 cursor-pointer"
-            title="Export as PDF or print physical cards, flyers, and pamphlets"
+            title="Export as PDF or print invitation"
           >
             <Printer className="w-3.5 h-3.5 text-secondary" />
             <span className="hidden sm:inline">Export PDF / Print</span>
@@ -1205,6 +1224,9 @@ export function EventViewer({
                             href={event.googleMapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={(e) => {
+                              if (isBuilderMode) e.preventDefault();
+                            }}
                             className={`${
                               isCompact 
                                 ? 'text-xs font-semibold underline mb-0.5' 
@@ -1245,6 +1267,9 @@ export function EventViewer({
                             href={event.googleMapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={(e) => {
+                              if (isBuilderMode) e.preventDefault();
+                            }}
                             className={`w-full max-w-[280px] mx-auto inline-flex items-center justify-center gap-2 ${
                               isMobile ? 'px-3.5 py-2 text-xs' : 'px-5 py-2.5 text-xs sm:text-sm'
                             } bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md shadow-red-200/50 mb-2 text-center active:scale-95`}
@@ -1254,7 +1279,7 @@ export function EventViewer({
                           </a>
                         )}
 
-                        {!isCompact && event.showLocationQrCode && event.googleMapsUrl && (
+                        {!isCompact && event.showLocationQrCode && (event.googleMapsUrl || (isBuilderMode && activeElementKey === 'locationQr')) && (
                           <div 
                             onClick={(e) => {
                               if (isBuilderMode && onSelectElementKey) {
@@ -1277,13 +1302,28 @@ export function EventViewer({
                                 Location Directions QR Code
                               </span>
                             )}
-                            <a href={event.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-block relative group">
-                              <img 
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(event.googleMapsUrl)}`}
-                                alt="Location Directions QR Code"
-                                className={`${isMobile ? 'w-24 h-24' : 'w-28 h-28'} object-contain rounded-lg border border-stone-100 group-hover:opacity-90 transition-opacity`}
-                              />
-                            </a>
+                            {event.googleMapsUrl ? (
+                              <a
+                                href={event.googleMapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => {
+                                  if (isBuilderMode) e.preventDefault();
+                                }}
+                                className="inline-block relative group"
+                              >
+                                <img 
+                                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(event.googleMapsUrl)}`}
+                                  alt="Location Directions QR Code"
+                                  className={`${isMobile ? 'w-24 h-24' : 'w-28 h-28'} object-contain rounded-lg border border-stone-100 group-hover:opacity-90 transition-opacity`}
+                                />
+                              </a>
+                            ) : (
+                              <div className={`${isMobile ? 'w-24 h-24' : 'w-28 h-28'} rounded-lg border border-dashed border-stone-300 bg-stone-50 flex flex-col items-center justify-center p-2 text-center`}>
+                                <MapPin className="w-5 h-5 text-rose-500 mb-1" />
+                                <span className="text-[9px] text-stone-500 font-medium">Enter Google Maps link below to generate QR</span>
+                              </div>
+                            )}
                             <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 flex items-center justify-center gap-1 text-center">
                               <MapPin className="w-3.5 h-3.5 text-orange-600 shrink-0" />
                               <span className="truncate">Scan for Venue Directions</span>
@@ -1328,7 +1368,9 @@ export function EventViewer({
                         <Heart className="w-5 h-5 fill-red-600 text-red-600" />
                       </div>
                       <h3 className="font-serif font-bold text-stone-900 text-lg sm:text-xl">Will You Join Us?</h3>
-                      <p className="text-xs text-stone-500">Please confirm your attendance below</p>
+                      <p className="text-xs text-stone-500">
+                        {event.rsvpConfig?.deadline?.trim() || 'Please confirm your attendance below'}
+                      </p>
                     </div>
 
                     {rsvpSubmitted ? (
@@ -1415,34 +1457,85 @@ export function EventViewer({
                           </div>
                         </div>
 
-                        {attending && (
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="block text-xs font-bold text-stone-700 mb-1">Total Guests</label>
-                              <select
-                                value={guestCount}
-                                onChange={(e) => setGuestCount(Number(e.target.value))}
-                                className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-hidden focus:border-red-500"
-                              >
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                                  <option key={n} value={n}>
-                                    {n} {n === 1 ? 'Guest' : 'Guests'}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-xs font-bold text-stone-700 mb-1">Phone (Optional)</label>
-                              <input
-                                type="tel"
-                                placeholder="+91 98765..."
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-hidden focus:border-red-500 focus:bg-white"
-                              />
+                        {attending && (event.rsvpConfig?.collectGuestCount !== false || event.rsvpConfig?.collectPhone !== false) && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {event.rsvpConfig?.collectGuestCount !== false && (
+                              <div>
+                                <label className="block text-xs font-bold text-stone-700 mb-1">Total Guests</label>
+                                <select
+                                  value={guestCount}
+                                  onChange={(e) => setGuestCount(Number(e.target.value))}
+                                  className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-hidden focus:border-red-500"
+                                >
+                                  {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                                    <option key={n} value={n}>
+                                      {n} {n === 1 ? 'Guest' : 'Guests'}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+                            {event.rsvpConfig?.collectPhone !== false && (
+                              <div>
+                                <label className="block text-xs font-bold text-stone-700 mb-1">Phone (Optional)</label>
+                                <input
+                                  type="tel"
+                                  placeholder="+91 98765..."
+                                  value={phone}
+                                  onChange={(e) => setPhone(e.target.value)}
+                                  className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-hidden focus:border-red-500 focus:bg-white"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {attending && event.rsvpConfig?.collectDietary && (
+                          <div>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">Meal Preference</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              {(['Veg', 'Non-Veg'] as const).map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setDietary(opt)}
+                                  className={`py-1.5 px-3 rounded-xl text-xs font-bold border transition-all ${
+                                    dietary === opt
+                                      ? 'bg-rose-700 text-white border-rose-700'
+                                      : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
                             </div>
                           </div>
                         )}
+
+                        {attending && event.rsvpConfig?.collectAccommodation && (
+                          <label className="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between cursor-pointer">
+                            <span className="text-xs font-semibold text-stone-700">Stay &amp; Accommodation Needed</span>
+                            <input
+                              type="checkbox"
+                              checked={accommodation}
+                              onChange={(e) => setAccommodation(e.target.checked)}
+                              className="w-4 h-4 text-rose-600 rounded"
+                            />
+                          </label>
+                        )}
+
+                        {attending && (event.rsvpConfig?.customQuestions || []).map((q, qIdx) => (
+                          <div key={qIdx}>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">{q}</label>
+                            <input
+                              type="text"
+                              placeholder="Your response..."
+                              value={customAnswers[q] || ''}
+                              onChange={(e) => setCustomAnswers(prev => ({ ...prev, [q]: e.target.value }))}
+                              className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-hidden focus:border-red-500 focus:bg-white"
+                            />
+                          </div>
+                        ))}
 
                         <div>
                           <label className="block text-xs font-bold text-stone-700 mb-1">Blessing or Personal Note (Optional)</label>
@@ -1476,8 +1569,9 @@ export function EventViewer({
           )}
 
                 {/* UPI Gift Section & Transaction Form */}
-                {!isCompact && event.showUpiQrCode !== false && (event.upiQrImageUrl || event.upiId) && (() => {
+                {!isCompact && event.showUpiQrCode !== false && (event.upiQrImageUrl || event.upiId || (isBuilderMode && (activeElementKey === 'upi' || activeElementKey === 'upiQr'))) && (() => {
                   const upiElem = getElementStyle('upiQr');
+                  const payeeName = event.upiName?.trim() || displayRecipient || displayTitle;
                   return (
                     <motion.section 
                       key="upi_section"
@@ -1508,12 +1602,15 @@ export function EventViewer({
                       </h3>
                       
                       <div className="p-3.5 sm:p-5 bg-white rounded-2xl shadow-sm border border-stone-200/90 flex flex-col items-center gap-3.5 sm:gap-4 max-w-sm w-full text-center overflow-hidden min-w-0">
-                        {(event.upiQrImageUrl || event.upiId) && (
+                        {event.upiName && (
+                          <p className="text-xs font-bold text-stone-800">{event.upiName}</p>
+                        )}
+                        {(event.upiQrImageUrl || event.upiId) ? (
                           <div className="p-2 bg-stone-50 rounded-xl border border-stone-100 shadow-inner flex flex-col items-center gap-1 max-w-full">
                             <img 
                               src={
                                 event.upiQrImageUrl ||
-                                `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`upi://pay?pa=${event.upiId}&pn=${encodeURIComponent(displayRecipient || displayTitle)}&cu=INR`)}`
+                                `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`upi://pay?pa=${event.upiId}&pn=${encodeURIComponent(payeeName)}&cu=INR`)}`
                               }
                               alt="UPI QR Code"
                               className="w-36 h-36 sm:w-40 sm:h-40 object-contain rounded-lg bg-white p-1 border border-stone-200 max-w-full"
@@ -1522,13 +1619,18 @@ export function EventViewer({
                               {event.upiQrImageUrl ? 'Scan uploaded QR code' : 'Scan with any UPI App'}
                             </span>
                           </div>
+                        ) : (
+                          <div className="w-36 h-36 rounded-xl border-2 border-dashed border-purple-200 bg-purple-50/40 flex flex-col items-center justify-center p-3 text-center">
+                            <Gift className="w-6 h-6 text-purple-600 mb-1" />
+                            <span className="text-[10px] text-purple-900 font-semibold">Upload a QR image or enter UPI ID below</span>
+                          </div>
                         )}
 
                       {event.upiId && (
                         <div className="w-full space-y-2 min-w-0">
                           <div className="flex items-center justify-between gap-1.5 px-2.5 py-2 bg-purple-50/70 border border-purple-200/80 rounded-xl text-xs font-bold text-purple-950 min-w-0 w-full overflow-hidden">
                             <a 
-                              href={`upi://pay?pa=${event.upiId}&pn=${encodeURIComponent(displayRecipient || displayTitle)}&cu=INR`}
+                              href={`upi://pay?pa=${event.upiId}&pn=${encodeURIComponent(payeeName)}&cu=INR`}
                               className="flex items-center gap-1.5 hover:underline font-mono min-w-0 overflow-hidden text-left"
                               title={event.upiId}
                             >

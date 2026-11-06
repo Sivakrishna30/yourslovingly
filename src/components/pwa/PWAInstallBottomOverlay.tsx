@@ -5,7 +5,8 @@ import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 export const PWAInstallBottomOverlay: React.FC = () => {
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Default to the compact minimized button on the bottom-right; opens full panel only when clicked
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isDismissed, setIsDismissed] = useState(false);
   const [showGuide, setShowGuide] = useState<'ios' | 'browser' | null>(null);
   const [isInstalling, setIsInstalling] = useState(false);
@@ -38,11 +39,13 @@ export const PWAInstallBottomOverlay: React.FC = () => {
     <>
       <aside
         aria-label="Install App"
-        className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-96 z-40 print:hidden pointer-events-auto"
+        className={`fixed bottom-4 right-4 z-40 print:hidden pointer-events-auto ${
+          isCollapsed ? 'w-auto' : 'left-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-96'
+        }`}
       >
         <AnimatePresence mode="wait">
           {isCollapsed ? (
-            /* COLLAPSED MINI-PILL */
+            /* DEFAULT: COLLAPSED MINI-PILL ON BOTTOM RIGHT */
             <motion.div
               key="collapsed-pill"
               initial={{ opacity: 0, y: 16, scale: 0.95 }}
@@ -55,7 +58,7 @@ export const PWAInstallBottomOverlay: React.FC = () => {
                 type="button"
                 onClick={() => setIsCollapsed(false)}
                 className="group flex items-center gap-2 px-3.5 py-2 rounded-full bg-stone-900/95 hover:bg-stone-900 text-white shadow-xl backdrop-blur-md border border-stone-800 text-xs font-bold transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-                title="Expand Install App panel"
+                title="Open Install App options"
               >
                 <div className="w-5 h-5 rounded-full bg-rose-600 flex items-center justify-center shrink-0">
                   <Download className="w-3 h-3 text-white" />
@@ -65,17 +68,17 @@ export const PWAInstallBottomOverlay: React.FC = () => {
               </button>
             </motion.div>
           ) : (
-            /* EXPANDED BOTTOM CARD OVERLAY */
+            /* EXPANDED FULL PANEL OVERLAY (Opened only when user clicks Install App) */
             <motion.div
               key="expanded-overlay"
               initial={{ opacity: 0, y: 24, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.96 }}
               transition={{ duration: 0.25 }}
-              className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-stone-200/90 ring-1 ring-black/5"
+              className="bg-white/98 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-stone-200/90 ring-1 ring-black/5 space-y-3"
             >
               {/* Header with App Logo, Title, and Collapse/Dismiss */}
-              <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <img
                     src="/apple-touch-icon.png"
@@ -88,16 +91,16 @@ export const PWAInstallBottomOverlay: React.FC = () => {
                         Install Yours Lovingly
                       </h4>
                       <span className="px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[10px] font-bold shrink-0">
-                        PWA
+                        App
                       </span>
                     </div>
                     <p className="text-[11px] text-stone-500 leading-tight mt-0.5">
-                      Add to home screen for 1-click access &amp; offline viewing
+                      Add to home screen for instant 1-tap launch &amp; offline access
                     </p>
                   </div>
                 </div>
 
-                {/* Control buttons: Collapse & Close */}
+                {/* Control buttons: Minimize & Close */}
                 <div className="flex items-center gap-1 shrink-0 -mr-1">
                   <button
                     type="button"
@@ -120,29 +123,62 @@ export const PWAInstallBottomOverlay: React.FC = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-1">
+              {/* Inline Quick Instructions & Details */}
+              <div className="p-3 rounded-xl bg-stone-50 border border-stone-200/80 text-[11px] text-stone-600 space-y-1.5">
+                {isIOS ? (
+                  <>
+                    <p className="font-bold text-stone-800 flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                      <span>Install on iPhone / iPad (Add to Home Screen):</span>
+                    </p>
+                    <p className="leading-relaxed">
+                      1. Tap <strong>Share</strong> in Safari toolbar &rarr; 2. Select <strong>Add to Home Screen</strong> &rarr; 3. Tap <strong>Add</strong>.
+                    </p>
+                  </>
+                ) : isInstallable ? (
+                  <>
+                    <p className="font-bold text-stone-800 flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                      <span>Ready to Install on Phone / Device:</span>
+                    </p>
+                    <p className="leading-relaxed">
+                      Tap the button below to add Yours Lovingly directly to your home screen or desktop app launcher.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-bold text-stone-800 flex items-center gap-1.5">
+                      <Monitor className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                      <span>Install on Phone or Desktop (Add to Home Screen):</span>
+                    </p>
+                    <p className="leading-relaxed">
+                      Tap <strong>Install on Phone / Add to Home Screen</strong> below or use your browser menu (<strong>⋮</strong> &rarr; <strong>Add to Home screen / Install App</strong>).
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {/* Action Buttons: Install on Phone / Add to Home Screen & Later */}
+              <div className="flex items-center gap-2 pt-0.5">
                 <button
                   type="button"
                   onClick={handleInstallClick}
                   disabled={isInstalling}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-stone-900 hover:bg-stone-800 active:scale-[0.99] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-stone-900 hover:bg-stone-800 active:scale-[0.99] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                 >
-                  <Download className="w-3.5 h-3.5 text-rose-400" />
+                  <Download className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                   <span>
                     {isInstalling
                       ? 'Installing...'
-                      : isIOS
-                      ? 'How to Install on iPhone'
                       : isInstallable
-                      ? 'Install on Device'
-                      : 'Install App'}
+                      ? 'Install on Phone / Add to Home Screen'
+                      : 'Install on Phone / Add to Home Screen'}
                   </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsCollapsed(true)}
-                  className="py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition-colors cursor-pointer"
+                  className="py-2.5 px-3.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition-colors cursor-pointer shrink-0"
                 >
                   Later
                 </button>

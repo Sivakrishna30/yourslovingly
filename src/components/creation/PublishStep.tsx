@@ -16,6 +16,7 @@ import {
 import type { User } from 'firebase/auth';
 import type { LovinglyEvent, TierType } from '../../types';
 import { getEventCreatorPath, getEventTypePath } from '../../lib/utils';
+import { canExportPdf, hasInsightsFeature } from '../../lib/hosting';
 import { EntitlementService } from '../../domain/entitlement/entitlementService';
 import { firebaseService } from '../../lib/firebase-service';
 import { CreationBottomNav } from './CreationBottomNav';
@@ -99,14 +100,14 @@ export function PublishStep({
     if (event.upiId || event.upiQrImageUrl) {
       list.push({ id: 'upi', name: 'UPI Shagun / Gift Scanner' });
     }
-    if (event.password && event.password.trim() !== '') {
-      list.push({ id: 'password', name: '4-Digit Security PIN' });
+    if (event.visibility === 'restricted') {
+      list.push({ id: 'restricted', name: 'Google Session Access Control' });
     }
     if (event.showLocationQrCode) {
       list.push({ id: 'locationQr', name: 'Venue Directions QR Code' });
     }
     return list;
-  }, [event.rsvpConfig?.enabled, event.upiId, event.upiQrImageUrl, event.password, event.showLocationQrCode]);
+  }, [event.rsvpConfig?.enabled, event.upiId, event.upiQrImageUrl, event.visibility, event.showLocationQrCode]);
 
   const hasPremiumFeatures = activePremiumFeatures.length > 0;
 
@@ -121,7 +122,8 @@ export function PublishStep({
       upiId: event.upiId,
       upiQrImageUrl: event.upiQrImageUrl,
       showUpiQrCode: event.showUpiQrCode,
-      password: event.password,
+      visibility: event.visibility,
+      allowedEmails: event.allowedEmails,
       showLocationQrCode: event.showLocationQrCode,
     });
 
@@ -130,7 +132,8 @@ export function PublishStep({
       upiId: '',
       upiQrImageUrl: '',
       showUpiQrCode: false,
-      password: '',
+      visibility: 'anyone',
+      allowedEmails: '',
       showLocationQrCode: false,
     };
 
@@ -149,8 +152,8 @@ export function PublishStep({
       onUpdateEvent({ rsvpConfig: event.rsvpConfig ? { ...event.rsvpConfig, enabled: false } : undefined });
     } else if (featureId === 'upi') {
       onUpdateEvent({ upiId: '', upiQrImageUrl: '', showUpiQrCode: false });
-    } else if (featureId === 'password') {
-      onUpdateEvent({ password: '' });
+    } else if (featureId === 'restricted') {
+      onUpdateEvent({ visibility: 'anyone', allowedEmails: '' });
     } else if (featureId === 'locationQr') {
       onUpdateEvent({ showLocationQrCode: false });
     }
@@ -407,6 +410,25 @@ export function PublishStep({
                           </label>
                         ))}
                       </div>
+
+                      {hasInsightsFeature(event) && (
+                        <div className="mt-2.5 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <Check className="w-4 h-4 text-emerald-700 shrink-0" />
+                            <div>
+                              <span className="text-xs font-bold text-emerald-950 block">
+                                Live Page Insights &amp; Guest Tracking Automatically Included
+                              </span>
+                              <span className="text-[11px] text-emerald-700">
+                                Automatically enabled because RSVP or UPI Digital Gifts is added to this Premium Page.
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-white border border-emerald-200 px-2 py-0.5 rounded-md shrink-0">
+                            Auto-Added
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Primary Action: Proceed with Premium Page */}
@@ -544,24 +566,26 @@ export function PublishStep({
                 <ExternalLink className="w-4 h-4" />
                 <span>Open Live Page</span>
               </a>
-              <button
-                type="button"
-                onClick={() => setShowPdfExport(true)}
-                className="py-3 px-4 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Printer className="w-4 h-4 text-amber-700" />
-                <span>Export PDF</span>
-              </button>
+              {canExportPdf({ ...event, isPublished: isSuccess }) && (
+                <button
+                  type="button"
+                  onClick={() => setShowPdfExport(true)}
+                  className="py-3 px-4 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Printer className="w-4 h-4 text-amber-700" />
+                  <span>Export PDF</span>
+                </button>
+              )}
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(
-                  `You're Invited!\n\n${event.title || 'Special Event'}\nJoin us on ${event.eventDate || 'the special day'}${event.location ? ` at ${event.location}` : ''}.\n\nTap the link below to view our official invitation and RSVP:\n${publicUrl}`
+                  `You're Invited!\n\n${event.title || 'Special Event'}\nJoin us on ${event.eventDate || 'the special day'}${event.location ? ` at ${event.location}` : ''}.\n\nTap the link below to view our official invitation${event.rsvpConfig?.enabled ? ' and RSVP' : ''}:\n${publicUrl}`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#1DA851] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
               >
                 <Share2 className="w-4 h-4" />
-                <span>Share via WhatsApp</span>
+                <span>Send to WhatsApp</span>
               </a>
               {onNext && (
                 <button

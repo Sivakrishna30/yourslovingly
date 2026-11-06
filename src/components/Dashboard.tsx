@@ -5,7 +5,7 @@ import { Calendar, MapPin, Share2, Trash2, Edit3, ExternalLink, BarChart3, Check
 import type { User } from 'firebase/auth';
 import type { LovinglyEvent } from '../types';
 import { getEventCreatorPath, getEventTypePath } from '../lib/utils';
-import { getHostingStatus } from '../lib/hosting';
+import { getHostingStatus, canAccessInsights, canExportPdf, isPremiumPage } from '../lib/hosting';
 import { InsightsModal } from './InsightsModal';
 import { HostingRenewalModal } from './HostingRenewalModal';
 import { PdfExportModal } from './PdfExportModal';
@@ -457,8 +457,19 @@ export function Dashboard({
                         {event.eventType}
                       </div>
                       {event.isPublished ? (
-                        <div className="absolute top-4 left-4 px-2 py-0.5 bg-emerald-600 text-white rounded-md text-[10px] font-bold uppercase tracking-wider shadow-xs">
-                          Live
+                        <div className="absolute top-4 left-4 flex items-center gap-1.5">
+                          <span className={`px-2 py-0.5 text-white rounded-md text-[10px] font-bold uppercase tracking-wider shadow-xs ${
+                            hostingInfo.isExpired ? 'bg-rose-700' : 'bg-emerald-600'
+                          }`}>
+                            {hostingInfo.isExpired ? 'Expired' : 'Live'}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shadow-xs ${
+                            isPremiumPage(event)
+                              ? 'bg-amber-500 text-stone-950'
+                              : 'bg-white/95 text-stone-700 border border-stone-200'
+                          }`}>
+                            {isPremiumPage(event) ? 'Premium' : 'Basic'}
+                          </span>
                         </div>
                       ) : (
                         <div className="absolute top-4 left-4 px-2 py-0.5 bg-stone-700 text-white rounded-md text-[10px] font-bold uppercase tracking-wider shadow-xs">
@@ -476,7 +487,7 @@ export function Dashboard({
                           <div className="flex items-center gap-1.5 truncate">
                             <Clock className={`w-3.5 h-3.5 shrink-0 ${hostingInfo.isExpired ? 'text-primary' : 'text-stone-500'}`} />
                             <span className="text-stone-600 font-medium truncate">
-                              {`${hostingInfo.daysRemaining}d left`}
+                              {hostingInfo.isExpired ? 'Hosting Expired' : `${hostingInfo.daysRemaining}d left`}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0">
@@ -511,49 +522,85 @@ export function Dashboard({
                   </div>
 
                   <div className="p-6 pt-0 space-y-3">
-                    {event.isPublished ? (
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Insights Button */}
-                        <button
-                          onClick={() => setSelectedEventForInsights(event)}
-                          className="py-2.5 px-3 bg-stone-50 hover:bg-brand-red/5 hover:text-primary text-stone-700 rounded-xl text-xs font-bold transition-all border border-stone-200 hover:border-brand-red/20 flex items-center justify-center gap-1.5 shadow-xs group/btn cursor-pointer"
-                        >
-                          <BarChart3 className="w-3.5 h-3.5 text-primary group-hover/btn:scale-110 transition-transform" />
-                          Insights
-                        </button>
+                    {(() => {
+                      const showInsights = canAccessInsights(event);
+                      const showPdf = canExportPdf(event);
+                      const whatsappShareHref = `https://wa.me/?text=${encodeURIComponent(
+                        `You're Invited!\n\n${event.title || 'Special Event'}\nJoin us on ${event.eventDate || 'the special day'}${event.location ? ` at ${event.location}` : ''}.\n\nTap the link below to view our official invitation${event.rsvpConfig?.enabled ? ' and RSVP' : ''}:\n${window.location.origin}/${getEventCreatorPath(event)}/${getEventTypePath(event)}/${event.slug}`
+                      )}`;
 
-                        {/* Export as PDF / Print */}
-                        <button
-                          onClick={() => handleExportPdf(event)}
-                          className="py-2.5 px-3 bg-stone-50 hover:bg-brand-teal/5 hover:text-secondary text-stone-700 rounded-xl text-xs font-bold transition-all border border-stone-200 hover:border-brand-teal/20 flex items-center justify-center gap-1.5 shadow-xs group/btn cursor-pointer"
-                          title="Export exact website invitation design as PDF"
-                        >
-                          <FileDown className="w-3.5 h-3.5 text-secondary group-hover/btn:scale-110 transition-transform" />
-                          <span>Export PDF</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Publish Button for Drafts */}
-                        <button
-                          onClick={() => navigate(`/create/${event.id}/publish`)}
-                          className="py-2.5 px-3 bg-primary text-white hover:bg-primary/90 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 group/btn cursor-pointer"
-                        >
-                          <Globe className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
-                          Publish
-                        </button>
+                      if (event.isPublished) {
+                        return (
+                          <div className="space-y-2">
+                            <div className={`grid gap-2 ${showInsights && showPdf ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                              {/* Insights Button - strictly for published Premium pages with RSVP or UPI */}
+                              {showInsights && (
+                                <button
+                                  onClick={() => setSelectedEventForInsights(event)}
+                                  className="py-2.5 px-3 bg-stone-50 hover:bg-brand-red/5 hover:text-primary text-stone-700 rounded-xl text-xs font-bold transition-all border border-stone-200 hover:border-brand-red/20 flex items-center justify-center gap-1.5 shadow-xs group/btn cursor-pointer"
+                                  title="View Guest RSVP & Gift Insights (Premium)"
+                                >
+                                  <BarChart3 className="w-3.5 h-3.5 text-primary group-hover/btn:scale-110 transition-transform" />
+                                  <span>Insights</span>
+                                </button>
+                              )}
 
-                        {/* Export as PDF / Print for Drafts */}
-                        <button
-                          onClick={() => handleExportPdf(event)}
-                          className="py-2.5 px-3 bg-stone-50 hover:bg-brand-teal/5 hover:text-secondary text-stone-700 rounded-xl text-xs font-bold transition-all border border-stone-200 hover:border-brand-teal/20 flex items-center justify-center gap-1.5 shadow-xs group/btn cursor-pointer"
-                          title="Export exact website invitation design as PDF"
-                        >
-                          <FileDown className="w-3.5 h-3.5 text-secondary group-hover/btn:scale-110 transition-transform" />
-                          <span>Export PDF</span>
-                        </button>
-                      </div>
-                    )}
+                              {/* Export PDF - strictly for active non-expired published pages */}
+                              {showPdf && (
+                                <button
+                                  onClick={() => handleExportPdf(event)}
+                                  className="py-2.5 px-3 bg-stone-50 hover:bg-brand-teal/5 hover:text-secondary text-stone-700 rounded-xl text-xs font-bold transition-all border border-stone-200 hover:border-brand-teal/20 flex items-center justify-center gap-1.5 shadow-xs group/btn cursor-pointer"
+                                  title="Export full-page invitation design as PDF"
+                                >
+                                  <FileDown className="w-3.5 h-3.5 text-secondary group-hover/btn:scale-110 transition-transform" />
+                                  <span>Export PDF</span>
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Send to WhatsApp - available on ALL pages (Basic & Premium) */}
+                            <a
+                              href={whatsappShareHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full py-2.5 px-3 bg-[#25D366]/10 hover:bg-[#25D366] text-[#128C7E] hover:text-white border border-[#25D366]/30 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                              title="Send Invitation to WhatsApp"
+                            >
+                              <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a5.8 5.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.81 11.81 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.88 11.88 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.82 11.82 0 0 0-3.48-8.413Z"/>
+                              </svg>
+                              <span>Send to WhatsApp</span>
+                            </a>
+                          </div>
+                        );
+                      }
+
+                      /* Drafts: Publish & Send to WhatsApp (NO Export PDF and NO Insights for drafts) */
+                      return (
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => navigate(`/create/${event.id}/publish`)}
+                            className="py-2.5 px-3 bg-primary text-white hover:bg-primary/90 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 group/btn cursor-pointer"
+                          >
+                            <Globe className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
+                            <span>Publish</span>
+                          </button>
+
+                          <a
+                            href={whatsappShareHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="py-2.5 px-3 bg-[#25D366]/10 hover:bg-[#25D366] text-[#128C7E] hover:text-white border border-[#25D366]/30 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                            title="Send to WhatsApp"
+                          >
+                            <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a5.8 5.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.81 11.81 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.88 11.88 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.82 11.82 0 0 0-3.48-8.413Z"/>
+                            </svg>
+                            <span>Send to WhatsApp</span>
+                          </a>
+                        </div>
+                      );
+                    })()}
 
                     {activeTab === 'trash' ? (
                       /* Trash Action Bar */
@@ -580,7 +627,7 @@ export function Dashboard({
                           <button
                             onClick={() => onEdit(event)}
                             className="p-2 text-stone-500 hover:text-secondary hover:bg-brand-teal/5 rounded-lg transition-all cursor-pointer"
-                            title={event.isPublished ? "Edit Text Content" : "Edit Page"}
+                            title={event.isPublished ? "Edit Page" : "Edit Draft"}
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
@@ -600,22 +647,20 @@ export function Dashboard({
                           </button>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          {event.isPublished && (
-                            <a
-                              href={`https://wa.me/?text=${encodeURIComponent(
-                                `You're Invited!\n\n${event.title || 'Special Event'}\nJoin us on ${event.eventDate || 'the special day'}${event.location ? ` at ${event.location}` : ''}.\n\nTap the link below to view our official invitation and RSVP:\n${window.location.origin}/${getEventCreatorPath(event)}/${getEventTypePath(event)}/${event.slug}`
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 text-[#25D366] hover:text-[#1DA851] hover:bg-[#25D366]/10 rounded-lg transition-all cursor-pointer"
-                              title="Share via WhatsApp"
-                            >
-                              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a5.8 5.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.81 11.81 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.88 11.88 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.82 11.82 0 0 0-3.48-8.413Z"/>
-                              </svg>
-                            </a>
-                          )}
-                          {event.isPublished && (
+                          <a
+                            href={`https://wa.me/?text=${encodeURIComponent(
+                              `You're Invited!\n\n${event.title || 'Special Event'}\nJoin us on ${event.eventDate || 'the special day'}${event.location ? ` at ${event.location}` : ''}.\n\nTap the link below to view our official invitation${event.rsvpConfig?.enabled ? ' and RSVP' : ''}:\n${window.location.origin}/${getEventCreatorPath(event)}/${getEventTypePath(event)}/${event.slug}`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 text-[#25D366] hover:text-[#1DA851] hover:bg-[#25D366]/10 rounded-lg transition-all cursor-pointer"
+                            title="Send to WhatsApp"
+                          >
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a5.8 5.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.81 11.81 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.88 11.88 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.82 11.82 0 0 0-3.48-8.413Z"/>
+                            </svg>
+                          </a>
+                          {event.isPublished && !hostingInfo.isExpired && (
                             <a
                               href={`/${getEventCreatorPath(event)}/${getEventTypePath(event)}/${event.slug}`}
                               target="_blank"
@@ -647,8 +692,8 @@ export function Dashboard({
           </div>
         )}
 
-        {/* Insights Modal */}
-        {selectedEventForInsights && (
+        {/* Insights Modal - Strictly guarded for published Premium pages with RSVP/UPI */}
+        {selectedEventForInsights && canAccessInsights(selectedEventForInsights) && (
           <InsightsModal 
             event={selectedEventForInsights} 
             onClose={() => setSelectedEventForInsights(null)} 

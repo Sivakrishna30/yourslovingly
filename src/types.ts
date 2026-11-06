@@ -257,9 +257,6 @@ export interface LovinglyEvent {
   upiName?: string;
   showUpiQrCode?: boolean;
   upiQrImageUrl?: string;
-  isPasscodeProtected?: boolean;
-  passcode?: string;
-  password?: string;
   rsvpConfig?: RsvpFormConfig;
   templateId?: string;
   elementStyles?: CanvaElementMap;
@@ -294,6 +291,9 @@ export interface EventRSVP {
   attending: boolean;
   guestCount: number;
   phone?: string;
+  dietary?: string;
+  accommodation?: boolean;
+  customAnswers?: Record<string, string>;
   note?: string;
   createdAt: string;
 }

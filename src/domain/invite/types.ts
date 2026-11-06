@@ -16,11 +16,9 @@ export interface Invite {
   tier: EntitlementTier;
   status: InviteStatus;
   
-  /** True if this invite is protected via a secure password mechanism */
-  isPasswordProtected: boolean;
-  
-  /** Depending on the mechanism, could be hashed or raw. Handled securely by backend. */
-  password?: string;
+  /** Access control mode via Google Account session ('anyone' or 'restricted') */
+  visibility?: 'anyone' | 'restricted';
+  allowedEmails?: string;
   
   createdAt: string;
   updatedAt: string;

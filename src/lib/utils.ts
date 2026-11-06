@@ -18,9 +18,15 @@ export function sanitizeForFirestore<T>(obj: T): T {
   if (!isPlainObject) {
     return obj;
   }
+  const FORBIDDEN_PASSWORD_KEYS = new Set([
+    'password',
+    'passcode',
+    'isPasscodeProtected',
+    'isPasswordProtected',
+  ]);
   const sanitized: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
-    if (value !== undefined) {
+    if (value !== undefined && !FORBIDDEN_PASSWORD_KEYS.has(key)) {
       sanitized[key] = sanitizeForFirestore(value);
     }
   }

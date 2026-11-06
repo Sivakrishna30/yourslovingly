@@ -7,6 +7,31 @@ and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
 ### Added & Enhanced
+- **Quick Create `+ Add` Upward Menu (`SampleCanvasEditor.tsx`, `Viewer.tsx`)**:
+  - Upgraded the bottom toolbar `+` button in `SampleCanvasEditor.tsx` to open an upward dropdown menu asking whether to add **Text Paragraph**, **Photos / Images**, or **Feature**.
+  - When **Feature** is selected, dynamically displays only the Step 4 features not currently present on the page (MP3 Song & Background Music, Page Photos, Interactive Guest RSVP Form, UPI Digital Gifts, Venue Directions Map QR) so removed or missing features can be added and edited immediately.
+  - When all features are already active on the page, displays `"All features are already present on this page"`.
+- **Premium-Only Insights, Active-Published-Only Export PDF & Universal Send to WhatsApp (`hosting.ts`, `Dashboard.tsx`, `PublishStep.tsx`, `SampleCanvasEditor.tsx`, `Viewer.tsx`)**:
+  - **Insights (`canAccessInsights`)**: Strictly restricted to published **Premium Pages** (`planTier === 'premium_99'` / `tier === 'premium'`) that have **RSVP** or **UPI** enabled; completely hidden for Basic Pages and Drafts. Automatically displays `"Live Page Insights & Guest Tracking Automatically Included"` in Step 6 (`PublishStep.tsx`) when RSVP or UPI is active.
+  - **Export PDF (`canExportPdf`)**: Strictly restricted to **Published** pages that are currently within their **active hosting period** (`isPublished && !isExpired`). Removed Export PDF from all Drafts, Expired pages, and the unpublished `SampleCanvasEditor`.
+  - **Send to WhatsApp**: Enabled across **all** pages (both Basic and Premium pages) in Workspace cards and Publish Step.
+- **Default Minimized PWA Install Pill (`PWAInstallBottomOverlay.tsx`)**:
+  - Set `PWAInstallBottomOverlay` to default to the compact `Install App ▲` pill button on the bottom-right (`isCollapsed = true`).
+  - Clicking the pill expands the full panel displaying inline installation instructions, the `Install on Phone / Add to Home Screen` action, and the `Later` button.
+- **Firebase Auth Multi-Persistence & PWA Google Account Chooser (`src/firebase.ts`, `vite.config.ts`)**:
+  - Resolved `_openDb` IndexedDB initialization crash (`firebase_auth.js:6808`) by initializing Firebase Auth via `initializeAuth` with multi-layer persistence (`[browserLocalPersistence, indexedDBLocalPersistence, inMemoryPersistence]`) and `browserPopupRedirectResolver`.
+  - Configured `googleProvider.setCustomParameters({ prompt: 'select_account' })` so Google Sign-In consistently opens the Google Account Chooser across both browser and standalone PWA contexts.
+  - Added `navigateFallbackDenylist: [/^\/__\/auth/, /^\/api/]` to Workbox service worker config in `vite.config.ts` so OAuth callback paths are never intercepted by offline routing.
+- **Zero-Password Security Architecture (`src/types.ts`, `src/lib/utils.ts`, `firebase-blueprint.json`, `src/domain/invite/*`, `FeaturesStep.tsx`, `Viewer.tsx`, `PreviewStep.tsx`, `PublishStep.tsx`)**:
+  - Completely removed all password/PIN inputs (`<input type="password">`) and stripped `password`, `passcode`, `isPasscodeProtected`, and `isPasswordProtected` from types, database schemas, and `sanitizeForFirestore` so zero passwords are ever collected or persisted in Firestore.
+  - Replaced the password lock model with Google Account Sign-In & Session verification (`visibility: 'anyone' | 'restricted'` and optional `allowedEmails`).
+- **Full Feature Options Duplication & Clean Contextual Editing (`SampleCanvasEditor.tsx`, `FeaturesStep.tsx`, `Viewer.tsx`)**:
+  - Removed all redundant `'Active'` and `'Included'` status badges/toggle buttons across all features; standardized to a single `'Remove from this page'` button at the bottom of each feature panel.
+  - Removed the separate `'Features'` button and drawer from the bottom toolbar of `SampleCanvasEditor.tsx` so features are edited directly by clicking them on the canvas.
+  - Duplicated full Create Step 4 options into `SampleCanvasEditor.tsx` when any feature is selected on the canvas:
+    - **UPI Digital Gifts (`upi` / `upiQr`)**: Custom QR code image upload/preview/change/remove (`upiQrImageUrl`), direct QR image URL input, UPI ID/VPA (`upiId`), Payee Display Name (`upiName`), and `'Remove from this page'`.
+    - **Guest RSVP (`rsvp`)**: All 4 guest collection checkboxes (`collectPhone`, `collectGuestCount`, `collectDietary`, `collectAccommodation`), `deadline`, `whatsappNumber`, custom RSVP questions (`customQuestions` add/edit/delete), and `'Remove from this page'`.
+    - **Location QR (`locationQr`), Audio (`audio`), and Photos (`photos`)**: Full pre-populated editing controls with `'Remove from this page'`.
 - **Progressive Web App (PWA) Architecture (`vite.config.ts`, `index.html`, `pwa/*`, `usePWAInstall.ts`, `useOnlineStatus.ts`)**:
   - Converted Yours Lovingly into a fully installable Progressive Web App (PWA) for desktop, Android, iOS Safari, and mobile web.
   - Implemented Workbox service worker caching for offline asset availability and increased maximum cache file size to 5MB.

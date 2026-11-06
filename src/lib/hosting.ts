@@ -45,14 +45,50 @@ export const HOSTING_PLANS: Record<PlanTier, PlanConfig> = {
 };
 
 /**
+ * Determines whether a page is on a paid/upgraded Premium Page plan.
+ */
+export function isPremiumPage(event: Partial<LovinglyEvent>): boolean {
+  if (event.planTier === 'premium_99') return true;
+  if (event.tier === 'premium') return true;
+  return false;
+}
+
+/**
+ * Determines whether RSVP or UPI Gifts is enabled on the page,
+ * which automatically enables Page Insights for Premium Pages.
+ */
+export function hasInsightsFeature(event: Partial<LovinglyEvent>): boolean {
+  const hasRsvp = Boolean(event.rsvpConfig?.enabled);
+  const hasUpi = Boolean(event.showUpiQrCode !== false && (event.upiId?.trim() || event.upiQrImageUrl?.trim()));
+  return hasRsvp || hasUpi;
+}
+
+/**
+ * Insights is exclusively available for published Premium Pages that have RSVP or UPI enabled.
+ * Basic Pages and Drafts never show Insights.
+ */
+export function canAccessInsights(event: LovinglyEvent): boolean {
+  return Boolean(event.isPublished && isPremiumPage(event) && hasInsightsFeature(event));
+}
+
+/**
+ * Export PDF is exclusively available for published pages that are currently within their active hosting period.
+ * Drafts and expired pages cannot export PDF.
+ */
+export function canExportPdf(event: LovinglyEvent, referenceDate: Date = new Date()): boolean {
+  if (!event.isPublished) return false;
+  const status = getHostingStatus(event, referenceDate);
+  return !status.isExpired;
+}
+
+/**
  * Determines whether a page should display a platform watermark based on its plan tier.
  * Free Basic Page (free) and Basic Page (basic_49, single_49) include watermarks.
  * Premium Page (premium_99) is Watermark-Free.
  */
 export function hasWatermark(event: Partial<LovinglyEvent>): boolean {
   if (event.isLifetime) return false;
-  if (event.planTier === 'premium_99') return false;
-  if (event.tier === 'premium' || event.tier === 'standard') return false;
+  if (isPremiumPage(event)) return false;
   return true;
 }
 
@@ -241,7 +277,7 @@ export function applyHostingExtension(
     return {
       ...event,
       planTier: 'premium_99',
-      tier: 'standard',
+      tier: 'premium',
       hostingExtensions: [...(event.hostingExtensions || []), extensionRecord],
     };
   }

@@ -47,9 +47,7 @@
         "showLocationQrCode": { "type": "boolean" },
         "whatsappNumber": { "type": "string" },
         "upiId": { "type": "string" },
-        "showUpiQrCode": { "type": "boolean" },
-        "isPasscodeProtected": { "type": "boolean" },
-        "passcode": { "type": "string" }
+        "showUpiQrCode": { "type": "boolean" }
       },
       "required": ["id", "slug", "title", "ownerId"]
     }

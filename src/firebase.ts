@@ -1,5 +1,14 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import {
+  getAuth,
+  initializeAuth,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
+  inMemoryPersistence,
+  browserPopupRedirectResolver,
+  GoogleAuthProvider,
+  type Auth,
+} from 'firebase/auth';
 import { initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import appletConfig from '../firebase-applet-config.json';
@@ -14,9 +23,29 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || appletConfig.measurementId,
 };
 
-// Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Initialize Firebase App
+const isExistingApp = getApps().length > 0;
+const app = isExistingApp ? getApp() : initializeApp(firebaseConfig);
+
+// Initialize Auth with resilient multi-layer persistence (browserLocalPersistence fallback prevents _openDb crashes in iframes/PWAs)
+let auth: Auth;
+if (!isExistingApp) {
+  try {
+    auth = initializeAuth(app, {
+      persistence: [
+        browserLocalPersistence,
+        indexedDBLocalPersistence,
+        inMemoryPersistence,
+      ],
+      popupRedirectResolver: browserPopupRedirectResolver,
+    });
+  } catch {
+    auth = getAuth(app);
+  }
+} else {
+  auth = getAuth(app);
+}
+
 const firestoreDbId = (appletConfig as { firestoreDatabaseId?: string }).firestoreDatabaseId;
 
 // Use initializeFirestore with forced long-polling for stability in sandboxed iframe environments
@@ -25,7 +54,12 @@ const db = initializeFirestore(app, {
 }, firestoreDbId || '(default)');
 
 const storage = getStorage(app);
+
+// Configure Google Auth Provider to always show the Google Account Chooser (listing signed-in accounts on the device without forcing a password prompt)
 const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account',
+});
 
 export const firebaseReady = Boolean(firebaseConfig.apiKey);
 

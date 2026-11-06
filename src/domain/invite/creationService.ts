@@ -14,7 +14,7 @@ export class CreationService {
       title: 'Untitled Invite',
       tier: 'free',
       status: 'draft',
-      isPasswordProtected: false,
+      visibility: 'anyone',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       publishedAt: null,

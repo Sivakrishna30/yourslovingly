@@ -33,7 +33,7 @@ export function PreviewStep({
     const list: string[] = [];
     if (event.rsvpConfig?.enabled) list.push('Interactive RSVP');
     if (event.upiId || event.upiQrImageUrl) list.push('UPI Shagun QR');
-    if (event.password && event.password.trim() !== '') list.push('4-Digit Security PIN');
+    if (event.visibility === 'restricted') list.push('Google Session Access');
     if (event.showLocationQrCode) list.push('Location QR');
     if (event.bgAudioUrl) list.push('Audio Soundtrack');
     if (event.spotifyUrl) list.push('Spotify Player');
