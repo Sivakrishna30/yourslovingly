@@ -324,12 +324,8 @@ export function EventViewer({
     }
   };
 
-  // Record page view on load and check for auto print query parameter
+  // Check for auto print query parameter (Note: Public page view tracking is handled exclusively in PublicViewerPage for non-owner guests)
   useEffect(() => {
-    if (event.slug && !isCompact && !event.slug.startsWith('sample-')) {
-      firebaseService.recordPageView(event.slug);
-    }
-
     if (typeof window !== 'undefined' && !isCompact) {
       const params = new URLSearchParams(window.location.search);
       if (params.get('print') === 'true') {
@@ -338,7 +334,7 @@ export function EventViewer({
         }, 800);
       }
     }
-  }, [event.slug, isCompact]);
+  }, [isCompact]);
 
   // Find design style details or default to botanical rose
   const styleInfo = useMemo(() => {
@@ -457,7 +453,7 @@ export function EventViewer({
       event.messages?.forEach((_, i) => base.push(`message_${i}`));
       base.push('spotify');
       event.photos?.forEach((_, i) => base.push(`photo_${i}`));
-      base.push('details', 'locationQr', 'upiQr');
+      base.push('details', 'locationQr', 'rsvp', 'upiQr', 'upi');
       return base.indexOf(key) !== -1 ? base.indexOf(key) : 99;
     }
     const idx = event.elementOrder.indexOf(key);
@@ -533,19 +529,23 @@ export function EventViewer({
           onSelectElementKey(null);
         }
       }}
-      className={`${
+      className={`yl-event-viewer-root ${
         isCompact 
           ? 'w-full relative overflow-hidden flex flex-col items-center' 
-          : 'min-h-screen w-full relative selection:bg-brand-red/10 selection:text-primary overflow-x-hidden print:bg-white print:min-h-0 print:p-0 flex flex-col items-center justify-center'
+          : 'min-h-screen w-full relative selection:bg-brand-red/10 selection:text-primary overflow-x-hidden flex flex-col items-center justify-center'
       }`}
-      style={{ backgroundColor: event.secondaryColor || styleInfo.secondary }}
+      style={{
+        backgroundColor: event.secondaryColor || styleInfo.secondary,
+        WebkitPrintColorAdjust: 'exact',
+        printColorAdjust: 'exact'
+      }}
     >
-      {/* Export as PDF / Print Action for Visitors (Premium only, published only) */}
-      {!isCompact && event.isPublished && !hasWatermark(event) && (
+      {/* Export as PDF / Print Action for Visitors */}
+      {!isCompact && !isBuilderMode && event.isPublished && (
         <div className="absolute top-4 right-4 z-30 print:hidden">
           <button
             onClick={handlePrint}
-            className="px-3 py-1.5 bg-white/90 backdrop-blur-md hover:bg-white text-stone-700 hover:text-secondary rounded-full border border-stone-200 shadow-xs text-xs font-bold transition-all flex items-center gap-1.5 hover:scale-105"
+            className="px-3 py-1.5 bg-white/90 backdrop-blur-md hover:bg-white text-stone-700 hover:text-secondary rounded-full border border-stone-200 shadow-xs text-xs font-bold transition-all flex items-center gap-1.5 hover:scale-105 cursor-pointer"
             title="Export as PDF or print physical cards, flyers, and pamphlets"
           >
             <Printer className="w-3.5 h-3.5 text-secondary" />
@@ -557,7 +557,7 @@ export function EventViewer({
 
       {/* Floating Elements (strictly bounded inside canvas, hidden in compact preview) */}
       {!isCompact && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 z-0 print:hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 z-0">
           {elements.map((el, i) => (
             <div 
               key={i}
@@ -576,7 +576,7 @@ export function EventViewer({
       )}
 
       {/* Main Inner Frame / Designer Card Wrapper */}
-      <div className={`relative max-w-4xl mx-auto w-full z-10 print:py-2 print:px-0 print:max-w-none ${
+      <div className={`relative max-w-4xl mx-auto w-full z-10 ${
         isCompact ? 'px-1.5 py-1.5' : (isMobile ? 'px-2 py-3' : 'px-3 sm:px-6 py-6 sm:py-8 md:py-14')
       }`}>
         <DecorativeFrame
@@ -584,11 +584,11 @@ export function EventViewer({
           primaryColor={event.primaryColor || styleInfo.primary}
           accentColor={event.highlightColor || '#D4AF37'}
           secondaryColor={event.secondaryColor || styleInfo.secondary}
-          className="shadow-2xl print:shadow-none"
+          className="shadow-2xl"
           isCompact={isCompact || isMobile}
         >
           <div 
-            className={`rounded-2xl sm:rounded-3xl relative overflow-hidden print:p-6 ${
+            className={`rounded-2xl sm:rounded-3xl relative overflow-hidden ${
               isCompact 
                 ? 'p-2.5 sm:p-3.5 space-y-2 text-center' 
                 : (isMobile ? 'p-3.5 sm:p-5 space-y-4 text-center' : 'p-4 sm:p-8 md:p-14 space-y-6 sm:space-y-10 md:space-y-12')
@@ -935,87 +935,110 @@ export function EventViewer({
             })}
 
             {/* Celebration Audio Player (MP3 Autoplay or Spotify) */}
-            {hasBackgroundAudio ? (
-              isCompact ? (
-                <div style={{ order: getOrder('spotify') }} className="bg-rose-50/90 rounded-2xl p-2.5 sm:p-3 border border-rose-200 shadow-xs flex items-center justify-between gap-2 text-rose-900 font-bold text-xs w-full">
-                  <div className="flex items-center gap-2 truncate">
-                    <div className={`w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0 ${isAudioPlaying ? 'animate-spin' : ''}`} style={{ animationDuration: '4s' }}>
-                      <Disc className="w-3 h-3" />
-                    </div>
-                    <span className="truncate">{event.bgAudioTitle || 'Celebration Music'}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={toggleAudioPlay}
-                    className="px-2.5 py-1 bg-white hover:bg-rose-100 rounded-lg text-rose-700 font-bold text-[11px] border border-rose-200 flex items-center gap-1 cursor-pointer shrink-0"
-                  >
-                    {isAudioPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                    <span>{isAudioPlaying ? 'Pause' : 'Play'}</span>
-                  </button>
-                </div>
-              ) : (
-                <section style={{ order: getOrder('spotify') }} className="bg-linear-to-r from-rose-50/90 via-amber-50/60 to-rose-50/90 rounded-2xl p-4 sm:p-5 border border-rose-200/80 shadow-xs space-y-3 print:hidden w-full text-left">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-rose-900 font-bold text-xs tracking-wide">
-                      <div className={`w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0 ${isAudioPlaying ? 'animate-spin' : ''}`} style={{ animationDuration: '4s' }}>
-                        <Disc className="w-3.5 h-3.5" />
+            {(hasBackgroundAudio || spotifyEmbedUrl) ? (
+              <div
+                style={{ order: getOrder('spotify') }}
+                onClick={(e) => {
+                  if (isBuilderMode && onSelectElementKey) {
+                    e.stopPropagation();
+                    onSelectElementKey(activeElementKey === 'audio' ? null : 'audio');
+                  }
+                }}
+                className={`w-full relative transition-all duration-300 rounded-2xl ${
+                  isBuilderMode ? 'cursor-pointer hover:ring-2 hover:ring-rose-400' : ''
+                } ${
+                  activeElementKey === 'audio' ? 'ring-2 ring-rose-600 ring-offset-2 bg-rose-50/20' : ''
+                }`}
+              >
+                {isBuilderMode && activeElementKey === 'audio' && (
+                  <span className="absolute -top-3 left-3 px-2 py-0.5 bg-rose-700 text-white text-[9px] font-bold rounded-full shadow-xs flex items-center gap-1 z-20">
+                    <Music className="w-2.5 h-2.5" />
+                    Celebration Audio Player
+                  </span>
+                )}
+                {hasBackgroundAudio ? (
+                  isCompact ? (
+                    <div className="bg-rose-50/90 rounded-2xl p-2.5 sm:p-3 border border-rose-200 shadow-xs flex items-center justify-between gap-2 text-rose-900 font-bold text-xs w-full">
+                      <div className="flex items-center gap-2 truncate">
+                        <div className={`w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0 ${isAudioPlaying ? 'animate-spin' : ''}`} style={{ animationDuration: '4s' }}>
+                          <Disc className="w-3 h-3" />
+                        </div>
+                        <span className="truncate">{event.bgAudioTitle || 'Celebration Music'}</span>
                       </div>
-                      <span className="truncate">{event.bgAudioTitle || 'Celebration Background Melody'}</span>
+                      <button
+                        type="button"
+                        onClick={toggleAudioPlay}
+                        className="px-2.5 py-1 bg-white hover:bg-rose-100 rounded-lg text-rose-700 font-bold text-[11px] border border-rose-200 flex items-center gap-1 cursor-pointer shrink-0"
+                      >
+                        {isAudioPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                        <span>{isAudioPlaying ? 'Pause' : 'Play'}</span>
+                      </button>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold flex items-center gap-1">
-                      <Sparkles className="w-2.5 h-2.5 text-rose-600" />
-                      {isAudioPlaying ? 'Playing' : 'Autoplay Audio'}
-                    </span>
-                  </div>
+                  ) : (
+                    <section className="bg-linear-to-r from-rose-50/90 via-amber-50/60 to-rose-50/90 rounded-2xl p-4 sm:p-5 border border-rose-200/80 shadow-xs space-y-3 print:hidden w-full text-left">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-rose-900 font-bold text-xs tracking-wide">
+                          <div className={`w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0 ${isAudioPlaying ? 'animate-spin' : ''}`} style={{ animationDuration: '4s' }}>
+                            <Disc className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="truncate">{event.bgAudioTitle || 'Celebration Background Melody'}</span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold flex items-center gap-1">
+                          <Sparkles className="w-2.5 h-2.5 text-rose-600" />
+                          {isAudioPlaying ? 'Playing' : 'Autoplay Audio'}
+                        </span>
+                      </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={toggleAudioMute}
-                      className="p-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold flex items-center gap-1 cursor-pointer"
-                      title={isAudioMuted ? 'Unmute' : 'Mute'}
-                    >
-                      {isAudioMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-600" /> : <Volume2 className="w-3.5 h-3.5" />}
-                      <span className="text-[10px]">{isAudioMuted ? 'Unmute' : 'Mute'}</span>
-                    </button>
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={toggleAudioMute}
+                          className="p-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                          title={isAudioMuted ? 'Unmute' : 'Mute'}
+                        >
+                          {isAudioMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-600" /> : <Volume2 className="w-3.5 h-3.5" />}
+                          <span className="text-[10px]">{isAudioMuted ? 'Unmute' : 'Mute'}</span>
+                        </button>
 
-                    <button
-                      type="button"
-                      onClick={toggleAudioPlay}
-                      className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
-                    >
-                      {isAudioPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                      <span>{isAudioPlaying ? 'Pause' : 'Play Audio'}</span>
-                    </button>
-                  </div>
-                </section>
-              )
-            ) : spotifyEmbedUrl ? (
-              isCompact ? (
-                <div style={{ order: getOrder('spotify') }} className="bg-stone-50/90 rounded-2xl p-2.5 sm:p-3 border border-emerald-200 shadow-xs flex items-center justify-center gap-2 text-emerald-800 font-bold text-xs w-full">
-                  <Music className="w-4 h-4 text-emerald-600 animate-pulse shrink-0" />
-                  <span className="truncate">Featured Spotify Song: {event.spotifyUrl?.split('/').pop() || 'Celebration Track'}</span>
-                </div>
-              ) : (
-                <section style={{ order: getOrder('spotify') }} className="bg-stone-50/80 rounded-2xl p-4 sm:p-6 border border-stone-200/80 shadow-sm space-y-3 print:hidden w-full">
-                  <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs tracking-wide">
-                    <Music className="w-4 h-4 text-emerald-600 animate-pulse" />
-                    <span>Featured Spotify Playlist and Music</span>
-                  </div>
-                  <div className="w-full rounded-xl overflow-hidden shadow-xs border border-stone-200">
-                    <iframe
-                      src={spotifyEmbedUrl}
-                      width="100%"
-                      height="152"
-                      frameBorder="0"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                      className="w-full rounded-xl"
-                      title="Spotify Music Player"
-                    />
-                  </div>
-                </section>
-              )
+                        <button
+                          type="button"
+                          onClick={toggleAudioPlay}
+                          className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                        >
+                          {isAudioPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                          <span>{isAudioPlaying ? 'Pause' : 'Play Audio'}</span>
+                        </button>
+                      </div>
+                    </section>
+                  )
+                ) : spotifyEmbedUrl ? (
+                  isCompact ? (
+                    <div className="bg-stone-50/90 rounded-2xl p-2.5 sm:p-3 border border-emerald-200 shadow-xs flex items-center justify-center gap-2 text-emerald-800 font-bold text-xs w-full">
+                      <Music className="w-4 h-4 text-emerald-600 animate-pulse shrink-0" />
+                      <span className="truncate">Featured Spotify Song: {event.spotifyUrl?.split('/').pop() || 'Celebration Track'}</span>
+                    </div>
+                  ) : (
+                    <section className="bg-stone-50/80 rounded-2xl p-4 sm:p-6 border border-stone-200/80 shadow-sm space-y-3 print:hidden w-full">
+                      <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs tracking-wide">
+                        <Music className="w-4 h-4 text-emerald-600 animate-pulse" />
+                        <span>Featured Spotify Playlist and Music</span>
+                      </div>
+                      <div className="w-full rounded-xl overflow-hidden shadow-xs border border-stone-200">
+                        <iframe
+                          src={spotifyEmbedUrl}
+                          width="100%"
+                          height="152"
+                          frameBorder="0"
+                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                          loading="lazy"
+                          className="w-full rounded-xl"
+                          title="Spotify Music Player"
+                        />
+                      </div>
+                    </section>
+                  )
+                ) : null}
+              </div>
             ) : null}
 
             {/* Photos Showcase */}
@@ -1111,7 +1134,7 @@ export function EventViewer({
                       : isMobile
                         ? 'bg-stone-50/90 rounded-2xl p-4 sm:p-5 border border-amber-200/60 shadow-sm flex flex-col items-center gap-4 text-center'
                         : 'bg-stone-50/90 rounded-2xl p-6 sm:p-10 border border-amber-200/60 shadow-sm flex flex-col items-center gap-8 text-center'
-                  } print:bg-white print:border relative transition-all duration-300 w-full ${
+                  } relative transition-all duration-300 w-full ${
                     detElem.animClass
                   } ${
                     isBuilderMode ? 'cursor-pointer hover:ring-2 hover:ring-rose-400' : ''
@@ -1224,7 +1247,7 @@ export function EventViewer({
                             rel="noopener noreferrer"
                             className={`w-full max-w-[280px] mx-auto inline-flex items-center justify-center gap-2 ${
                               isMobile ? 'px-3.5 py-2 text-xs' : 'px-5 py-2.5 text-xs sm:text-sm'
-                            } bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md shadow-red-200/50 print:hidden mb-2 text-center active:scale-95`}
+                            } bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md shadow-red-200/50 mb-2 text-center active:scale-95`}
                           >
                             <MapPin className="w-4 h-4 shrink-0" />
                             <span className="truncate">Get Directions on Maps</span>
@@ -1240,7 +1263,7 @@ export function EventViewer({
                               }
                             }}
                             style={locQrElem.customStyle}
-                            className={`mt-2 p-2.5 sm:p-3 bg-white rounded-2xl border border-stone-200 shadow-xs inline-flex flex-col items-center gap-1.5 sm:gap-2 print:block relative transition-all duration-300 max-w-[240px] mx-auto ${
+                            className={`mt-2 p-2.5 sm:p-3 bg-white rounded-2xl border border-stone-200 shadow-xs inline-flex flex-col items-center gap-1.5 sm:gap-2 relative transition-all duration-300 max-w-[240px] mx-auto ${
                               locQrElem.animClass
                             } ${
                               isBuilderMode ? 'cursor-pointer hover:ring-2 hover:ring-teal-400' : ''
@@ -1270,10 +1293,35 @@ export function EventViewer({
                       </div>
                     )}
                   </div>
+                </motion.section>
+              );
+            })()}
 
-                {/* In-Page RSVP Submission Box */}
-                {!isCompact && event.rsvpConfig?.enabled && (
-                  <div className="pt-8 border-t border-stone-200/80 w-full text-left print:hidden">
+            {/* In-Page RSVP Submission Box - Standalone Decoupled Section */}
+            {event.rsvpConfig?.enabled && (
+              <motion.section
+                key="rsvp_section"
+                style={{ order: getOrder('rsvp') }}
+                onClick={(e) => {
+                  if (isBuilderMode && onSelectElementKey) {
+                    e.stopPropagation();
+                    onSelectElementKey(activeElementKey === 'rsvp' ? null : 'rsvp');
+                  }
+                }}
+                className={`w-full relative transition-all duration-300 rounded-2xl ${
+                  isBuilderMode ? 'cursor-pointer hover:ring-2 hover:ring-rose-400' : ''
+                } ${
+                  activeElementKey === 'rsvp' ? 'ring-2 ring-rose-600 ring-offset-2 bg-rose-50/20' : ''
+                }`}
+              >
+                {isBuilderMode && activeElementKey === 'rsvp' && (
+                  <span className="absolute -top-3 left-4 px-2 py-0.5 bg-rose-700 text-white text-[9px] font-bold rounded-full shadow-xs flex items-center gap-1 z-20">
+                    <Heart className="w-2.5 h-2.5 fill-current" />
+                    Interactive Guest RSVP Form
+                  </span>
+                )}
+                {!isCompact ? (
+                  <div className="pt-2 w-full text-left">
                   <div className="max-w-md mx-auto bg-white rounded-2xl p-6 sm:p-7 border border-stone-200 shadow-sm space-y-4">
                     <div className="text-center space-y-1">
                       <div className="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-2">
@@ -1418,31 +1466,37 @@ export function EventViewer({
                     )}
                   </div>
                 </div>
-              )}
-
-              {isCompact && event.rsvpConfig?.enabled && (
-                <div className="pt-3 border-t border-stone-200/80 w-full flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50/60 py-2 px-3 rounded-xl">
+              ) : (
+                <div className="pt-2 w-full flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50/60 py-2 px-3 rounded-xl border border-emerald-200/80">
                   <Heart className="w-3.5 h-3.5 fill-rose-600 text-rose-600 shrink-0" />
                   <span>RSVP & Headcount Tracking Included</span>
                 </div>
               )}
+            </motion.section>
+          )}
 
                 {/* UPI Gift Section & Transaction Form */}
-                {!isCompact && (event.upiQrImageUrl || event.upiId) && (() => {
+                {!isCompact && event.showUpiQrCode !== false && (event.upiQrImageUrl || event.upiId) && (() => {
                   const upiElem = getElementStyle('upiQr');
                   return (
-                    <div 
-                      onClick={() => isBuilderMode && onSelectElementKey && onSelectElementKey('upiQr')}
-                      style={upiElem.customStyle}
-                      className={`pt-6 sm:pt-8 border-t border-stone-200/80 w-full flex flex-col items-center print:bg-white relative transition-all duration-300 rounded-2xl p-2 sm:p-4 max-w-full overflow-hidden ${
+                    <motion.section 
+                      key="upi_section"
+                      style={{ ...upiElem.customStyle, order: getOrder('upi') }}
+                      onClick={(e) => {
+                        if (isBuilderMode && onSelectElementKey) {
+                          e.stopPropagation();
+                          onSelectElementKey(activeElementKey === 'upi' || activeElementKey === 'upiQr' ? null : 'upi');
+                        }
+                      }}
+                      className={`pt-6 sm:pt-8 border-t border-stone-200/80 w-full flex flex-col items-center relative transition-all duration-300 rounded-2xl p-2 sm:p-4 max-w-full overflow-hidden ${
                         upiElem.animClass
                       } ${
                         isBuilderMode ? 'cursor-pointer hover:ring-2 hover:ring-teal-400' : ''
                       } ${
-                        upiElem.isSelected ? 'ring-2 ring-teal-500 ring-offset-2 bg-teal-50/20' : ''
+                        (activeElementKey === 'upi' || activeElementKey === 'upiQr') ? 'ring-2 ring-teal-500 ring-offset-2 bg-teal-50/20' : ''
                       }`}
                     >
-                      {isBuilderMode && upiElem.isSelected && (
+                      {isBuilderMode && (activeElementKey === 'upi' || activeElementKey === 'upiQr') && (
                         <span className="absolute top-2 left-2 px-2 py-0.5 bg-teal-800 text-white text-[9px] font-bold rounded-full shadow-xs flex items-center gap-1 z-20">
                           {upiElem.isLocked ? <Lock className="w-2.5 h-2.5 text-amber-300" /> : <Sparkles className="w-2.5 h-2.5" />}
                           UPI Gift & Payment QR
@@ -1454,7 +1508,7 @@ export function EventViewer({
                       </h3>
                       
                       <div className="p-3.5 sm:p-5 bg-white rounded-2xl shadow-sm border border-stone-200/90 flex flex-col items-center gap-3.5 sm:gap-4 max-w-sm w-full text-center overflow-hidden min-w-0">
-                        {event.showUpiQrCode !== false && (event.upiQrImageUrl || event.upiId) && (
+                        {(event.upiQrImageUrl || event.upiId) && (
                           <div className="p-2 bg-stone-50 rounded-xl border border-stone-100 shadow-inner flex flex-col items-center gap-1 max-w-full">
                             <img 
                               src={
@@ -1562,12 +1616,9 @@ export function EventViewer({
                       </div>
                     )}
                     </div>
-                  </div>
+                  </motion.section>
                 );
               })()}
-            </motion.section>
-          );
-        })()}
           </div>
 
           {pageHasWatermark && (

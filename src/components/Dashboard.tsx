@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Calendar, MapPin, Share2, Trash2, Edit3, ExternalLink, BarChart3, Check, FileDown, Clock, Plus, Copy, RotateCcw, ShieldCheck, Globe, Lock, LogOut, ArrowRight, FolderKanban } from 'lucide-react';
+import { Calendar, MapPin, Share2, Trash2, Edit3, ExternalLink, BarChart3, Check, FileDown, Clock, Plus, Copy, RotateCcw, ShieldCheck, Globe, LogOut, ArrowRight, FolderKanban, LayoutTemplate, ChevronDown } from 'lucide-react';
 import type { User } from 'firebase/auth';
 import type { LovinglyEvent } from '../types';
 import { getEventCreatorPath, getEventTypePath } from '../lib/utils';
-import { getHostingStatus, hasWatermark } from '../lib/hosting';
+import { getHostingStatus } from '../lib/hosting';
 import { InsightsModal } from './InsightsModal';
 import { HostingRenewalModal } from './HostingRenewalModal';
+import { PdfExportModal } from './PdfExportModal';
+import { SamplesShowcase } from './SamplesShowcase';
+import { SAMPLE_INVITES, type SampleInvite } from '../data/samples';
+import { PWAInstallButton } from './pwa/PWAInstallButton';
 import koreanHeartLogo from '../assets/images/korean_heart_golden_logo_1786820911376.jpg';
 
-export type DashboardTab = 'all' | 'drafts' | 'published' | 'expired' | 'trash' | 'account';
+export type DashboardTab = 'all' | 'drafts' | 'published' | 'expired' | 'trash' | 'templates' | 'account';
 
 interface DashboardProps {
   user?: User | null;
@@ -20,6 +24,8 @@ interface DashboardProps {
   onRestore?: (event: LovinglyEvent) => void;
   onPermanentDelete?: (event: LovinglyEvent) => void;
   onNew: () => void;
+  onSelectSample?: (sample: SampleInvite) => void;
+  onNavigateHome?: () => void;
   onExtendHosting?: (updatedEvent: LovinglyEvent) => Promise<void>;
   onSignOut?: () => void;
   activeTab?: DashboardTab;
@@ -34,6 +40,8 @@ export function Dashboard({
   onRestore, 
   onPermanentDelete, 
   onNew, 
+  onSelectSample,
+  onNavigateHome,
   onExtendHosting,
   onSignOut,
   activeTab: externalTab = 'all',
@@ -50,7 +58,17 @@ export function Dashboard({
 
   const [selectedEventForInsights, setSelectedEventForInsights] = useState<LovinglyEvent | null>(null);
   const [selectedEventForHosting, setSelectedEventForHosting] = useState<LovinglyEvent | null>(null);
+  const [selectedEventForPdf, setSelectedEventForPdf] = useState<LovinglyEvent | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [createDropdownOpen, setCreateDropdownOpen] = useState(false);
+
+  const handleGoHome = () => {
+    if (onNavigateHome) {
+      onNavigateHome();
+    } else {
+      navigate('/');
+    }
+  };
 
   const handleShare = (event: LovinglyEvent) => {
     const url = `${window.location.origin}/${getEventCreatorPath(event)}/${getEventTypePath(event)}/${event.slug}`;
@@ -60,15 +78,7 @@ export function Dashboard({
   };
 
   const handleExportPdf = (event: LovinglyEvent) => {
-    if (hasWatermark(event)) {
-      setSelectedEventForHosting(event);
-      return;
-    }
-    const printUrl = `/${getEventCreatorPath(event)}/${getEventTypePath(event)}/${event.slug}?print=true`;
-    const printWindow = window.open(printUrl, '_blank');
-    if (printWindow) {
-      printWindow.focus();
-    }
+    setSelectedEventForPdf(event);
   };
 
   const handleCopyToNew = (event: LovinglyEvent) => {
@@ -118,40 +128,111 @@ export function Dashboard({
   return (
     <div className="bg-stone-50/30 min-h-screen">
       {/* Top Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-brand-red/20 shadow-md shadow-brand-red/10 bg-white flex items-center justify-center p-0.5">
-              <img 
-                src={koreanHeartLogo} 
-                alt="Yours Lovingly Logo" 
-                className="w-full h-full object-cover rounded-lg" 
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <span className="text-xl font-serif font-bold text-stone-900 tracking-tight">
-              Yours Lovingly
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-xs print:hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink">
             <button
-              onClick={onNew}
-              className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shadow-brand-red/20 cursor-pointer"
+              type="button"
+              onClick={handleGoHome}
+              className="flex items-center gap-2 text-left group cursor-pointer focus:outline-hidden min-w-0 shrink"
+              title="Go to Home Page"
             >
-              <Plus className="w-4 h-4" />
-              <span>New Creation</span>
+              <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-xl overflow-hidden border border-brand-red/20 shadow-xs bg-white flex items-center justify-center p-0.5 shrink-0">
+                <img 
+                  src={koreanHeartLogo} 
+                  alt="Yours Lovingly Logo" 
+                  className="w-full h-full object-cover rounded-lg" 
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <span className="text-base sm:text-2xl font-serif font-bold text-stone-900 group-hover:text-primary transition-colors tracking-tight whitespace-nowrap">
+                Yours Lovingly
+              </span>
             </button>
           </div>
-        </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+          {/* Action Header: Install App + Single Create Button with Dropdown */}
+          <div className="flex items-center gap-2 shrink-0">
+            <PWAInstallButton variant="pill" />
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setCreateDropdownOpen(!createDropdownOpen)}
+                className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer shrink-0"
+                title="Create New Page"
+              >
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>Create</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${createDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {createDropdownOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setCreateDropdownOpen(false)} 
+                />
+                <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-stone-200 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="px-3 py-1.5 border-b border-stone-100 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                    Choose Creation Mode
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreateDropdownOpen(false);
+                      onNew();
+                    }}
+                    className="w-full px-3.5 py-2.5 text-left hover:bg-rose-50/60 transition-colors flex items-start gap-3 cursor-pointer group"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-primary group-hover:text-white transition-colors">
+                      <Plus className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs sm:text-sm font-bold text-stone-900 group-hover:text-primary transition-colors">
+                        Create page from scratch
+                      </div>
+                      <div className="text-[11px] text-stone-500">
+                        Start fresh or select a template in the step-by-step page builder.
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreateDropdownOpen(false);
+                      setTab('templates');
+                    }}
+                    className="w-full px-3.5 py-2.5 text-left hover:bg-amber-50/60 transition-colors flex items-start gap-3 cursor-pointer group border-t border-stone-100"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                      <LayoutTemplate className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs sm:text-sm font-bold text-stone-900 group-hover:text-amber-800 transition-colors">
+                        Quick create with templates
+                      </div>
+                      <div className="text-[11px] text-stone-500">
+                        Choose pre-designed royal templates and customize text, music & photos.
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-16">
         {/* Header & Section Title */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">Workspace</h2>
             <p className="text-stone-500 mt-1 text-xs sm:text-sm">
-              Manage your drafts, live invites, expired hosting, and soft-deleted recovery trash.
+              Manage your drafts, live invites, sample templates, expired hosting, and recovery trash.
             </p>
           </div>
           {draftCount > 0 && (
@@ -167,6 +248,7 @@ export function Dashboard({
             { id: 'all', label: 'All Invites', count: allCount },
             { id: 'drafts', label: 'Working Drafts', count: draftCount },
             { id: 'published', label: 'Live Published', count: publishedCount },
+            { id: 'templates', label: 'Templates', count: SAMPLE_INVITES.length },
             { id: 'expired', label: 'Expired Hosting', count: expiredCount },
             { id: 'trash', label: '30-Day Trash', count: trashCount },
             { id: 'account', label: 'Account Profile', count: null },
@@ -176,7 +258,7 @@ export function Dashboard({
               <button
                 key={tab.id}
                 onClick={() => setTab(tab.id as DashboardTab)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                   isActive
                     ? 'bg-white text-stone-900 shadow-xs ring-1 ring-stone-200'
                     : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
@@ -195,7 +277,29 @@ export function Dashboard({
           })}
         </div>
 
-        {activeTab === 'account' ? (
+        {activeTab === 'templates' ? (
+          <div className="bg-white rounded-3xl border border-stone-200 p-4 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-stone-100">
+              <div>
+                <h3 className="text-lg font-serif font-bold text-stone-900">
+                  Ready-Made Templates
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Select any design below to customize text, fonts, colors, music, photos, and features instantly.
+                </p>
+              </div>
+            </div>
+            <SamplesShowcase
+              onSelectSample={(sample) => {
+                if (onSelectSample) {
+                  onSelectSample(sample);
+                } else {
+                  navigate(`/customize/sample/${sample.id}`);
+                }
+              }}
+            />
+          </div>
+        ) : activeTab === 'account' ? (
           /* Account Tab View */
           <div className="bg-white rounded-3xl border border-stone-200 p-8 max-w-2xl mx-auto space-y-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-stone-100 pb-6">
@@ -249,14 +353,23 @@ export function Dashboard({
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-stone-100 flex items-center justify-between gap-4">
-                <button
-                  onClick={onNew}
-                  className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Create New Page</span>
-                </button>
+              <div className="pt-4 border-t border-stone-100 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={onNew}
+                    className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Create New Page</span>
+                  </button>
+                  <button
+                    onClick={() => setTab('templates')}
+                    className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <LayoutTemplate className="w-4 h-4 text-rose-600" />
+                    <span>Browse Templates</span>
+                  </button>
+                </div>
                 {onSignOut && (
                   <button
                     onClick={onSignOut}
@@ -286,7 +399,7 @@ export function Dashboard({
               {activeTab === 'drafts' && 'Start a new draft to customize digital invitations, flyers, or memory pages.'}
               {activeTab === 'published' && 'Complete your draft details and publish to launch your live invitation link.'}
               {activeTab === 'expired' && 'All your published invitations are active and hosted smoothly.'}
-              {activeTab === 'all' && 'Create your first Yours Lovingly digital event page or invitation in minutes.'}
+              {activeTab === 'all' && 'Create your first Yours Lovingly digital event page or customize a ready-made template in minutes.'}
             </p>
             {activeTab !== 'trash' && (
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -295,7 +408,14 @@ export function Dashboard({
                   className="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Start New Creation</span>
+                  <span>Create Page</span>
+                </button>
+                <button
+                  onClick={() => setTab('templates')}
+                  className="w-full sm:w-auto px-6 py-3 bg-stone-900 text-white rounded-xl font-bold hover:bg-stone-800 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <LayoutTemplate className="w-4 h-4 text-rose-400" />
+                  <span>Quick create with templates</span>
                 </button>
                 {activeTab !== 'all' && (
                   <button
@@ -408,15 +528,14 @@ export function Dashboard({
                         <button
                           onClick={() => handleExportPdf(event)}
                           className="py-2.5 px-3 bg-stone-50 hover:bg-brand-teal/5 hover:text-secondary text-stone-700 rounded-xl text-xs font-bold transition-all border border-stone-200 hover:border-brand-teal/20 flex items-center justify-center gap-1.5 shadow-xs group/btn cursor-pointer"
-                          title={hasWatermark(event) ? "Premium Feature: Upgrade to Export PDF" : "Export as PDF to print physical cards, flyers, and pamphlets"}
+                          title="Export exact website invitation design as PDF"
                         >
                           <FileDown className="w-3.5 h-3.5 text-secondary group-hover/btn:scale-110 transition-transform" />
                           <span>Export PDF</span>
-                          {hasWatermark(event) && <Lock className="w-3 h-3 text-stone-400 ml-0.5" />}
                         </button>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 gap-2">
+                      <div className="grid grid-cols-2 gap-2">
                         {/* Publish Button for Drafts */}
                         <button
                           onClick={() => navigate(`/create/${event.id}/publish`)}
@@ -424,6 +543,16 @@ export function Dashboard({
                         >
                           <Globe className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
                           Publish
+                        </button>
+
+                        {/* Export as PDF / Print for Drafts */}
+                        <button
+                          onClick={() => handleExportPdf(event)}
+                          className="py-2.5 px-3 bg-stone-50 hover:bg-brand-teal/5 hover:text-secondary text-stone-700 rounded-xl text-xs font-bold transition-all border border-stone-200 hover:border-brand-teal/20 flex items-center justify-center gap-1.5 shadow-xs group/btn cursor-pointer"
+                          title="Export exact website invitation design as PDF"
+                        >
+                          <FileDown className="w-3.5 h-3.5 text-secondary group-hover/btn:scale-110 transition-transform" />
+                          <span>Export PDF</span>
                         </button>
                       </div>
                     )}
@@ -453,7 +582,7 @@ export function Dashboard({
                           <button
                             onClick={() => onEdit(event)}
                             className="p-2 text-stone-500 hover:text-secondary hover:bg-brand-teal/5 rounded-lg transition-all cursor-pointer"
-                            title="Edit Page"
+                            title={event.isPublished ? "Edit Text Content" : "Edit Page"}
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
@@ -476,7 +605,7 @@ export function Dashboard({
                           {event.isPublished && (
                             <a
                               href={`https://wa.me/?text=${encodeURIComponent(
-                                `You're Invited! 🎊\n\n${event.title || 'Special Event'}\nJoin us on ${event.eventDate || 'the special day'}${event.location ? ` at ${event.location}` : ''}.\n\nTap the link below to view our official invitation and RSVP:\n${window.location.origin}/${getEventCreatorPath(event)}/${getEventTypePath(event)}/${event.slug}`
+                                `You're Invited!\n\n${event.title || 'Special Event'}\nJoin us on ${event.eventDate || 'the special day'}${event.location ? ` at ${event.location}` : ''}.\n\nTap the link below to view our official invitation and RSVP:\n${window.location.origin}/${getEventCreatorPath(event)}/${getEventTypePath(event)}/${event.slug}`
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -536,8 +665,15 @@ export function Dashboard({
             onConfirmExtension={handleConfirmExtension}
           />
         )}
+
+        {/* Exact Website Design PDF Export Modal */}
+        <PdfExportModal
+          event={selectedEventForPdf}
+          onClose={() => setSelectedEventForPdf(null)}
+        />
       </div>
     </div>
   );
 }
+
 

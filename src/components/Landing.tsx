@@ -12,13 +12,23 @@ import {
   BarChart3,
   Check,
   Clock,
-  Eye
+  LayoutDashboard,
+  Layers,
+  Globe,
+  LogOut,
+  Menu,
+  X
 } from 'lucide-react';
 import type { User as FirebaseUser } from 'firebase/auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 import type { CreationCategory, DesignStyle } from '../types';
 import koreanHeartLogo from '../assets/images/korean_heart_golden_logo_1786820911376.jpg';
 import { SamplesShowcase, type SampleInvite } from './SamplesShowcase';
+import { SAMPLE_INVITES } from '../data/samples';
+import { MASTER_TEMPLATES } from '../lib/designSystem';
+import { PWAInstallButton } from './pwa/PWAInstallButton';
 
 interface NavbarProps {
   user: FirebaseUser | null;
@@ -26,19 +36,20 @@ interface NavbarProps {
   onSignOut: () => void;
   onLogoClick: () => void;
   onNavigateToPricing?: () => void;
+  onNavigateToDashboard?: () => void;
 }
 
-export function Navbar({ user, onSignIn, onSignOut, onLogoClick }: NavbarProps) {
+export function Navbar({ user, onSignIn, onSignOut, onLogoClick, onNavigateToDashboard }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
         <button 
           onClick={onLogoClick}
-          className="flex items-center gap-2.5 group text-left"
+          className="flex items-center gap-2 sm:gap-2.5 group text-left cursor-pointer min-w-0 shrink"
         >
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-rose-200 shadow-md shadow-rose-200/50 group-hover:scale-105 transition-transform bg-white flex items-center justify-center p-0.5">
+          <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-xl overflow-hidden border border-rose-200 shadow-xs bg-white flex items-center justify-center p-0.5 shrink-0">
             <img 
               src={koreanHeartLogo} 
               alt="Yours Lovingly Korean Finger Heart Logo" 
@@ -46,7 +57,7 @@ export function Navbar({ user, onSignIn, onSignOut, onLogoClick }: NavbarProps) 
               referrerPolicy="no-referrer"
             />
           </div>
-          <span className="text-xl sm:text-2xl font-serif font-bold text-stone-900 tracking-tight flex items-center gap-1.5">
+          <span className="text-base sm:text-2xl font-serif font-bold text-stone-900 tracking-tight whitespace-nowrap">
             Yours Lovingly
           </span>
         </button>
@@ -60,34 +71,52 @@ export function Navbar({ user, onSignIn, onSignOut, onLogoClick }: NavbarProps) 
           <a href="#faq" className="hover:text-secondary transition-colors">FAQ</a>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <PWAInstallButton variant="pill" />
           {user ? (
-            <div className="flex items-center gap-3 sm:gap-4">
-              <span className="text-sm text-stone-600 hidden sm:inline font-medium max-w-[160px] truncate">{user.displayName || user.email}</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {onNavigateToDashboard && (
+                <button
+                  type="button"
+                  onClick={onNavigateToDashboard}
+                  className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer shrink-0"
+                  title="Open Workspace"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 shrink-0" />
+                  <span>Workspace</span>
+                </button>
+              )}
+              <span className="text-sm text-stone-600 hidden lg:inline font-medium max-w-[140px] truncate">{user.displayName || user.email}</span>
               <button 
+                type="button"
                 onClick={onSignOut}
-                className="text-xs sm:text-sm font-medium px-3 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:text-primary hover:border-red-200 transition-colors"
+                className="p-1.5 sm:px-3 sm:py-2 rounded-xl border border-stone-200 text-stone-600 hover:text-red-700 hover:border-red-200 hover:bg-red-50/50 transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                title="Sign Out"
+                aria-label="Sign Out"
               >
-                Sign Out
+                <LogOut className="w-4 h-4 text-stone-500 hover:text-red-600 shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm font-semibold">Sign Out</span>
               </button>
             </div>
           ) : (
             <button 
+              type="button"
               onClick={onSignIn}
-              className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-stone-900 text-white rounded-full text-xs sm:text-sm font-medium hover:bg-primary transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-3 sm:px-5 py-1.5 sm:py-2 bg-stone-900 text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-primary transition-all shadow-xs cursor-pointer shrink-0"
             >
-              <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              Sign In
+              <LogIn className="w-3.5 h-3.5 shrink-0" />
+              <span>Sign In</span>
             </button>
           )}
 
           {/* Mobile Menu Toggle Button */}
           <button
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+            className="md:hidden p-1.5 sm:p-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-100 border border-stone-200/80 transition-colors shrink-0 flex items-center justify-center cursor-pointer"
             aria-label="Toggle navigation menu"
           >
-            <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${mobileMenuOpen ? 'rotate-180' : ''}`} />
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
       </div>
@@ -95,6 +124,30 @@ export function Navbar({ user, onSignIn, onSignOut, onLogoClick }: NavbarProps) 
       {/* Mobile Navigation Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-stone-200 px-4 py-4 space-y-3 shadow-lg">
+          {user && (
+            <div className="pb-3 border-b border-stone-100 flex items-center justify-between text-xs text-stone-500">
+              <span className="truncate">Signed in as <strong className="text-stone-800">{user.displayName || user.email}</strong></span>
+            </div>
+          )}
+          {user && onNavigateToDashboard && (
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onNavigateToDashboard();
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-primary text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>Go to Workspace</span>
+            </button>
+          )}
+          <a 
+            href="#samples" 
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 text-sm font-medium text-stone-700 hover:text-red-600"
+          >
+            Samples
+          </a>
           <a 
             href="#features" 
             onClick={() => setMobileMenuOpen(false)}
@@ -123,6 +176,21 @@ export function Navbar({ user, onSignIn, onSignOut, onLogoClick }: NavbarProps) 
           >
             FAQ
           </a>
+          {user && (
+            <div className="pt-2 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onSignOut();
+                }}
+                className="w-full py-2 px-3 text-left text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </nav>
@@ -130,11 +198,15 @@ export function Navbar({ user, onSignIn, onSignOut, onLogoClick }: NavbarProps) 
 }
 
 export function Hero({ 
-  onStart
+  onStart,
+  onNavigateToDashboard,
+  user
  }: { 
   onStart: () => void;
   onStartWithCategory?: (cat: CreationCategory, style?: DesignStyle) => void;
   onNavigateToPricing?: () => void;
+  onNavigateToDashboard?: () => void;
+  user?: FirebaseUser | null;
 }) {
   return (
     <section className="relative pt-24 sm:pt-28 lg:pt-32 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-brand-orange/5 via-stone-50/60 to-white">
@@ -162,7 +234,7 @@ export function Hero({
             <p className="text-base sm:text-lg lg:text-xl text-stone-600 mb-8 sm:mb-10 leading-relaxed max-w-2xl">
               Design interactive digital micro-sites with location, music, photos, and UPI gifts. Track visitor activity, receive reports in WhatsApp, and download print-ready PDFs.
             </p>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3.5 sm:gap-4">
               <button 
                 onClick={onStart}
                 className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
@@ -170,24 +242,23 @@ export function Hero({
                 <Plus className="w-5 h-5" />
                 Start Creating Free
               </button>
-              <a 
-                href="#samples"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('samples')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white text-stone-700 border border-stone-200 rounded-xl font-bold text-base sm:text-lg hover:bg-stone-50 hover:text-primary hover:border-rose-200 transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Eye className="w-4 h-4 text-primary" />
-                View Samples
-              </a>
-              <a 
-                href="#pricing"
-                className="w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 bg-stone-100 text-stone-700 border border-stone-200/80 rounded-xl font-semibold text-sm sm:text-base hover:bg-stone-200 hover:text-stone-900 transition-all text-center flex items-center justify-center gap-1.5"
-              >
-                Pricing
-                <ArrowRight className="w-4 h-4 text-stone-500" />
-              </a>
+              {user && onNavigateToDashboard ? (
+                <button
+                  onClick={onNavigateToDashboard}
+                  className="w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 bg-stone-900 text-white rounded-xl font-semibold text-sm sm:text-base hover:bg-stone-800 transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>My Workspace</span>
+                </button>
+              ) : (
+                <a 
+                  href="#pricing"
+                  className="w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 bg-stone-100 text-stone-700 border border-stone-200/80 rounded-xl font-semibold text-sm sm:text-base hover:bg-stone-200 hover:text-stone-900 transition-all text-center flex items-center justify-center gap-1.5"
+                >
+                  Pricing
+                  <ArrowRight className="w-4 h-4 text-stone-500" />
+                </a>
+              )}
             </div>
           </motion.div>
         </div>
@@ -244,6 +315,7 @@ export function Landing({
   onStartWithCategory,
   onSelectSample,
   onNavigateToPricing,
+  onNavigateToDashboard,
   user, 
   onSignIn, 
   onSignOut 
@@ -252,10 +324,32 @@ export function Landing({
   onStartWithCategory?: (cat: CreationCategory, style?: DesignStyle) => void;
   onSelectSample?: (sample: SampleInvite) => void;
   onNavigateToPricing?: () => void;
+  onNavigateToDashboard?: () => void;
   user: FirebaseUser | null;
   onSignIn: () => void;
   onSignOut: () => void;
 }) {
+  const totalTemplatesCount = MASTER_TEMPLATES.length + SAMPLE_INVITES.length;
+  const [pagesCreatedCount, setPagesCreatedCount] = useState<number>(SAMPLE_INVITES.length);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadCreatedCount() {
+      try {
+        const snap = await getDocs(collection(db, 'public_invites'));
+        if (mounted) {
+          setPagesCreatedCount(snap.size + SAMPLE_INVITES.length);
+        }
+      } catch {
+        // Fallback if offline
+      }
+    }
+    loadCreatedCount();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-stone-900 relative">
       {/* Fixed Non-Scrollable Background Logo in Center of Landing Page (30% Opacity) */}
@@ -274,12 +368,15 @@ export function Landing({
         onSignOut={onSignOut} 
         onLogoClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
         onNavigateToPricing={onNavigateToPricing}
+        onNavigateToDashboard={onNavigateToDashboard}
       />
 
       <Hero 
         onStart={onStart} 
         onStartWithCategory={onStartWithCategory} 
         onNavigateToPricing={onNavigateToPricing}
+        onNavigateToDashboard={onNavigateToDashboard}
+        user={user}
       />
 
       {/* Live Samples Showcase Section */}
@@ -635,6 +732,37 @@ export function Landing({
             >
               View Plans and Pricing
             </a>
+          </div>
+
+          {/* Live Platform Metrics */}
+          <div className="pt-8 sm:pt-10 border-t border-white/20 grid grid-cols-2 gap-4 max-w-md mx-auto">
+            <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-4 flex items-center justify-center gap-3 text-left shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-white/20 text-white border border-white/30 flex items-center justify-center shrink-0">
+                <Globe className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-2xl sm:text-3xl font-serif font-bold text-white tabular-nums leading-tight">
+                  {pagesCreatedCount}
+                </div>
+                <div className="text-xs font-semibold text-white/85">
+                  Pages Created
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-4 flex items-center justify-center gap-3 text-left shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-white/20 text-white border border-white/30 flex items-center justify-center shrink-0">
+                <Layers className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-2xl sm:text-3xl font-serif font-bold text-white tabular-nums leading-tight">
+                  {totalTemplatesCount}
+                </div>
+                <div className="text-xs font-semibold text-white/85">
+                  Ready Templates
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

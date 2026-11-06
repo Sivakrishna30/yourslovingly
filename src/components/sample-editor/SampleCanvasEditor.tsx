@@ -25,7 +25,11 @@ import {
   Calendar,
   FileText,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Printer,
+  Music,
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react';
 import type { User } from 'firebase/auth';
 import type { 
@@ -38,6 +42,7 @@ import type {
 import { SAMPLE_INVITES } from '../../data/samples';
 import { sampleToLovinglyEvent } from '../../lib/sampleAdapter';
 import { EventViewer } from '../Viewer';
+import { PdfExportModal } from '../PdfExportModal';
 import { AudioUploader } from '../audio/AudioUploader';
 import { createSlug } from '../../lib/utils';
 import { 
@@ -96,6 +101,7 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
   const [isGlobalDrawerCollapsed, setIsGlobalDrawerCollapsed] = useState<boolean>(false);
   const [deviceMode, setDeviceMode] = useState<'mobile' | 'desktop'>('mobile');
   const [savedNotice, setSavedNotice] = useState(false);
+  const [showPdfExport, setShowPdfExport] = useState(false);
 
   // Save changes to scoped storage
   const handleUpdate = (updates: Partial<LovinglyEvent>) => {
@@ -152,6 +158,24 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
       updates.googleMapsUrl = original.googleMapsUrl;
     } else if (selectedElementKey === 'motif') {
       updates.decorativeMotif = original.decorativeMotif;
+    } else if (selectedElementKey === 'audio') {
+      updates.bgAudioUrl = original.bgAudioUrl;
+      updates.bgAudioPresetId = original.bgAudioPresetId;
+      updates.bgAudioTitle = original.bgAudioTitle;
+      updates.spotifyUrl = original.spotifyUrl;
+      updates.musicType = original.musicType;
+    } else if (selectedElementKey === 'photos' || selectedElementKey.startsWith('photo_')) {
+      updates.photos = original.photos;
+    } else if (selectedElementKey === 'rsvp') {
+      updates.rsvpConfig = original.rsvpConfig;
+      updates.whatsappNumber = original.whatsappNumber;
+    } else if (selectedElementKey === 'upi' || selectedElementKey === 'upiQr') {
+      updates.upiId = original.upiId;
+      updates.showUpiQrCode = original.showUpiQrCode;
+      updates.upiQrImageUrl = original.upiQrImageUrl;
+    } else if (selectedElementKey === 'locationQr') {
+      updates.showLocationQrCode = original.showLocationQrCode;
+      updates.googleMapsUrl = original.googleMapsUrl;
     } else if (selectedElementKey.startsWith('message_')) {
       const idx = parseInt(selectedElementKey.replace('message_', ''), 10);
       if (!isNaN(idx)) {
@@ -224,7 +248,7 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
     };
 
     localStorage.setItem(`draft_${newId}`, JSON.stringify(creationDraft));
-    navigate(`/create/${newId}/preview`);
+    navigate(`/create/${newId}/publish`);
   };
 
   if (!sample) {
@@ -342,8 +366,18 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
           )}
         </div>
 
-        {/* Right: Save & Proceed Action (100% visible with zero cut-off) */}
+        {/* Right: Export PDF & Save & Proceed Action */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowPdfExport(true)}
+            className="px-2.5 sm:px-3.5 py-2 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+            title="Export Exact PDF"
+          >
+            <Printer className="w-3.5 h-3.5 text-rose-700 shrink-0" />
+            <span className="hidden sm:inline">Export PDF</span>
+            <span className="sm:hidden">PDF</span>
+          </button>
           <button
             type="button"
             onClick={handleProceedToPublish}
@@ -409,6 +443,11 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
                   {selectedElementKey === 'quote' && <Sparkles className="w-3.5 h-3.5" />}
                   {selectedElementKey === 'details' && <MapPin className="w-3.5 h-3.5" />}
                   {selectedElementKey === 'motif' && <Sparkles className="w-3.5 h-3.5" />}
+                  {selectedElementKey === 'audio' && <Music className="w-3.5 h-3.5" />}
+                  {(selectedElementKey === 'photos' || selectedElementKey?.startsWith('photo_')) && <ImageIcon className="w-3.5 h-3.5" />}
+                  {selectedElementKey === 'rsvp' && <Heart className="w-3.5 h-3.5 text-rose-600" />}
+                  {(selectedElementKey === 'upi' || selectedElementKey === 'upiQr') && <QrCode className="w-3.5 h-3.5 text-purple-700" />}
+                  {selectedElementKey === 'locationQr' && <MapPin className="w-3.5 h-3.5 text-rose-600" />}
                   {selectedElementKey?.startsWith('message_') && <FileText className="w-3.5 h-3.5" />}
                 </span>
                 <div className="min-w-0">
@@ -418,6 +457,11 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
                     {selectedElementKey === 'quote' && 'Editing Welcome Tagline / Quote'}
                     {selectedElementKey === 'details' && 'Editing Date & Location'}
                     {selectedElementKey === 'motif' && 'Editing Center Element'}
+                    {selectedElementKey === 'audio' && 'Editing Background Music'}
+                    {(selectedElementKey === 'photos' || selectedElementKey?.startsWith('photo_')) && 'Editing Page Photos'}
+                    {selectedElementKey === 'rsvp' && 'Editing Guest RSVP Form'}
+                    {(selectedElementKey === 'upi' || selectedElementKey === 'upiQr') && 'Editing UPI Digital Gifts'}
+                    {selectedElementKey === 'locationQr' && 'Editing Venue Directions QR'}
                     {selectedElementKey?.startsWith('message_') && `Editing Message Paragraph ${messageIdx !== null ? messageIdx + 1 : ''}`}
                   </h3>
                   <p className="text-[10px] text-stone-500 hidden sm:block truncate">
@@ -425,7 +469,15 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
                       ? 'Element selected & highlighted. Drag directly on canvas to reposition.' 
                       : selectedElementKey === 'motif'
                         ? 'Select an auspicious or celebratory center element. Edits reflect live on the canvas.'
-                        : 'Modify text, font pairing, size, and styling. Edits reflect live on the canvas.'}
+                        : selectedElementKey === 'audio'
+                          ? 'Change soundtrack, upload MP3, embed Spotify track, or remove music.'
+                          : (selectedElementKey === 'photos' || selectedElementKey?.startsWith('photo_'))
+                            ? 'Remove template photos or upload new pictures to personalize your page.'
+                            : selectedElementKey === 'rsvp'
+                              ? 'Customize guest headcount collection or remove RSVP form.'
+                              : (selectedElementKey === 'upi' || selectedElementKey === 'upiQr')
+                                ? 'Update UPI ID and payment scanner or remove digital gifts from this page.'
+                                : 'Modify text, font pairing, size, and styling. Edits reflect live on the canvas.'}
                   </p>
                 </div>
               </div>
@@ -614,13 +666,257 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
                               : 'bg-stone-50 border-stone-200 hover:bg-white'
                           }`}
                         >
-                          <span className="text-xl">{motif.icon}</span>
                           <span className="text-[10px] font-bold text-stone-800 truncate w-full">
                             {motif.name}
                           </span>
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+              )}
+
+              {/* 7. AUDIO (BACKGROUND MUSIC) CONTROLS */}
+              {selectedElementKey === 'audio' && (
+                <div className="space-y-3">
+                  <AudioUploader
+                    event={event}
+                    onChange={handleUpdate}
+                    variant="minimal"
+                  />
+                  {(event.bgAudioUrl || event.spotifyUrl || event.bgAudioTitle) && (
+                    <button
+                      type="button"
+                      onClick={() => handleUpdate({
+                        bgAudioUrl: '',
+                        bgAudioPresetId: '',
+                        bgAudioTitle: '',
+                        spotifyUrl: '',
+                        musicType: 'none',
+                      })}
+                      className="w-full py-2 px-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove Song from This Page</span>
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* 8. PHOTOS (GALLERY / SHOWCASE) CONTROLS */}
+              {(selectedElementKey === 'photos' || selectedElementKey?.startsWith('photo_')) && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-stone-700">
+                      Page Photos ({event.photos.length})
+                    </label>
+                    {event.photos.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdate({ photos: [] })}
+                        className="text-[11px] font-bold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Remove All Photos</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {event.photos.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {event.photos.map((photoUrl, idx) => (
+                        <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-stone-200 bg-stone-100">
+                          <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = event.photos.filter((_, i) => i !== idx);
+                              handleUpdate({ photos: next });
+                            }}
+                            className="absolute top-1.5 right-1.5 p-1 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition-all cursor-pointer opacity-90 group-hover:opacity-100"
+                            title="Remove this photo"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/60 text-white text-[9px] rounded font-mono">
+                            #{idx + 1}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-center text-xs text-stone-500">
+                      No photos on this page. Upload your first picture below.
+                    </div>
+                  )}
+
+                  {/* Upload new photo input */}
+                  <div className="pt-2 border-t border-stone-100">
+                    <label className="block text-[11px] font-bold text-stone-600 mb-1 flex items-center gap-1">
+                      <Upload className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Upload &amp; Add New Photo</span>
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (uploadEvt) => {
+                            if (uploadEvt.target?.result) {
+                              handleUpdate({ photos: [...event.photos, uploadEvt.target.result as string] });
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="w-full text-xs text-stone-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* 9. RSVP FORM CONTROLS */}
+              {selectedElementKey === 'rsvp' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200">
+                    <div>
+                      <span className="text-xs font-bold text-stone-900 block">RSVP Form Status</span>
+                      <span className="text-[11px] text-stone-500">Collect attendance responses &amp; guest headcounts</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdate({
+                        rsvpConfig: {
+                          ...(event.rsvpConfig || { collectPhone: true, collectGuestCount: true, collectDietary: false, collectAccommodation: false }),
+                          enabled: !event.rsvpConfig?.enabled
+                        }
+                      })}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        event.rsvpConfig?.enabled
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-stone-200 text-stone-700'
+                      }`}
+                    >
+                      {event.rsvpConfig?.enabled ? 'Active / Included' : 'Disabled'}
+                    </button>
+                  </div>
+
+                  {event.rsvpConfig?.enabled && (
+                    <div className="space-y-2.5">
+                      <div>
+                        <label className="block text-[11px] font-bold text-stone-700 mb-1">Host WhatsApp Number for Alerts</label>
+                        <input
+                          type="tel"
+                          value={event.whatsappNumber || ''}
+                          onChange={(e) => handleUpdate({ whatsappNumber: e.target.value })}
+                          placeholder="+91 9876543210"
+                          className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs focus:bg-white"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleUpdate({
+                          rsvpConfig: {
+                            enabled: false,
+                            collectPhone: event.rsvpConfig?.collectPhone ?? true,
+                            collectGuestCount: event.rsvpConfig?.collectGuestCount ?? true,
+                            collectDietary: event.rsvpConfig?.collectDietary ?? false,
+                            collectAccommodation: event.rsvpConfig?.collectAccommodation ?? false,
+                            deadline: event.rsvpConfig?.deadline,
+                            customQuestions: event.rsvpConfig?.customQuestions
+                          }
+                        })}
+                        className="w-full py-2 px-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Remove RSVP Form from This Page</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 10. UPI DIGITAL GIFTS CONTROLS */}
+              {(selectedElementKey === 'upi' || selectedElementKey === 'upiQr') && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200">
+                    <div>
+                      <span className="text-xs font-bold text-purple-950 block">UPI Gift Scanner Status</span>
+                      <span className="text-[11px] text-stone-500">Allow guests to scan &amp; send shagun instantly</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdate({ showUpiQrCode: event.showUpiQrCode === false ? true : false })}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        event.showUpiQrCode !== false
+                          ? 'bg-purple-700 text-white'
+                          : 'bg-stone-200 text-stone-700'
+                      }`}
+                    >
+                      {event.showUpiQrCode !== false ? 'Active' : 'Disabled'}
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 mb-1">Your UPI ID (VPA)</label>
+                    <input
+                      type="text"
+                      value={event.upiId || ''}
+                      onChange={(e) => handleUpdate({ upiId: e.target.value })}
+                      placeholder="e.g. mobile@okaxis or name@upi"
+                      className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-mono focus:bg-white"
+                    />
+                  </div>
+
+                  {(event.upiId || event.upiQrImageUrl || event.showUpiQrCode !== false) && (
+                    <button
+                      type="button"
+                      onClick={() => handleUpdate({
+                        upiId: '',
+                        upiQrImageUrl: '',
+                        showUpiQrCode: false,
+                      })}
+                      className="w-full py-2 px-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove UPI Gifts from This Page</span>
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* 11. VENUE DIRECTIONS QR CONTROLS */}
+              {selectedElementKey === 'locationQr' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200">
+                    <div>
+                      <span className="text-xs font-bold text-stone-900 block">Directions QR Code</span>
+                      <span className="text-[11px] text-stone-500">Scannable QR linking to Google Maps directions</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdate({ showLocationQrCode: !event.showLocationQrCode })}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        event.showLocationQrCode
+                          ? 'bg-teal-700 text-white'
+                          : 'bg-stone-200 text-stone-700'
+                      }`}
+                    >
+                      {event.showLocationQrCode ? 'Active' : 'Disabled'}
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 mb-1">Google Maps URL</label>
+                    <input
+                      type="url"
+                      value={event.googleMapsUrl || ''}
+                      onChange={(e) => handleUpdate({ googleMapsUrl: e.target.value })}
+                      placeholder="https://maps.google.com/..."
+                      className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs focus:bg-white"
+                    />
                   </div>
                 </div>
               )}
@@ -970,6 +1266,28 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
                           className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-mono"
                         />
                       </div>
+
+                      <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2 sm:col-span-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900">
+                            <MapPin className="w-4 h-4 text-emerald-700" />
+                            <span>Venue Navigation Map QR</span>
+                          </div>
+                          <input 
+                            type="checkbox"
+                            checked={event.showLocationQrCode ?? true}
+                            onChange={(e) => handleUpdate({ showLocationQrCode: e.target.checked })}
+                            className="w-4 h-4 text-rose-600 rounded cursor-pointer"
+                          />
+                        </div>
+                        <input
+                          type="url"
+                          value={event.googleMapsUrl || ''}
+                          onChange={(e) => handleUpdate({ googleMapsUrl: e.target.value })}
+                          placeholder="e.g. https://maps.google.com/?q=..."
+                          className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-mono"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1075,10 +1393,19 @@ export function SampleCanvasEditor({ user }: SampleCanvasEditorProps) {
 
           {/* Canva Helper Tip */}
           <div className="hidden md:flex items-center gap-1.5 text-[11px] font-medium text-stone-500 bg-stone-100/80 px-2.5 py-1 rounded-full border border-stone-200 shrink-0">
-            <span>💡 Click any element on canvas to edit</span>
+            <span>Click any element on canvas to edit</span>
           </div>
         </div>
       </nav>
+
+      {/* Print-Isolated PDF Export Modal */}
+      {showPdfExport && (
+        <PdfExportModal
+          event={event}
+          onClose={() => setShowPdfExport(false)}
+          autoTriggerPrint={true}
+        />
+      )}
     </div>
   );
 }

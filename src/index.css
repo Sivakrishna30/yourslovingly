@@ -80,3 +80,80 @@ h2 {
 .shadow-premium {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
 }
+
+@media print {
+  @page {
+    margin: 8mm;
+    size: auto;
+  }
+
+  html,
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.yl-printing-active > #root {
+    display: none !important;
+  }
+
+  body.yl-printing-active > #yl-pdf-print-portal {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.yl-printing-active > #yl-pdf-print-portal > div {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+
+  #yl-pdf-print-portal .yl-print-toolbar,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Full-page print unconstraining so full page prints without viewport fold clipping */
+  .yl-event-viewer-root {
+    min-height: 0 !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    display: block !important;
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .yl-event-viewer-root * {
+    overflow: visible !important;
+  }
+
+  .yl-event-viewer-root .max-w-4xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+

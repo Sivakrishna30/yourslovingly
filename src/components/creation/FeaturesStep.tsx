@@ -5,10 +5,8 @@ import {
   Users, 
   IndianRupee, 
   Lock, 
-  ShieldCheck,
   Check,
   Upload,
-  Sparkles,
   X
 } from 'lucide-react';
 import type { LovinglyEvent, RsvpFormConfig } from '../../types';
@@ -61,7 +59,7 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
   };
 
   const defaultRsvpConfig: RsvpFormConfig = {
-    enabled: event.rsvpConfig?.enabled ?? true,
+    enabled: event.rsvpConfig?.enabled ?? false,
     collectPhone: event.rsvpConfig?.collectPhone ?? true,
     collectGuestCount: event.rsvpConfig?.collectGuestCount ?? true,
     collectDietary: event.rsvpConfig?.collectDietary ?? true,
@@ -121,10 +119,10 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
         {/* Navigation Tabs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 bg-stone-100 rounded-2xl">
           {[
-            { id: 'spotify', label: 'Music & Audio', icon: Music, badge: event.bgAudioUrl ? 'MP3 Active' : event.spotifyUrl ? 'Spotify Active' : 'Basic Included' },
-            { id: 'rsvp', label: 'RSVP Form', icon: Users, badge: event.rsvpConfig?.enabled === true ? 'Active' : '⭐ Premium' },
-            { id: 'upi', label: 'UPI Gifts & QR', icon: IndianRupee, badge: hasUpiConfigured ? 'Active' : '⭐ Premium' },
-            { id: 'security', label: 'Password Lock', icon: Lock, badge: event.password ? 'Protected' : '⭐ Premium' }
+            { id: 'spotify', label: 'Music & Audio', icon: Music, badge: event.bgAudioUrl ? 'MP3 Active' : event.spotifyUrl ? 'Spotify Active' : 'Optional' },
+            { id: 'rsvp', label: 'RSVP Form', icon: Users, badge: event.rsvpConfig?.enabled === true ? 'Enabled' : 'Optional' },
+            { id: 'upi', label: 'UPI Gifts & QR', icon: IndianRupee, badge: hasUpiConfigured ? 'Active' : 'Optional' },
+            { id: 'security', label: 'Password Lock', icon: Lock, badge: event.password ? 'Protected' : 'Optional' }
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -165,22 +163,17 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
         {/* Tab 2: RSVP Config */}
         {activeTab === 'rsvp' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-amber-50/70 rounded-2xl border border-amber-200">
+            <div className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-200">
               <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-stone-900">Interactive Guest RSVP Form</span>
-                  <span className="px-2 py-0.5 bg-amber-200 text-amber-900 text-[10px] font-bold rounded-md flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-700" /> Premium Feature
-                  </span>
-                </div>
-                <p className="text-xs text-amber-800">
+                <span className="text-sm font-bold text-stone-900 block">Interactive Guest RSVP Form</span>
+                <p className="text-xs text-stone-500">
                   Collect attendance responses, dietary choices, and headcount directly to your live dashboard.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => handleUpdateRsvp({ enabled: !defaultRsvpConfig.enabled })}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   defaultRsvpConfig.enabled
                     ? 'bg-rose-700 text-white shadow-xs'
                     : 'bg-stone-200 text-stone-700 hover:bg-stone-300'
@@ -260,32 +253,15 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
         {/* Tab 3: UPI Gifts & QR Image Upload */}
         {activeTab === 'upi' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <IndianRupee className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-xs font-bold text-amber-900">Direct UPI Gifts & Digital Payments</h4>
-                    <span className="px-2 py-0.5 bg-amber-200 text-amber-900 text-[10px] font-bold rounded-md flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-amber-700" /> Premium Feature
-                    </span>
-                  </div>
-                  <p className="text-xs text-amber-700 leading-relaxed mt-0.5">
-                    Allows well-wishers and guests to scan your QR code or send digital gifts directly to your bank account via GPay, PhonePe, Paytm, or BHIM. Zero platform fees.
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Validation warning status */}
             {!hasUpiConfigured ? (
-              <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-semibold flex items-center gap-2">
-                <span>⚠️ Either attach a QR Code image OR enter your UPI ID / Phone number to enable UPI gifts on your page.</span>
+              <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-700 text-xs font-semibold flex items-center gap-2">
+                <span>Attach a QR Code image or enter your UPI ID / Phone number below to enable direct UPI gifts on your page.</span>
               </div>
             ) : (
               <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>UPI Gift module is ready for your page! Guests will be able to scan your QR code or copy your UPI ID.</span>
+                <span>UPI Gift module is active for your page. Guests will be able to scan your QR code or copy your UPI ID.</span>
               </div>
             )}
 
@@ -385,21 +361,6 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
         {/* Tab 4: Security & 4-Digit PIN */}
         {activeTab === 'security' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-xs font-bold text-amber-900">4-Digit Security PIN</h4>
-                  <span className="px-2 py-0.5 bg-amber-200 text-amber-900 text-[10px] font-bold rounded-md flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-700" /> Premium Feature
-                  </span>
-                </div>
-                <p className="text-xs text-amber-800 leading-relaxed mt-0.5">
-                  Protect your private celebration photos, venue details, and invite behind a simple 4-digit numeric PIN.
-                </p>
-              </div>
-            </div>
-
             <div className="max-w-md bg-stone-50 border border-stone-200 rounded-2xl p-5 space-y-3">
               <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
                 Set 4-Digit Guest Access PIN (Numbers Only)
@@ -434,7 +395,7 @@ export function FeaturesStep({ event, onUpdate, onBack, onNext, onSaveDraft }: F
               </div>
               <div className="text-[11px] text-stone-500">
                 {event.password && event.password.length === 4 
-                  ? '✓ 4-Digit PIN active. Guests will need this PIN to view the invite.' 
+                  ? '4-Digit PIN active. Guests will need this PIN to view the invite.' 
                   : event.password ? `${event.password.length}/4 digits entered` : 'No PIN set (Open public access)'}
               </div>
             </div>

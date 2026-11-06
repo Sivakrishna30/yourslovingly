@@ -7,6 +7,56 @@ and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
 ### Added & Enhanced
+- **Progressive Web App (PWA) Architecture (`vite.config.ts`, `index.html`, `pwa/*`, `usePWAInstall.ts`, `useOnlineStatus.ts`)**:
+  - Converted Yours Lovingly into a fully installable Progressive Web App (PWA) for desktop, Android, iOS Safari, and mobile web.
+  - Implemented Workbox service worker caching for offline asset availability and increased maximum cache file size to 5MB.
+  - Created high-res PWA icons (`apple-touch-icon.png`, `pwa-192x192.png`, `pwa-512x512.png`, `pwa-maskable-512x512.png`) and verified web app manifest configuration.
+  - Added native install prompt button (`PWAInstallButton.tsx`) in Landing navbar & Workspace header, plus an offline network indicator banner (`OfflineIndicator.tsx`).
+- **Unified Edit Flow & Deprecation of Legacy Editor Model (`App.tsx`, `Dashboard.tsx`, `Editor.tsx` deleted)**:
+  - Completely removed the redundant legacy 1356-line `Editor.tsx` model.
+  - Re-routed all draft and event editing directly to `/create/:inviteId/details`, pre-populating all existing settings, texts, and design options inside the unified 6-step creation flow.
+  - Added redirect wrapper routing legacy `/edit/:eventId` paths to `/create/:eventId/details`.
+- **Full-Page PDF Multi-Page Export Fix (`index.css`, `PdfExportModal.tsx`)**:
+  - Resolved browser viewport truncation during PDF generation: set `.yl-event-viewer-root` and `#yl-pdf-print-portal` to `min-height: 0 !important; height: auto !important; overflow: visible !important;` so invitations print across multiple pages cleanly without cutoff.
+- **Canva-Style Fragment Decoupling & Canvas Editor Polish (`Viewer.tsx`, `SampleCanvasEditor.tsx`)**:
+  - Decoupled Date/Venue, RSVP, and UPI Gifts into standalone interactive fragments with dedicated selection indicators and reset/remove controls.
+  - Added direct inspection and removal controls for audio/music tracks and photo galleries.
+  - Added Venue Map QR, RSVP, and UPI Gift toggles directly into the bottom toolbar's Features drawer.
+  - Ensured "Save & Proceed" navigates directly to Step 6 (`/create/${newId}/publish`) following the unified pricing model.
+- **Codebase Clean-up**:
+  - Resolved JSX parser mismatch in `Viewer.tsx`.
+  - Removed obsolete temporary checklist files (`FINAL_PHASE1_REMAINING_ACTION_ITEMS.md`, `FINAL_VERIFICATION_REPORT.md`, `IMPLEMENTATION_PROGRESS.md`).
+- **Mobile Top Panel & Header Responsiveness (`Landing.tsx`, `Dashboard.tsx`)**:
+  - Fixed mobile header layout overlapping across both Landing Page (`Navbar`) and Workspace (`Dashboard`):
+    - Added responsive `h-14 sm:h-16`, safe horizontal paddings (`px-3 sm:px-6`), brand logo scaling (`w-8 h-8 sm:w-11 sm:h-11`), text truncation (`truncate min-w-0`), and non-wrapping `shrink-0` action containers.
+    - Landing Navbar on mobile now neatly aligns brand, "Workspace", "Sign Out", and modern hamburger dropdown toggle (`Menu` / `X`) without multi-line wrapping or collisions.
+    - Workspace Top Header on mobile cleanly proportions brand, "Home", "Templates", and "Create Page" without overlapping options.
+  - Removed `(6-Step Wizard)` text from the Create Page button in `Dashboard.tsx`.
+  - Added "1-Click Quick Edit" informative badge and guidance text across "Create Using Templates" header action, sub-navigation tab, and template gallery showcase.
+- **Relocated Platform Metrics to CTA Section (`Landing.tsx`)**:
+  - Relocated the live counters (**Pages Created** and **Ready Templates**) from the top Hero banner down to the final Call-to-Action (CTA) section ("Ready to create your digital page?") above the footer, styling them with translucent frosted glass cards and high-contrast typography.
+- **Landing Page Hero Metrics Polish (`Landing.tsx`)**:
+  - Removed the "100% Exact Print-Ready PDF Export" third metric box from the landing page hero strip, focusing the live metrics on "Pages Created" and "Ready Templates".
+- **Exact Print-Ready PDF Export & Live Published Page Fidelity (`PdfExportModal.tsx`, `Viewer.tsx`, `PublicViewerPage.tsx`, `publishService.ts`, `index.css`, `Dashboard.tsx`, `Editor.tsx`, `PublishStep.tsx`, `SampleCanvasEditor.tsx`)**:
+  - Resolved the blank PDF export and blank live page issue by persisting the full `legacyEvent: LovinglyEvent` snapshot inside `public_invites/{slug}` upon publication and rendering `<EventViewer>` directly on `PublicViewerPage.tsx`.
+  - Created `<PdfExportModal />` using a print-isolated React Portal (`#yl-pdf-print-portal`) and `@media print` CSS rules (`-webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;`), preserving 100% of background colors, textures, decorative frames, motifs, typography, and alignment with zero blank pages or layout shifts.
+  - Enabled 1-click **Export PDF** across Dashboard cards (published & drafts), Step 5 (`PublishStep.tsx`), the Studio Editor (`Editor.tsx`), the Sample Canvas Editor (`SampleCanvasEditor.tsx`), and the live guest view (`Viewer.tsx`).
+- **Step 6 / Hosting & Plan Selection Logic (`PublishStep.tsx`, `FeaturesStep.tsx`, `App.tsx`)**:
+  - When Premium Features (RSVP, UPI Gifts, 4-Digit PIN, Location QR) are selected, displays **"Premium Features Are Selected"** with interactive feature checkboxes, the **Premium Page** price, a primary **"Proceed with Premium Page"** button, and a secondary **"Remove Premium Features & Proceed with Basic Page"** button.
+  - When no Premium Features are selected, displays **only the Basic Page** plan option.
+  - Removed all `"Premium Feature"` text panels/badges from the first-line header display of RSVP, UPI Gifts, and 4-Digit Security PIN in `FeaturesStep.tsx`, and defaulted RSVP to unselected unless explicitly enabled.
+  - Free Basic Pages (`₹0` with 1st Page Free Credit) publish immediately, while paid plans (`price > 0`) save as a draft and route to the Payment Gateway Pending boundary without falsely marking `isPublished = true`.
+- **Strict Non-Owner Guest View Counting (`Viewer.tsx`, `PublicViewerPage.tsx`, `publishService.ts`)**:
+  - Removed automatic view counting from `<EventViewer />` (`Viewer.tsx`) so creation wizard previews (Steps 1–6), sample customization, and draft editing never inflate page view counts.
+  - Restricted `firebaseService.recordPageView(slug)` in `PublicViewerPage.tsx` strictly to non-owner visitors (`auth.currentUser?.uid !== ownerId`) viewing a live, published, non-expired page, and initialized newly published pages with `views: 0`.
+- **Workspace Navigation, Sample Templates Hub & Live Landing Metrics (`Dashboard.tsx`, `Landing.tsx`, `App.tsx`)**:
+  - Enabled signed-in users to visit the `/` Landing Page anytime via the new top-left **Home** button next to the Yours Lovingly logo in `Dashboard.tsx`, with a **Workspace** button in `Landing.tsx` to return.
+  - Added a **"Create Using Templates"** header action and **"Sample Templates"** tab inside `Dashboard.tsx` so users can launch the 1-step Canva-style template customizer directly from their Workspace alongside the 6-step **"Create Page"** wizard.
+  - Added live counters on the Landing Page Hero (`Landing.tsx`) for **Pages Created** (live from Firestore `public_invites` + curated showcase) and **Ready Templates**.
+- **Post-Publish Text-Only Editing Lock & Global Watermark (`Editor.tsx`, `App.tsx`)**:
+  - Enforced the Post-Publish Text-Only Editing contract (`04_editing_and_monetization.md`): published pages allow unlimited free text updates (title, host, date, venue, messages) that automatically sync to `public_invites/{slug}`, while locking structural template/frame/motif changes with a 1-click **"Copy to New Draft"** action.
+  - Added the fixed 30% opacity centered Korean Finger Heart logo watermark (`opacity-30 mix-blend-multiply pointer-events-none`) across all pages and creation steps.
+  - Removed decorative emojis from UI buttons, tabs, badges, and controls across the application.
 - **Reordered Step Sequence: Step 5 Final Preview & Step 6 Launch Hub (`App.tsx`, `PreviewStep.tsx`, `PublishStep.tsx`, `FeaturesStep.tsx`)**:
   - Reordered the wizard flow so **Step 5** is the dedicated **Live Guest Preview (`preview`)** featuring the responsive mobile phone / desktop switcher and complete visual inspection.
   - Set **Step 6** to **Hosting, Plan & Launch (`publish`)**, consolidating user authentication, Firestore quota verification, premium feature resolution, and 1-click publishing.

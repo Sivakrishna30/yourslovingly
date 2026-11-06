@@ -78,7 +78,6 @@ export function SmartMessageSuggestion({
                   : 'bg-brand-teal/40 hover:bg-brand-teal/60 text-stone-100 border-brand-teal/20'
               }`}
             >
-              <span>{t.icon}</span>
               <span>{t.label}</span>
             </button>
           ))}
@@ -141,7 +140,7 @@ function SuggestionEditor({ suggestion, onApplyMessage, onRefresh }: SuggestionE
           className="w-full sm:w-auto justify-center px-4 py-2 sm:py-1.5 bg-brand-teal/40 hover:bg-brand-teal/60 text-stone-200 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 border border-brand-teal/20"
         >
           <RefreshCw className="w-3.5 h-3.5 text-accent" />
-          Next Option 🔄
+          <span>Next Option</span>
         </button>
 
         <button
@@ -154,7 +153,7 @@ function SuggestionEditor({ suggestion, onApplyMessage, onRefresh }: SuggestionE
           }`}
         >
           {applied ? <Check className="w-4 h-4 text-white" /> : <Sparkles className="w-4 h-4" />}
-          {applied ? 'Applied to Invitation!' : 'Use This Message ✨'}
+          <span>{applied ? 'Applied to Invitation' : 'Use This Message'}</span>
         </button>
       </div>
     </div>

@@ -232,7 +232,6 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
                         isSelected ? 'border-rose-600 ring-2 ring-rose-600/20 bg-rose-50/40' : 'border-stone-200 hover:border-stone-400'
                       }`}
                     >
-                      <div className="text-xl">{frame.icon}</div>
                       <span className="text-xs font-bold text-stone-900 block leading-tight">{frame.name}</span>
                       <span className="text-[10px] text-stone-500 block">{frame.category}</span>
                     </button>
@@ -259,7 +258,6 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
                         isSelected ? 'border-rose-600 ring-2 ring-rose-600/20 bg-rose-50/40' : 'border-stone-200 hover:border-stone-400'
                       }`}
                     >
-                      <div className="text-xl">{motif.icon}</div>
                       <span className="text-xs font-bold text-stone-900 block leading-tight">{motif.name}</span>
                       <span className="text-[10px] text-stone-500 block">{motif.category}</span>
                     </button>
@@ -286,7 +284,6 @@ export function ElementsStep({ event, onUpdate, onBack, onNext, onSaveDraft }: E
                         isSelected ? 'border-rose-600 ring-2 ring-rose-600/20 bg-rose-50/40' : 'border-stone-200 hover:border-stone-400'
                       }`}
                     >
-                      <div className="text-xl">{tex.icon}</div>
                       <span className="text-xs font-bold text-stone-900 block leading-tight">{tex.name}</span>
                       <span className="text-[10px] text-stone-500 block">{tex.intensity}</span>
                     </button>

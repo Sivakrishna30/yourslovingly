@@ -50,7 +50,7 @@ export function EventTypeStep({ selectedEventType, onSelectEventType, onNext }: 
         <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-2xl overflow-x-auto w-full sm:w-auto">
           {[
             { id: 'all', label: 'All Types' },
-            { id: 'popular', label: '🔥 Popular' },
+            { id: 'popular', label: 'Popular' },
             { id: 'traditional', label: 'Traditional & Pooja' },
             { id: 'celebration', label: 'Parties' },
             { id: 'personal', label: 'Milestones' }

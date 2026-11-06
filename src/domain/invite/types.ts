@@ -1,5 +1,6 @@
 import type { EntitlementTier } from '../entitlement/types';
 import type { Page, ElementInstance } from '../element/types';
+import type { LovinglyEvent } from '../../types';
 
 export type InviteStatus = 'draft' | 'published';
 
@@ -45,4 +46,8 @@ export interface PublicationSnapshot {
   
   /** Frozen copy of all element instances, mapped by pageId */
   elements: Readonly<Record<string, ReadonlyArray<Readonly<ElementInstance>>>>;
+
+  /** Full rich invitation event configuration for exact EventViewer rendering and PDF export */
+  legacyEvent?: LovinglyEvent;
 }
+

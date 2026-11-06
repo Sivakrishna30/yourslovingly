@@ -91,28 +91,28 @@ export function InsightsModal({ event, onClose }: InsightsModalProps) {
     const attendingRsvps = insights.rsvps.filter(r => r.attending);
     const declinedRsvps = insights.rsvps.filter(r => !r.attending);
 
-    let report = `📊 *EVENT INSIGHTS REPORT*\n`;
-    report += `🎉 *${event.title || 'Event'}*\n`;
+    let report = `*EVENT INSIGHTS REPORT*\n`;
+    report += `*${event.title || 'Event'}*\n`;
     if (event.eventDate) {
-      report += `📅 Date: ${new Date(event.eventDate).toLocaleDateString()}\n`;
+      report += `Date: ${new Date(event.eventDate).toLocaleDateString()}\n`;
     }
     if (event.location) {
-      report += `📍 Location: ${event.location}\n`;
+      report += `Location: ${event.location}\n`;
     }
-    report += `🔗 Page: ${publicUrl}\n\n`;
+    report += `Page: ${publicUrl}\n\n`;
 
-    report += `📈 *SUMMARY STATS*\n`;
-    report += `👀 Page Opens and Views: ${insights.views}\n`;
-    report += `💌 Total RSVP Submissions: ${totalResponses}\n`;
-    report += `✅ Attending: ${insights.totalAttendingCount} RSVPs (${insights.totalGuestCount} Total Headcount)\n`;
-    report += `❌ Declined: ${insights.totalDeclinedCount} RSVPs\n`;
+    report += `*SUMMARY STATS*\n`;
+    report += `- Page Opens and Views: ${insights.views}\n`;
+    report += `- Total RSVP Submissions: ${totalResponses}\n`;
+    report += `- Attending: ${insights.totalAttendingCount} RSVPs (${insights.totalGuestCount} Total Headcount)\n`;
+    report += `- Declined: ${insights.totalDeclinedCount} RSVPs\n`;
     if (insights.totalAmountCollected && insights.totalAmountCollected > 0) {
-      report += `💰 Total Gifts Collected: ₹${insights.totalAmountCollected.toLocaleString()} (${insights.transactions?.length || 0} gifts)\n`;
+      report += `- Total Gifts Collected: ₹${insights.totalAmountCollected.toLocaleString()} (${insights.transactions?.length || 0} gifts)\n`;
     }
     report += `\n`;
 
     if (insights.transactions && insights.transactions.length > 0) {
-      report += `🎁 *GIFT TRANSACTIONS RECORDED (${insights.transactions.length})*:\n`;
+      report += `*GIFT TRANSACTIONS RECORDED (${insights.transactions.length})*:\n`;
       insights.transactions.forEach((tx, idx) => {
         const refText = tx.transactionRef ? ` (Ref: ${tx.transactionRef})` : '';
         const noteText = tx.note ? ` - "${tx.note}"` : '';
@@ -122,7 +122,7 @@ export function InsightsModal({ event, onClose }: InsightsModalProps) {
     }
 
     if (attendingRsvps.length > 0) {
-      report += `✨ *ATTENDING GUESTS (${attendingRsvps.length})*:\n`;
+      report += `*ATTENDING GUESTS (${attendingRsvps.length})*:\n`;
       attendingRsvps.forEach((r, idx) => {
         const countText = r.guestCount > 1 ? ` (${r.guestCount} guests)` : ` (1 guest)`;
         const noteText = r.note ? ` - "${r.note}"` : '';
@@ -132,7 +132,7 @@ export function InsightsModal({ event, onClose }: InsightsModalProps) {
     }
 
     if (declinedRsvps.length > 0) {
-      report += `🕊️ *REGRETFULLY DECLINED (${declinedRsvps.length})*:\n`;
+      report += `*REGRETFULLY DECLINED (${declinedRsvps.length})*:\n`;
       declinedRsvps.forEach((r, idx) => {
         const noteText = r.note ? ` - "${r.note}"` : '';
         report += `${idx + 1}. ${r.guestName}${noteText}\n`;

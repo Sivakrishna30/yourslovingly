@@ -2,6 +2,7 @@ import { doc, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { db } from '../../firebase';
 import type { Invite, PublicationSnapshot } from '../invite/types';
 import type { Page, ElementInstance } from '../element/types';
+import type { LovinglyEvent } from '../../types';
 import { EntitlementService } from '../entitlement/entitlementService';
 import { sanitizeForFirestore } from '../../lib/utils';
 
@@ -14,7 +15,8 @@ export class PublishService {
     uid: string, 
     invite: Invite, 
     pages: Page[], 
-    elements: ElementInstance[]
+    elements: ElementInstance[],
+    legacyEvent?: LovinglyEvent
   ): Promise<string> {
     
     // 1. Entitlement validation is assumed to have happened before calling this,
@@ -35,6 +37,9 @@ export class PublishService {
     const inviteCopy = JSON.parse(JSON.stringify(invite)) as Invite;
     const pagesCopy = JSON.parse(JSON.stringify(pages)) as Page[];
     const elementsCopy = JSON.parse(JSON.stringify(elements)) as ElementInstance[];
+    const legacyCopy = legacyEvent
+      ? (JSON.parse(JSON.stringify({ ...legacyEvent, isPublished: true, publishedAt, expiresAt: expiresAt || legacyEvent.expiresAt })) as LovinglyEvent)
+      : undefined;
 
     // Group elements by pageId
     const elementsByPage: Record<string, ElementInstance[]> = {};
@@ -51,16 +56,27 @@ export class PublishService {
       invite: inviteCopy,
       pages: pagesCopy,
       elements: elementsByPage,
+      ...(legacyCopy ? { legacyEvent: legacyCopy } : {}),
     };
+
+    // Check if this is the initial publication so we can zero out any pre-publication view artifacts
+    const projectionRef = doc(db, 'public_invites', invite.slug);
+    const existingProjection = await getDoc(projectionRef);
 
     const batch = writeBatch(db);
 
     // 2. Write the canonical projection document (for routing and fast fetching)
-    const projectionRef = doc(db, 'public_invites', invite.slug);
     batch.set(projectionRef, sanitizeForFirestore({
       ...snapshot,
+      ...(legacyCopy ? legacyCopy : {}),
       ownerId: uid // required for RSVP updates
     }));
+
+    // Reset insights view counter to 0 on initial publication so creation-time previews are never included
+    if (!existingProjection.exists()) {
+      const insightsRef = doc(db, 'public_invites', invite.slug, 'insights', 'general');
+      batch.set(insightsRef, { views: 0 }, { merge: true });
+    }
 
     // 3. Write immutable version history
     const versionRef = doc(db, 'public_invites', invite.slug, 'versions', snapshotId);

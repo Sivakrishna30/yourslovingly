@@ -38,24 +38,24 @@ export function StudioInspector({
   const [activeTab, setActiveTab] = useState<'position' | 'typography' | 'colors' | 'animation' | 'elements'>('position');
 
   const elementSequence = useMemo(() => {
-    const seq: { key: string; label: string; icon: string }[] = [];
-    seq.push({ key: 'background', label: 'Background Canvas', icon: '🎨' });
-    if (event.title?.trim() || event.eventType) seq.push({ key: 'title', label: 'Main Event Title', icon: '👑' });
-    if (event.recipientName?.trim()) seq.push({ key: 'recipient', label: 'Subtitle / Recipient', icon: '💌' });
-    if (event.eventDate || event.location) seq.push({ key: 'details', label: 'Date & Venue Details', icon: '📍' });
+    const seq: { key: string; label: string }[] = [];
+    seq.push({ key: 'background', label: 'Background Canvas' });
+    if (event.title?.trim() || event.eventType) seq.push({ key: 'title', label: 'Main Event Title' });
+    if (event.recipientName?.trim()) seq.push({ key: 'recipient', label: 'Subtitle / Recipient' });
+    if (event.eventDate || event.location) seq.push({ key: 'details', label: 'Date & Venue Details' });
     
     event.messages?.forEach((msg, idx) => {
       if (msg.trim()) {
-        seq.push({ key: `message_${idx}`, label: `Message ${idx + 1}`, icon: '💬' });
+        seq.push({ key: `message_${idx}`, label: `Message ${idx + 1}` });
       }
     });
 
     event.photos?.forEach((_, idx) => {
-      seq.push({ key: `photo_${idx}`, label: `Image ${idx + 1}`, icon: '🖼️' });
+      seq.push({ key: `photo_${idx}`, label: `Image ${idx + 1}` });
     });
 
-    if (event.showLocationQrCode && event.googleMapsUrl) seq.push({ key: 'locationQr', label: 'Location Map & QR', icon: '🗺️' });
-    if (event.showUpiQrCode && (event.upiId || event.upiQrImageUrl)) seq.push({ key: 'upiQr', label: 'UPI Gift & Payment QR', icon: '💳' });
+    if (event.showLocationQrCode && event.googleMapsUrl) seq.push({ key: 'locationQr', label: 'Location Map & QR' });
+    if (event.showUpiQrCode && (event.upiId || event.upiQrImageUrl)) seq.push({ key: 'upiQr', label: 'UPI Gift & Payment QR' });
 
     if (event.elementOrder) {
       seq.sort((a, b) => {
@@ -72,7 +72,7 @@ export function StudioInspector({
   }, [event]);
 
   const currentIndex = elementSequence.findIndex(e => e.key === activeElementKey);
-  const currentElemInfo = elementSequence[currentIndex] || elementSequence[0] || { key: 'background', label: 'Background Canvas', icon: '🎨' };
+  const currentElemInfo = elementSequence[currentIndex] || elementSequence[0] || { key: 'background', label: 'Background Canvas' };
   
   // Update active element if it's no longer in the sequence
   if (currentIndex === -1 && elementSequence.length > 0 && activeElementKey !== currentElemInfo.key) {
@@ -127,7 +127,6 @@ export function StudioInspector({
       {/* Top Header Bar: Element Selector & Lock/Confirm Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-800">
         <div className="flex items-center gap-2">
-          <span className="text-lg">{currentElemInfo.icon}</span>
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-accent">
@@ -212,7 +211,7 @@ export function StudioInspector({
               key={item.key}
               type="button"
               onClick={() => handleSelect(item.key)}
-              className={`px-2 py-1 rounded-lg shrink-0 font-medium transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg shrink-0 font-medium transition-all flex items-center gap-1 ${
                 isSelected
                   ? 'bg-accent text-stone-950 font-bold shadow-xs'
                   : itemLocked
@@ -220,8 +219,7 @@ export function StudioInspector({
                   : 'bg-stone-800/60 text-stone-300 hover:bg-stone-800'
               }`}
             >
-              <span>{item.icon}</span>
-              <span className="truncate max-w-[80px]">{item.label.split(' ')[0]}</span>
+              <span className="truncate max-w-[90px]">{item.label.split(' ')[0]}</span>
               {itemLocked && <Check className="w-3 h-3 text-secondary" />}
             </button>
           );
