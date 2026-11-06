@@ -11,7 +11,6 @@ import { HostingRenewalModal } from './HostingRenewalModal';
 import { PdfExportModal } from './PdfExportModal';
 import { SamplesShowcase } from './SamplesShowcase';
 import { SAMPLE_INVITES, type SampleInvite } from '../data/samples';
-import { PWAInstallButton } from './pwa/PWAInstallButton';
 import koreanHeartLogo from '../assets/images/korean_heart_golden_logo_1786820911376.jpg';
 
 export type DashboardTab = 'all' | 'drafts' | 'published' | 'expired' | 'trash' | 'templates' | 'account';
@@ -151,9 +150,8 @@ export function Dashboard({
             </button>
           </div>
 
-          {/* Action Header: Install App + Single Create Button with Dropdown */}
+          {/* Action Header: Single Create Button with Dropdown */}
           <div className="flex items-center gap-2 shrink-0">
-            <PWAInstallButton variant="pill" />
             <div className="relative shrink-0">
               <button
                 type="button"

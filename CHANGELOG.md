@@ -11,7 +11,13 @@ and this project adheres to Semantic Versioning.
   - Converted Yours Lovingly into a fully installable Progressive Web App (PWA) for desktop, Android, iOS Safari, and mobile web.
   - Implemented Workbox service worker caching for offline asset availability and increased maximum cache file size to 5MB.
   - Created high-res PWA icons (`apple-touch-icon.png`, `pwa-192x192.png`, `pwa-512x512.png`, `pwa-maskable-512x512.png`) and verified web app manifest configuration.
-  - Added native install prompt button (`PWAInstallButton.tsx`) in Landing navbar & Workspace header, plus an offline network indicator banner (`OfflineIndicator.tsx`).
+- **Collapsable PWA Install Bottom Overlay Panel (`PWAInstallBottomOverlay.tsx`, `Landing.tsx`, `Dashboard.tsx`, `App.tsx`)**:
+  - Removed top navbar/header install buttons from `Landing.tsx` and `Dashboard.tsx` to keep top mobile and desktop navigation completely uncluttered.
+  - Implemented a collapsable floating bottom overlay panel (`PWAInstallBottomOverlay.tsx`) mounted globally in `App.tsx`:
+    - Expanded card state: presents app icon, PWA badge, benefits, 1-click Install button, Later button, and collapse/dismiss controls.
+    - Collapsed mini-pill state: smooth floating pill button with `Download` icon, "Install App", and `ChevronUp` expander.
+    - Interactive step-by-step installation modals for iOS Safari (Share &rarr; Add to Home Screen) and desktop browsers (Address Bar Install / Menu).
+    - Automatically hides when the app runs in standalone installed mode.
 - **Unified Edit Flow & Deprecation of Legacy Editor Model (`App.tsx`, `Dashboard.tsx`, `Editor.tsx` deleted)**:
   - Completely removed the redundant legacy 1356-line `Editor.tsx` model.
   - Re-routed all draft and event editing directly to `/create/:inviteId/details`, pre-populating all existing settings, texts, and design options inside the unified 6-step creation flow.

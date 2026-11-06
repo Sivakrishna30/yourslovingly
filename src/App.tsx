@@ -12,6 +12,7 @@ import type { SampleInvite } from './data/samples';
 import { Landing } from './components/Landing';
 import { Dashboard, type DashboardTab } from './components/Dashboard';
 import { OfflineIndicator } from './components/pwa/OfflineIndicator';
+import { PWAInstallBottomOverlay } from './components/pwa/PWAInstallBottomOverlay';
 import { SampleCanvasEditor } from './components/sample-editor/SampleCanvasEditor';
 import { createDraftFromSample } from './lib/sampleAdapter';
 
@@ -611,6 +612,7 @@ export default function App() {
         <div className="relative z-10">
           <Analytics />
           <OfflineIndicator />
+          <PWAInstallBottomOverlay />
           <AppRoutes user={user} handleSignIn={handleSignIn} handleSignOut={handleSignOut} events={events} setEvents={setEvents} />
         </div>
       </div>

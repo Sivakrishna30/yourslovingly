@@ -28,7 +28,6 @@ import koreanHeartLogo from '../assets/images/korean_heart_golden_logo_178682091
 import { SamplesShowcase, type SampleInvite } from './SamplesShowcase';
 import { SAMPLE_INVITES } from '../data/samples';
 import { MASTER_TEMPLATES } from '../lib/designSystem';
-import { PWAInstallButton } from './pwa/PWAInstallButton';
 
 interface NavbarProps {
   user: FirebaseUser | null;
@@ -72,7 +71,6 @@ export function Navbar({ user, onSignIn, onSignOut, onLogoClick, onNavigateToDas
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          <PWAInstallButton variant="pill" />
           {user ? (
             <div className="flex items-center gap-1.5 sm:gap-2">
               {onNavigateToDashboard && (
